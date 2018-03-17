@@ -198,7 +198,7 @@ namespace Mediation.PlanTools
             foreach (IAxiom conditional in action.Conditionals)
             {
                 List<Hashtable> bindings = new List<Hashtable>();
-                Hashtable binding = new Hashtable();
+                //Hashtable binding = new Hashtable();
 
                 if (conditional.Arity == 0)
                 {
