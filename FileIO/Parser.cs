@@ -7,12 +7,12 @@ using System.Text;
 using System.Threading;
 using System.Text.RegularExpressions;
 
-using Mediation.Interfaces;
-using Mediation.PlanTools;
-using Mediation.Enums;
+using BoltFreezer.Interfaces;
+using BoltFreezer.PlanTools;
+using BoltFreezer.Enums;
 using System;
 
-namespace Mediation.FileIO
+namespace BoltFreezer.FileIO
 {
     public static class Parser
     {

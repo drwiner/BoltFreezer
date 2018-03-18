@@ -1,7 +1,7 @@
-﻿using Mediation.Interfaces;
+﻿using BoltFreezer.Interfaces;
 using System;
 
-namespace Mediation.Utilities
+namespace BoltFreezer.Utilities
 {
     public class PredicateComparer
     {

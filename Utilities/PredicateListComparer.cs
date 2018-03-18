@@ -1,10 +1,10 @@
-﻿using Mediation.Interfaces;
+﻿using BoltFreezer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Mediation.Utilities
+namespace BoltFreezer.Utilities
 {
     public class PredicateListComparer : IEqualityComparer<List<IPredicate>>
     {

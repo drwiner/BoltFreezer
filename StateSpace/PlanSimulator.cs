@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-using Mediation.PlanTools;
-using Mediation.Interfaces;
+using BoltFreezer.PlanTools;
+using BoltFreezer.Interfaces;
 
-namespace Mediation.StateSpace
+namespace BoltFreezer.StateSpace
 {
     public static class PlanSimulator
     {

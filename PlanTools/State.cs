@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-using Mediation.Interfaces;
-using Mediation.Utilities;
+using BoltFreezer.Interfaces;
+using BoltFreezer.Utilities;
 
-namespace Mediation.PlanTools
+namespace BoltFreezer.PlanTools
 {
     [Serializable]
     public class State : IState

@@ -5,9 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-using Mediation.Interfaces;
+using BoltFreezer.Interfaces;
+using BoltFreezer.Utilities;
 
-namespace Mediation.PlanTools
+namespace BoltFreezer.PlanTools
 {
     [Serializable]
     public class Operator : IOperator
@@ -326,6 +327,18 @@ namespace Mediation.PlanTools
             newBindings[variable] = constant;
 
             // Set the new bindings to the operator object.
+            Bindings = newBindings;
+        }
+
+        public void AddBindings (List<string> variables, List<string> constants)
+        {
+            var bindingPairs = variables.Zip(constants, (v, c) => new {Variable=v, Constant=c});
+            Hashtable newBindings = Bindings.Clone() as Hashtable;
+            foreach (var bp in bindingPairs)
+            {
+                newBindings[bp.Variable] = bp.Constant;
+            }
+
             Bindings = newBindings;
         }
 

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 
-using Mediation.Interfaces;
-using Mediation.PlanTools;
-using Mediation.PlanSpace;
-using Mediation.Utilities;
+using BoltFreezer.Interfaces;
+using BoltFreezer.PlanTools;
+using BoltFreezer.PlanSpace;
+using BoltFreezer.Utilities;
 
-namespace Mediation.FileIO
+namespace BoltFreezer.FileIO
 {
     public static class Writer
     {

@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-using Mediation.PlanTools;
+using BoltFreezer.PlanTools;
 
-namespace Mediation.Interfaces
+namespace BoltFreezer.Interfaces
 {
     public interface IAxiom
     {

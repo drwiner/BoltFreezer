@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading;
 using System.Collections;
 
-using Mediation.Interfaces;
+using BoltFreezer.Interfaces;
 
-namespace Mediation.PlanTools
+namespace BoltFreezer.PlanTools
 {
     [Serializable]
     public class Plan : IPlan

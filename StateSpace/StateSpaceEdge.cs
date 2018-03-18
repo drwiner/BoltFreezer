@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Mediation.Enums;
-using Mediation.Interfaces;
-using Mediation.PlanTools;
+using BoltFreezer.Enums;
+using BoltFreezer.Interfaces;
+using BoltFreezer.PlanTools;
 
-namespace Mediation.StateSpace
+namespace BoltFreezer.StateSpace
 { 
     public class StateSpaceEdge : IMediationEdge
     {

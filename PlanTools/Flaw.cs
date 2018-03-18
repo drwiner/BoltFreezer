@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace Mediation.PlanTools
+namespace BoltFreezer.PlanTools
 {
     [Serializable]
     public class Flaw

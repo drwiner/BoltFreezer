@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mediation.Utilities
+namespace BoltFreezer.Utilities
 {
     [Serializable]
     public class Tuple<T1, T2>

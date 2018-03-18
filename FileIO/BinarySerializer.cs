@@ -2,7 +2,7 @@
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 
-namespace Mediation.FileIO
+namespace BoltFreezer.FileIO
 {
     public static class BinarySerializer
     {

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-using Mediation.PlanTools;
+using BoltFreezer.PlanTools;
 
-namespace Mediation.PlanSpace
+namespace BoltFreezer.PlanSpace
 { 
     public class PlanSpaceEdge
     {

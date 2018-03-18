@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Mediation.Interfaces;
+using BoltFreezer.Interfaces;
 
-namespace Mediation.PlanTools
+namespace BoltFreezer.PlanTools
 {
     [Serializable]
     class Intention : IIntention

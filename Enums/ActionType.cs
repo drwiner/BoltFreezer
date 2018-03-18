@@ -1,4 +1,4 @@
-﻿namespace Mediation.Enums
+﻿namespace BoltFreezer.Enums
 {
     public enum ActionType
     {

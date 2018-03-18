@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace Mediation.Interfaces
+namespace BoltFreezer.Interfaces
 {
     public interface IPredicate
     {

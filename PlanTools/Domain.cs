@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-using Mediation.Interfaces;
-using Mediation.Enums;
+using BoltFreezer.Interfaces;
+using BoltFreezer.Enums;
 
-namespace Mediation.PlanTools
+namespace BoltFreezer.PlanTools
 {
     [Serializable]
     public class Domain : IDomain
