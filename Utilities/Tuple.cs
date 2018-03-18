@@ -12,6 +12,11 @@ namespace BoltFreezer.Utilities
             First = first;
             Second = second;
         }
+
+        public Object Clone()
+        {
+            return new Tuple<T1,T2>(First, Second);
+        }
     }
 
     [Serializable]

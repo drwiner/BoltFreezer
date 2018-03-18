@@ -19,8 +19,12 @@ namespace BoltFreezer.Interfaces
         // Plans have an ordered list of steps.
         List<IOperator> Steps { get; set; }
 
-        // There will be dependencies (or causal links) among the plan's steps.
-        List<CausalLink> Dependencies { get; set; }
+        // Ordering Graph
+        Graph<IOperator> Orderings { get; set; }
+        //IOrderingGraph Orderings { get; set; }
+
+        // CausalLinkGraph
+        ICausalLinkGraph CausalLinks { get; set; }
 
         // The plan will have an initial state.
         IState Initial { get; set; }
@@ -30,5 +34,7 @@ namespace BoltFreezer.Interfaces
 
         // The plan can be cloned.
         Object Clone();
+
+        float Estimate { get; set; }
     }
 }

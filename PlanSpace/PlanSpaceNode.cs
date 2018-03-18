@@ -43,5 +43,11 @@ namespace BoltFreezer.PlanSpace
             problem = new Problem();
             id = System.Threading.Interlocked.Increment(ref Counter);
         }
+
+        public PlanSpaceNode(Plan _plan, Problem _problem) : this()
+        {
+            plan = _plan;
+            problem = _problem;
+        }
     }
 }
