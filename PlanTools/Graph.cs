@@ -26,6 +26,15 @@ namespace BoltFreezer.PlanTools
             edges = _edges;
         }
 
+        public void AddEdge(Tuple<T,T> edge)
+        {
+            if (!nodes.Contains(edge.First))
+                nodes.Add(edge.First);
+            if (!nodes.Contains(edge.Second))
+                nodes.Add(edge.Second);
+            edges.Add(edge);
+        }
+
         public List<T> GetDescendants(T element)
         {
             if (!nodes.Contains(element))

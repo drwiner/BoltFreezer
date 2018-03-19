@@ -16,12 +16,19 @@ namespace BoltFreezer.PlanTools
         private List<ITerm> terms;
         private bool sign;
         private Hashtable observing;
+        private bool isStatic;
 
         // Access the predicate's name.
         public string Name
         {
             get { return name; }
             set { name = value; }
+        }
+
+        public bool IsStatic
+        {
+           get { return isStatic; }
+           set { isStatic = value; }
         }
 
         // Access the predicate's terms.
