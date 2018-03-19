@@ -1,5 +1,6 @@
 ﻿using BoltFreezer.Interfaces;
 using BoltFreezer.Utilities;
+using BoltFreezer.Enums;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,11 +8,11 @@ using UnityEngine;
 
 namespace BoltFreezer.PlanTools
 {
+
     public class Flawque
     {
         private Heap<OpenCondition> openConditions;
         private Heap<ThreatenedLinkFlaw> threatenedLinks;
-
 
         public Flawque()
         {
@@ -19,10 +20,16 @@ namespace BoltFreezer.PlanTools
             threatenedLinks = new Heap<ThreatenedLinkFlaw>(HeapType.MinHeap);
         }
 
+        public Flawque(Heap<OpenCondition> ocs, Heap<ThreatenedLinkFlaw> tclfs)
+        {
+            openConditions = ocs;
+            threatenedLinks = tclfs;
+        }
+
         public void Insert(Plan plan, OpenCondition oc)
         {
             // Static? 
-            if (oc.precondition.IsStatic)
+            if (GroundActionFactory.Statics.Contains(oc.precondition))
             {
                 oc.isStatic = true;
                 return;
@@ -66,6 +73,15 @@ namespace BoltFreezer.PlanTools
             }
         }
 
+        public int Count
+        {
+            get { return openConditions.Count; }
+        }
+
+        /// <summary>
+        /// Returns next flaw. A threatened link has priority. Then statics, inits without risk, risky ocs, reuse ocs, then nonreuse ocs
+        /// </summary>
+        /// <returns> Flaw that implements interface IFlaw </returns>
         public IFlaw Next()
         {
             // repair threatened links first
@@ -81,7 +97,7 @@ namespace BoltFreezer.PlanTools
         // What to do here --> how can we reassign?
         public void AddCndtsAndRisks(Plan plan, IOperator action)
         {
-            foreach (var oc in OpenConditionGenerator())
+            foreach (var oc in openConditions.ToList())
             {
                 // ignore any open conditions that cannot possibly be affected by this action's effects, such as those occurring after
                 if (plan.Orderings.IsPath(oc.step, action))
@@ -93,6 +109,25 @@ namespace BoltFreezer.PlanTools
                 if (action.Effects.Any(x => oc.precondition.IsInverse(x)))
                     oc.risks += 1;
             }
+        }
+
+        /// <summary>
+        /// Clone of Flawque requires clone of all individual flaws
+        /// </summary>
+        /// <returns></returns>
+        public Flawque Clone()
+        {
+            var openConditionHeap = new Heap<OpenCondition>(HeapType.MinHeap);
+            foreach (var oc in openConditions.ToList())
+            {
+                openConditionHeap.Insert(oc.Clone());
+            }
+            var tclfHeap = new Heap<ThreatenedLinkFlaw>(HeapType.MinHeap);
+            foreach (var tclf in threatenedLinks.ToList())
+            {
+                tclfHeap.Insert(tclf.Clone());
+            }
+            return new Flawque(openConditionHeap, tclfHeap);
         }
 
     }

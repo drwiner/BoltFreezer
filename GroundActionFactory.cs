@@ -1,5 +1,4 @@
 ﻿using BoltFreezer.Interfaces;
-using BoltFreezer.PlanTools;
 using BoltFreezer.Utilities;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,21 +8,22 @@ using UnityEngine;
 
 namespace BoltFreezer.PlanTools
 {
-    public class GroundActionFactory
+    public static class GroundActionFactory
     {
-        public List<IOperator> GroundActions;
-        private Problem prob;
-        private Hashtable typeDict;
+        public static List<IOperator> GroundActions;
+        private static Hashtable typeDict;
 
-        public GroundActionFactory(List<IOperator> ops, Problem _prob)
+        // Those predicates which are not established by an effect of an action but which are a precondition. They either hold initially or not at all.
+        public static List<IPredicate> Statics = new List<IPredicate>();
+
+        public static void PopulateGroundActions(List<IOperator> ops, Problem _prob)
         {
             GroundActions = new List<IOperator>();
-            prob = _prob;
             typeDict = _prob.TypeList;
             FromOperators(ops);
         }
 
-        public void FromOperator(IOperator op)
+        public static void FromOperator(IOperator op)
         {
 
             var permList = new List<List<IObject>>();
@@ -41,15 +41,34 @@ namespace BoltFreezer.PlanTools
 
                 opClone.AddBindings(termStringList.ToList(), constantStringList.ToList());
                 Debug.Log("operator: " + opClone.ToString());
-                GroundActions.Add(opClone);
+                GroundActions.Add(opClone as IOperator);
             }
         }
 
-        public void FromOperators(List<IOperator> operators)
+        public static void FromOperators(List<IOperator> operators)
         {
             foreach (var op in operators)
             {
                 FromOperator(op);
+            }
+        }
+
+        public static void DetectStatics(Dictionary<IPredicate,List<IOperator>> CMap, Dictionary<IPredicate, List<IOperator>> TMap)
+        {
+            
+            foreach (var op in GroundActions)
+            {
+                foreach (var pre in op.Preconditions)
+                {
+                    if (Statics.Contains(pre))
+                    {
+                        continue;
+                    }
+                    if (!CMap.ContainsKey(pre) && !TMap.ContainsKey(pre))
+                    {
+                        Statics.Add(pre);
+                    }
+                }
             }
         }
     }

@@ -65,11 +65,11 @@ namespace BoltFreezer.FileIO
             // The plan object.
             Plan plan = new Plan();
 
-            // Add the domain to the plan.
-            plan.Domain = domain;
+            //// Add the domain to the plan.
+            //plan.Domain = domain;
 
-            // Add the problem to the plan.
-            plan.Problem = problem;
+            //// Add the problem to the plan.
+            //plan.Problem = problem;
 
             // Create a step to represent the initial state.
             Operator init = new Operator();

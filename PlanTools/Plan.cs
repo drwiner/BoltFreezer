@@ -12,35 +12,13 @@ namespace BoltFreezer.PlanTools
     [Serializable]
     public class Plan : IPlan
     {
-        private Domain domain;
-        private Problem problem;
         private List<IOperator> steps;
         private IState initial;
         private IState goal;
-        private float estimate;
+
         private Graph<IOperator> orderings;
         private ICausalLinkGraph causalLinks;
         private Flawque flaws;
-
-        public float Estimate
-        {
-            get { return Estimate; }
-            set { estimate = value;  }
-        }
-
-        // Access the plan's domain.
-        public Domain Domain
-        {
-            get { return domain; }
-            set { domain = value; }
-        }
-
-        // Access the plan's problem.
-        public Problem Problem
-        {
-            get { return problem; }
-            set { problem = value; }
-        }
 
         // Access the plan's steps.
         public List<IOperator> Steps
@@ -100,51 +78,59 @@ namespace BoltFreezer.PlanTools
 
         public Plan ()
         {
-            domain = new Domain();
-            problem = new Problem();
+            // S
             steps = new List<IOperator>();
+            // O
+            orderings = new Graph<IOperator>();
+            // L
+            causalLinks = new CausalLinkGraph();
+            
+            flaws = new Flawque();
+            initial = new State();
+            goal = new State();
+        }
+
+        public Plan(IState _initial, IState _goal, List<IOperator> _steps)
+        {
+            steps = _steps;
             causalLinks = new CausalLinkGraph();
             orderings = new Graph<IOperator>();
-            initial = new State();
-            goal = new State();
             flaws = new Flawque();
+            initial = _initial;
+            goal = _goal;
         }
 
-        public Plan (Domain domain, Problem problem, List<IOperator> steps)
-        {
-            this.domain = domain;
-            this.problem = problem;
-            this.steps = steps;
-            this.causalLinks = new CausalLinkGraph();
-            this.orderings = new Graph<IOperator>();
-            initial = new State();
-            goal = new State();
-            flaws = new Flawque();
-        }
+        //// MARK for delete
+        //public Plan(List<IOperator> steps, IState initial)
+        //{
+        //    this.steps = steps;
+        //    this.causalLinks = new CausalLinkGraph();
+        //    this.initial = initial;
+        //    goal = new State();
+        //    flaws = new Flawque();
+        //}
 
-        public Plan(Domain domain, Problem problem, List<IOperator> steps, IState initial)
+        // Used when cloning a plan: <S, O, L>, F
+        public Plan(List<IOperator> steps, IState initial, IState goal, Graph<IOperator> og, ICausalLinkGraph clg, Flawque flawQueue)
         {
-            this.domain = domain;
-            this.problem = problem;
-            this.steps = steps;
-            this.causalLinks = new CausalLinkGraph();
-            this.initial = initial;
-            goal = new State();
-            flaws = new Flawque();
-        }
-
-        // Used when cloning a plan
-        public Plan(Domain domain, Problem problem, List<IOperator> steps, IState initial, Graph<IOperator> og, ICausalLinkGraph clg, Flawque flawQueue)
-        {
-            // do we need the plan to have a domain and problem? 
-            this.domain = domain;
-            this.problem = problem;
             this.steps = steps;
             this.causalLinks = clg;
             this.orderings = og;
             this.flaws = flawQueue;
             this.initial = initial;
-            goal = new State();
+            this.goal = goal;
+        }
+
+        public void Insert(IOperator newStep)
+        {
+            steps.Add(newStep);
+            orderings.Insert(InitialStep, newStep);
+            orderings.Insert(newStep, GoalStep);
+        }
+
+        public void Repair(IOperator needStep, IPredicate needPrecond, IOperator repairStep)
+        {
+            causalLinks.Insert(new CausalLink(needPrecond as Predicate, repairStep, needStep));
         }
 
         // Return the first state of the plan.
@@ -184,10 +170,17 @@ namespace BoltFreezer.PlanTools
                 newSteps.Add((IOperator)step.Clone());
 
             IState newInitial = initial.Clone() as IState;
+            IState newGoal = goal.Clone() as IState;
 
-            
+            // Assuming for now that members of the ordering graph are never mutated.  If they are, then a clone will keep references to mutated members.
+            // ToDo: Sanity check after HTN implementation
+            Graph<IOperator> newOrderings = orderings.Clone() as Graph<IOperator>;
+            ICausalLinkGraph newlinks = causalLinks.Clone() as ICausalLinkGraph;
 
-            return new Plan(domain, problem, newSteps, newInitial);
+            // Inherit all flaws
+            Flawque flawList = flaws.Clone();
+
+            return new Plan(newSteps, newInitial, newGoal, newOrderings, newlinks, flawList);
         }
     }
 }

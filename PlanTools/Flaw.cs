@@ -7,35 +7,34 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
+using BoltFreezer.Enums;
+
 namespace BoltFreezer.PlanTools
 {
 
     [Serializable]
     public class OpenCondition : IComparable<OpenCondition>, IFlaw
     {
-        public Predicate precondition;
-        public Operator step;
+        public IPredicate precondition;
+        public IOperator step;
         public bool isStatic = false;
         public bool isInit = false;
         public int risks = 0;
         public int cndts = 0;
         
-        private string flawType;
 
-        string IFlaw.FlawType
+        FlawType IFlaw.Ftype
         {
-            get { return flawType; }
-            set{flawType = value;}
+            get{ return FlawType.Condition;}
         }
 
         public OpenCondition ()
         {
             precondition = new Predicate();
             step = new Operator();
-            flawType = "oc";
         }
 
-        public OpenCondition (Predicate precondition, Operator step)
+        public OpenCondition (IPredicate precondition, IOperator step)
         {
             this.precondition = precondition;
             this.step = step;
@@ -108,13 +107,11 @@ namespace BoltFreezer.PlanTools
             }
             else
                 return 1;
-
-            throw new NotImplementedException();
         }
 
         public OpenCondition Clone()
         {
-            var oc = new OpenCondition(precondition.Clone() as Predicate, step.Clone() as Operator);
+            var oc = new OpenCondition(precondition.Clone() as IPredicate, step.Clone() as IOperator);
             oc.risks = risks;
             oc.isInit = isInit;
             oc.isStatic = isStatic;
@@ -127,26 +124,23 @@ namespace BoltFreezer.PlanTools
     public class ThreatenedLinkFlaw : IComparable<ThreatenedLinkFlaw>, IFlaw
     {
         public CausalLink causallink;
-        public Operator threatener;
-        private string flawType;
+        public IOperator threatener;
 
         public ThreatenedLinkFlaw()
         {
             causallink = new CausalLink();
-            threatener = new Operator();
+            threatener = new Operator() as IOperator;
         }
 
-        public ThreatenedLinkFlaw(CausalLink _causallink, Operator _threat)
+        public ThreatenedLinkFlaw(CausalLink _causallink, IOperator _threat)
         {
             this.causallink = _causallink;
             this.threatener = _threat;
-            flawType = "tclf";
         }
 
-        string IFlaw.FlawType
+        FlawType IFlaw.Ftype
         {
-            get { return flawType; }
-            set { flawType = value; }
+            get { return FlawType.Link; }
         }
 
         public int CompareTo(ThreatenedLinkFlaw other)
@@ -185,8 +179,6 @@ namespace BoltFreezer.PlanTools
             }
             else
                 return 1;
-
-            throw new NotImplementedException();
         }
 
         public override string ToString()
@@ -198,6 +190,13 @@ namespace BoltFreezer.PlanTools
             sb.AppendLine("Threat: " + threatener);
 
             return sb.ToString();
+        }
+
+        public ThreatenedLinkFlaw Clone()
+        {
+            var cl = causallink.Clone() as CausalLink;
+            var thrt = threatener.Clone() as IOperator;
+            return new ThreatenedLinkFlaw(cl, thrt);
         }
     }
 

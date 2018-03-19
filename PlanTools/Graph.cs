@@ -35,6 +35,15 @@ namespace BoltFreezer.PlanTools
             edges.Add(edge);
         }
 
+        public void Insert(T elm1, T elm2)
+        {
+            if (!nodes.Contains(elm1))
+                nodes.Add(elm1);
+            if (!nodes.Contains(elm2))
+                nodes.Add(elm2);
+            edges.Add(new Tuple<T,T>(elm1, elm2));
+        }
+
         public List<T> GetDescendants(T element)
         {
             if (!nodes.Contains(element))
@@ -128,6 +137,10 @@ namespace BoltFreezer.PlanTools
         }
         
 
+        /// <summary>
+        /// Clones just the graph, and not the members. The members will never be mutated.
+        /// </summary>
+        /// <returns> new Graph<typeparamref name="T"/> (nodes, edges) </returns>
         public Object Clone()
         {
             return new Graph<T>(nodes, edges);

@@ -342,6 +342,7 @@ namespace BoltFreezer.PlanTools
             Bindings = newBindings;
         }
 
+
         // Return the term at the nth position.
         public string TermAt(int position)
         {

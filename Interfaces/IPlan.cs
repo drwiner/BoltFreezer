@@ -10,18 +10,18 @@ namespace BoltFreezer.Interfaces
 {
     public interface IPlan
     {
-        // Plans have a domain.
-        Domain Domain { get; set; }
+        // Plans do not need their own domain and problem.
+        //// Plans have a domain.
+        //Domain Domain { get; set; }
 
-        // Plans have a problem.
-        Problem Problem { get; set; }
+        //// Plans have a problem.
+        //Problem Problem { get; set; }
 
         // Plans have an ordered list of steps.
         List<IOperator> Steps { get; set; }
 
         // Ordering Graph
         Graph<IOperator> Orderings { get; set; }
-        //IOrderingGraph Orderings { get; set; }
 
         // CausalLinkGraph
         ICausalLinkGraph CausalLinks { get; set; }
@@ -32,11 +32,16 @@ namespace BoltFreezer.Interfaces
         // The plan will have a goal state.
         IState Goal { get; set; }
 
+        // Keep track of flaws in each plan.
         Flawque Flaws { get; set; }
+
+        // Insert step
+        void Insert(IOperator newStep);
+
+        // Repair Condition
+        void Repair(IOperator needStep, IPredicate needPrecond, IOperator repairStep);
 
         // The plan can be cloned.
         Object Clone();
-
-        float Estimate { get; set; }
     }
 }

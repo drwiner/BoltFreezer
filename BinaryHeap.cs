@@ -40,9 +40,9 @@ namespace BoltFreezer.Utilities
             return true;
         }
 
-        public int Count()
+        public int Count
         {
-            return items.Count;
+            get { return items.Count; }
         }
 
         public void Insert(T item)

@@ -1,10 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
+using BoltFreezer.Enums;
+
 namespace BoltFreezer.Interfaces
 {
     public interface IFlaw
     {
-        string FlawType { get; set; }
+        // Read Only
+        FlawType Ftype { get; }
     }
 }

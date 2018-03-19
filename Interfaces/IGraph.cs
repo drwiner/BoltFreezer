@@ -8,7 +8,6 @@ using System.Collections.Generic;
 namespace BoltFreezer.Interfaces
 {
 
-
     public interface IOrderingGraph
     {
         List<Tuple<IOperator, IOperator>> Edges { get; set; }
