@@ -40,6 +40,7 @@ namespace BoltFreezer.PlanSpace
             while (frontier.Count > 0)
             {
                 var plan = frontier.Dequeue();
+                
                 //plan.flaws
             }
 

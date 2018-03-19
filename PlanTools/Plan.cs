@@ -20,6 +20,7 @@ namespace BoltFreezer.PlanTools
         private float estimate;
         private Graph<IOperator> orderings;
         private ICausalLinkGraph causalLinks;
+        private Flawque flaws;
 
         public float Estimate
         {
@@ -71,6 +72,12 @@ namespace BoltFreezer.PlanTools
             set { goal = value; }
         }
 
+        public Flawque Flaws
+        {
+            get { return flaws; }
+            set { Flaws = value;  }
+        }
+
         // Access the plan's initial step.
         public Operator InitialStep
         {
@@ -100,6 +107,7 @@ namespace BoltFreezer.PlanTools
             orderings = new Graph<IOperator>();
             initial = new State();
             goal = new State();
+            flaws = new Flawque();
         }
 
         public Plan (Domain domain, Problem problem, List<IOperator> steps)
@@ -111,6 +119,7 @@ namespace BoltFreezer.PlanTools
             this.orderings = new Graph<IOperator>();
             initial = new State();
             goal = new State();
+            flaws = new Flawque();
         }
 
         public Plan(Domain domain, Problem problem, List<IOperator> steps, IState initial)
@@ -121,8 +130,22 @@ namespace BoltFreezer.PlanTools
             this.causalLinks = new CausalLinkGraph();
             this.initial = initial;
             goal = new State();
+            flaws = new Flawque();
         }
 
+        // Used when cloning a plan
+        public Plan(Domain domain, Problem problem, List<IOperator> steps, IState initial, Graph<IOperator> og, ICausalLinkGraph clg, Flawque flawQueue)
+        {
+            // do we need the plan to have a domain and problem? 
+            this.domain = domain;
+            this.problem = problem;
+            this.steps = steps;
+            this.causalLinks = clg;
+            this.orderings = og;
+            this.flaws = flawQueue;
+            this.initial = initial;
+            goal = new State();
+        }
 
         // Return the first state of the plan.
         public State GetFirstState ()
@@ -161,6 +184,8 @@ namespace BoltFreezer.PlanTools
                 newSteps.Add((IOperator)step.Clone());
 
             IState newInitial = initial.Clone() as IState;
+
+            
 
             return new Plan(domain, problem, newSteps, newInitial);
         }

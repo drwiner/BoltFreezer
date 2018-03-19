@@ -32,6 +32,8 @@ namespace BoltFreezer.Interfaces
         // The plan will have a goal state.
         IState Goal { get; set; }
 
+        Flawque Flaws { get; set; }
+
         // The plan can be cloned.
         Object Clone();
 
