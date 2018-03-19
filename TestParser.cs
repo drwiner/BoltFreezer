@@ -39,6 +39,7 @@ public class TestParser : MonoBehaviour {
         }
         catch (Exception ex)
         {
+            Debug.Log(serializableObject); 
             //Log exception here
         }
     }
@@ -97,7 +98,7 @@ public class TestParser : MonoBehaviour {
         Debug.Log("Creating Ground Operators");
         GroundActionFactory.PopulateGroundActions(testDomain.Operators, testProblem);
         foreach(var op in GroundActionFactory.GroundActions)
-            SerializeObject(op, FileName + "_" + op.ID);
+            SerializeObject(op, FileName + "@_" + op.ID + ".XML");
         
         
         Debug.Log("Caching Maps");
@@ -111,7 +112,7 @@ public class TestParser : MonoBehaviour {
         // Create Initial Plan
         // public Plan(List<IOperator> steps, IState initial, IState goal, Graph<IOperator> og, ICausalLinkGraph clg, Flawque flawQueue)
         // IState _initial, IState _goal, List<IOperator> _steps
-        var initialPlan = new Plan(testProblem.Initial as IState, new State(testProblem.Goal) as IState);
+        var initialPlan = new Plan(new State(testProblem.Initial) as IState, new State(testProblem.Goal) as IState);
         foreach (var goal in testProblem.Goal)
         {
             initialPlan.Flaws.Insert(initialPlan, new OpenCondition(goal, initialPlan.GoalStep as IOperator));

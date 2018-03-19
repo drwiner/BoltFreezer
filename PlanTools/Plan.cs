@@ -72,7 +72,7 @@ namespace BoltFreezer.PlanTools
 
         public Graph<IOperator> Orderings
         {
-            get { return Orderings; }
+            get { return orderings; }
             set   { throw new NotImplementedException(); }
         }
 
