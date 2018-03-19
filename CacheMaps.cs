@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using BoltFreezer.Interfaces;
 
 namespace BoltFreezer.PlanTools
 {
+    [Serializable]
     public static class CacheMaps
     {
         // Stored mappings for repair applicability

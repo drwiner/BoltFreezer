@@ -1,5 +1,6 @@
 ﻿using BoltFreezer.Interfaces;
 using BoltFreezer.Utilities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using UnityEngine;
 
 namespace BoltFreezer.PlanTools
 {
+    [Serializable]
     public static class GroundActionFactory
     {
         public static List<IOperator> GroundActions;
@@ -40,7 +42,7 @@ namespace BoltFreezer.PlanTools
                 var constantStringList = from objConst in combination select objConst.Name;
 
                 opClone.AddBindings(termStringList.ToList(), constantStringList.ToList());
-                Debug.Log("operator: " + opClone.ToString());
+                //Debug.Log("operator: " + opClone.ToString());
                 GroundActions.Add(opClone as IOperator);
             }
         }

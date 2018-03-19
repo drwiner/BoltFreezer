@@ -50,6 +50,7 @@ namespace BoltFreezer.PlanTools
                     oc.risks += 1;
 
             }
+            Debug.Log(oc);
 
             if (oc.risks == 0 && plan.Initial.InState(oc.precondition))
             {
