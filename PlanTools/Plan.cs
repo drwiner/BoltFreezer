@@ -90,9 +90,9 @@ namespace BoltFreezer.PlanTools
             goal = new State();
         }
 
-        public Plan(IState _initial, IState _goal, List<IOperator> _steps)
+        public Plan(IState _initial, IState _goal)
         {
-            steps = _steps;
+            steps = new List<IOperator>();
             causalLinks = new CausalLinkGraph();
             orderings = new Graph<IOperator>();
             flaws = new Flawque();

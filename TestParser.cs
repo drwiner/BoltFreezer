@@ -29,13 +29,17 @@ public class TestParser : MonoBehaviour {
 
         Debug.Log("Creating initial Plan");
         // Create Initial Plan
-        var initialPlan = new Plan(testProblem.Initial as IState, testProblem.Goal as IState, GroundActionFactory.GroundActions);
+        // public Plan(List<IOperator> steps, IState initial, IState goal, Graph<IOperator> og, ICausalLinkGraph clg, Flawque flawQueue)
+        // IState _initial, IState _goal, List<IOperator> _steps
+        var initialPlan = new Plan(testProblem.Initial as IState, testProblem.Goal as IState);
         foreach (var goal in testProblem.Goal)
         {
-            initialPlan.Flaws.Insert(initialPlan, new OpenCondition(goal as Predicate, initialPlan.GoalStep));
+            initialPlan.Flaws.Insert(initialPlan, new OpenCondition(goal, initialPlan.GoalStep as IOperator));
         }
+        Debug.Log("Insert First Ordering");
         initialPlan.Orderings.Insert(initialPlan.InitialStep, initialPlan.GoalStep);
 
+        Debug.Log("First POP");
         var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new AddReuseHeuristic().Heuristic);
         var bestFirstSolutions = AStarPOP.Solve(1, 6000f);
         Debug.Log(bestFirstSolutions[0]);

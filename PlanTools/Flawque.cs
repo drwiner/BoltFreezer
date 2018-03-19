@@ -95,7 +95,7 @@ namespace BoltFreezer.PlanTools
         }
 
         // What to do here --> how can we reassign?
-        public void AddCndtsAndRisks(Plan plan, IOperator action)
+        public void AddCndtsAndRisks(IPlan plan, IOperator action)
         {
             foreach (var oc in openConditions.ToList())
             {
