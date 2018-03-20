@@ -106,7 +106,7 @@ namespace BoltFreezer.PlanSpace
             return null;
         }
 
-        public List<IPlan> BFS(int k=4, float cutoff = 6000f)
+        public List<IPlan> DFS(int k=4, float cutoff = 6000f)
         {
             var Solutions = new List<IPlan>();
             var Unexplored = new Stack<IPlan>();
@@ -150,7 +150,7 @@ namespace BoltFreezer.PlanSpace
             return null;
         }
 
-        public List<IPlan> DFS(int k = 4, float cutoff = 6000f)
+        public List<IPlan> BFS(int k = 4, float cutoff = 6000f)
         {
             var Solutions = new List<IPlan>();
             var Unexplored = new Queue<IPlan>();

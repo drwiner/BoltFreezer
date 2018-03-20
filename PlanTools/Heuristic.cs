@@ -1,5 +1,6 @@
 ﻿
 using BoltFreezer.Interfaces;
+using System.Collections.Generic;
 
 namespace BoltFreezer.PlanTools
 {
@@ -32,25 +33,49 @@ namespace BoltFreezer.PlanTools
 
     public static class HeuristicMethods
     {
+
+        private static Dictionary<IOperator, int> visitedOps = new Dictionary<IOperator, int>();
+        private static Dictionary<IPredicate, int> visitedPreds = new Dictionary<IPredicate, int>();
+
+        private static List<IPredicate> currentlyEvaluatedPreds;
+
         // h^r_add(pi) = sum_(oc in plan) 0 if exists a step possibly preceding oc.step and h_add(oc.precondition) otherwise.
         public static int AddReuseHeuristic(IPlan plan)
         {
+
             int sumo = 0;
             foreach (var oc in plan.Flaws.OpenConditionGenerator())
             {
+
+                // Refresh to new list
+                currentlyEvaluatedPreds = new List<IPredicate>();
+
+                if (visitedPreds.ContainsKey(oc.precondition))
+                {
+                    sumo += visitedPreds[oc.precondition];
+                    continue;
+                }
+
+                // Does there exist a step in the plan that can establish this needed precondition?
                 var existsA = false;
                 foreach (var existingStep in plan.Steps)
                 {
                     if (plan.Orderings.IsPath(oc.step, existingStep))
                         continue;
+
                     if (CacheMaps.CausalMap[oc.precondition].Contains(existingStep))
                     {
                         existsA = true;
                         break;
                     }
                 }
+
+                // append heuristic for open condition
                 if (!existsA)
+                {
+                    currentlyEvaluatedPreds.Add(oc.precondition);
                     sumo += AddHeuristic(plan.Initial, oc.precondition);
+                }
             }
             return sumo;
         }
@@ -61,26 +86,63 @@ namespace BoltFreezer.PlanTools
             if (initial.InState(condition))
                 return 0;
 
+            // if we have a value for this, return it.
+            if (visitedPreds.ContainsKey(condition))
+            {
+                return visitedPreds[condition];
+            }
+
             int minSoFar = 1000;
+            // Then this is a static condition that can never be true... we should avoid this plan.
+            if (!CacheMaps.CausalMap.ContainsKey(condition))
+            {
+                return minSoFar;
+            }
+
+            // find the gorund action that minimizes the heuristic estimate
             foreach (var groundAction in CacheMaps.CausalMap[condition])
             {
-                var thisVal = AddHeuristic(initial, groundAction);
+                int thisVal;
+                if (visitedOps.ContainsKey(groundAction))
+                {
+                    thisVal = visitedOps[groundAction];
+                }
+                else
+                {
+                    thisVal = AddHeuristic(initial, groundAction);
+                }
+
+
                 if (thisVal < minSoFar)
                 {
                     minSoFar = thisVal;
                 }
             }
+
+            visitedPreds[condition] = minSoFar;
             return minSoFar;
         }
 
         // h_add(a) = 1 + h_add (Prec(a))
         public static int AddHeuristic(IState initial, IOperator op)
         {
+            if (visitedOps.ContainsKey(op))
+            {
+                return visitedOps[op];
+            }
+
             int sumo = 1;
             foreach (var precond in op.Preconditions)
             {
+                if (currentlyEvaluatedPreds.Contains(precond))
+                {
+                    continue;
+                }
+
+                currentlyEvaluatedPreds.Add(precond);
                 sumo += AddHeuristic(initial, precond);
             }
+            visitedOps[op] = sumo;
             return sumo;
         }
 
