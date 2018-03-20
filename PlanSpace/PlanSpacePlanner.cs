@@ -4,7 +4,6 @@ using BoltFreezer.PlanTools;
 using Priority_Queue;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace BoltFreezer.PlanSpace
 {
@@ -71,7 +70,7 @@ namespace BoltFreezer.PlanSpace
         {
             var Solutions = new List<IPlan>();
 
-            var t0 = Time.time;
+            //var t0 = Time.time;
 
             while (frontier.Count > 0)
             {

@@ -4,7 +4,6 @@ using BoltFreezer.Enums;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace BoltFreezer.PlanTools
 {
@@ -50,7 +49,7 @@ namespace BoltFreezer.PlanTools
                     oc.risks += 1;
 
             }
-            Debug.Log(plan.Initial);
+            //Debug.Log(plan.Initial);
 
             if (oc.risks == 0 && plan.Initial.InState(oc.precondition))
             {

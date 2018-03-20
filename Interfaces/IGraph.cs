@@ -2,7 +2,6 @@
 using BoltFreezer.PlanTools;
 using BoltFreezer.Utilities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace BoltFreezer.Interfaces
