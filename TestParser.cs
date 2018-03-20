@@ -7,6 +7,7 @@ using UnityEngine;
 
 using BoltFreezer.PlanSpace;
 using System.Collections.Generic;
+using System.IO;
 
 public class TestParser : MonoBehaviour {
     public bool RELOAD = true;
@@ -23,21 +24,44 @@ public class TestParser : MonoBehaviour {
         if (RELOAD) { 
             Debug.Log("Creating Ground Operators");
             GroundActionFactory.PopulateGroundActions(testDomain.Operators, testProblem);
-            BinarySerializer.SerializeObject(FileName, GroundActionFactory.GroundActions);
-            //foreach (var op in GroundActionFactory.GroundActions)
-            //    BinarySerializer.SerializeObject(FileName + op.GetHashCode().ToString(), op);
+            //BinarySerializer.SerializeObject(FileName, GroundActionFactory.GroundActions);
+            foreach (var op in GroundActionFactory.GroundActions)
+                BinarySerializer.SerializeObject(FileName + op.GetHashCode().ToString(), op);
         }
         else
         {
-            var actions = new List<IOperator>();
+            List<IOperator> Operators = new List<IOperator>();
+            foreach (string file in Directory.GetFiles(Parser.GetTopDirectory() + @"Cache\" + testDomainName))
+            {
+                var op = BinarySerializer.DeSerializeObject<IOperator>(file);
+                Operators.Add(op);
+                //string contents = File.ReadAllText(file);
+            }
+            //var actions = new List<IOperator>();
 
-            GroundActionFactory.GroundActions = BinarySerializer.DeSerializeObject<List<IOperator>>(FileName);
+            GroundActionFactory.GroundActions = Operators;
         }
 
         Debug.Log("Caching Maps");
-        CacheMaps.CacheLinks(GroundActionFactory.GroundActions);
-        CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, testProblem.Goal);
+        string CausalMapFileName = Parser.GetTopDirectory() + @"CausalMaps\" + testDomainName + "_" + testProblem.Name;
+        string ThreatMapFileName = Parser.GetTopDirectory() + @"CausalMaps\" + testDomainName + "_" + testProblem.Name;
+
+        if (RELOAD)
+        {
+            CacheMaps.CacheLinks(GroundActionFactory.GroundActions);
+            CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, testProblem.Goal);
+            BinarySerializer.SerializeObject(CausalMapFileName, CacheMaps.CausalMap);
+            BinarySerializer.SerializeObject(ThreatMapFileName, CacheMaps.ThreatMap);
+        }
+        else
+        {
+            //https://stackoverflow.com/questions/12554186/how-to-serialize-deserialize-to-dictionaryint-string-from-custom-xml-not-us
+            //var clmap = BinarySerializer.DeSerializeObject<Dictionary<IPredicate, List<IOperator>>(CausalMapFileName);
+            //var clmap = BinarySerializer.DeSerializeObject<>
+        }
+
         Debug.Log("Finding static preconditions");
+        
         GroundActionFactory.DetectStatics(CacheMaps.CausalMap, CacheMaps.ThreatMap);
 
 
