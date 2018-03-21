@@ -120,14 +120,14 @@ namespace BoltFreezer.PlanTools
             var newOpenConditions = new List<OpenCondition>();
             foreach (var oc in openConditions.ToList())
             {
-                newOpenConditions.Add(oc);
+                newOpenConditions.Add(oc.Clone());
             }
             var openConditionHeap = new Heap<OpenCondition>(HeapType.MinHeap, newOpenConditions);
 
             var newThreatenedLinks = new List<ThreatenedLinkFlaw>();                 
             foreach (var tclf in threatenedLinks.ToList())
             {
-                newThreatenedLinks.Add(tclf);
+                newThreatenedLinks.Add(tclf.Clone());
             }
             var tclfHeap =  new Heap<ThreatenedLinkFlaw>(HeapType.MinHeap, newThreatenedLinks);
 

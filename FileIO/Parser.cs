@@ -16,8 +16,7 @@ namespace BoltFreezer.FileIO
 {
     public static class Parser
     {
-        //public static string path = @"D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\";
-        public static string path = @"D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\";
+        public static string path = @"D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\";
 
         // Returns the project's top directory as a string.
         public static string GetTopDirectory ()

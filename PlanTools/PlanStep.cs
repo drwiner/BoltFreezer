@@ -153,7 +153,7 @@ namespace BoltFreezer.PlanTools
 
         public Object Clone()
         {
-            return new PlanStep(Action, OpenConditions, ID);
+            return new PlanStep(Action.Clone() as IOperator, OpenConditions, ID);
         }
 
         public string TermAt(int position)

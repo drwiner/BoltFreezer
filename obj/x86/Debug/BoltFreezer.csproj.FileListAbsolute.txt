@@ -1,0 +1,7 @@
+D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x86\Debug\BoltFreezer.csprojResolveAssemblyReference.cache
+D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x86\Debug\BoltFreezer.csproj.CoreCompileInputs.cache
+D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\bin\Debug\BoltFreezer.dll.config
+D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\bin\Debug\BoltFreezer.dll
+D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\bin\Debug\BoltFreezer.pdb
+D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x86\Debug\BoltFreezer.dll
+D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x86\Debug\BoltFreezer.pdb
