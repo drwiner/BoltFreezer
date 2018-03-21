@@ -13,10 +13,26 @@ namespace BoltFreezer.Utilities
             Second = second;
         }
 
+        public override int GetHashCode()
+        {
+            return First.GetHashCode() + 23 * Second.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var tuple = obj as Tuple<T1, T2>;
+            if (First.Equals(tuple.First) && Second.Equals(tuple.Second))
+                return true;
+            //if (First.GetHashCode() == tuple.First.GetHashCode().Equals(tuple.First) && Second.Equals(tuple.Second))
+            //    return true;
+            return false;
+        }
+
         public Object Clone()
         {
             return new Tuple<T1,T2>(First, Second);
         }
+
     }
 
     [Serializable]

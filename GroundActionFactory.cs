@@ -11,6 +11,8 @@ namespace BoltFreezer.PlanTools
     [Serializable]
     public static class GroundActionFactory
     {
+        public static Dictionary<int, IOperator> GroundLibrary;
+
         public static List<IOperator> GroundActions;
         private static Hashtable typeDict;
 
@@ -20,6 +22,7 @@ namespace BoltFreezer.PlanTools
         public static void PopulateGroundActions(List<IOperator> ops, Problem _prob)
         {
             GroundActions = new List<IOperator>();
+            GroundLibrary = new Dictionary<int, IOperator>();
             typeDict = _prob.TypeList;
             FromOperators(ops);
         }
@@ -42,7 +45,15 @@ namespace BoltFreezer.PlanTools
 
                 opClone.AddBindings(termStringList.ToList(), constantStringList.ToList());
                 //Debug.Log("operator: " + opClone.ToString());
-                GroundActions.Add(opClone as IOperator);
+                
+                // this ensures that this ground operator has a unique ID
+                var groundOperator = new Operator(opClone.Name, opClone.Terms, opClone.Bindings, opClone.Preconditions, opClone.Effects);
+                
+                if (GroundLibrary.ContainsKey(groundOperator.ID))
+                    throw new System.Exception();
+
+                GroundActions.Add(groundOperator as IOperator);
+                GroundLibrary[groundOperator.ID] = groundOperator;
             }
         }
 
@@ -54,7 +65,7 @@ namespace BoltFreezer.PlanTools
             }
         }
 
-        public static void DetectStatics(Dictionary<IPredicate,List<IOperator>> CMap, Dictionary<IPredicate, List<IOperator>> TMap)
+        public static void DetectStatics(Dictionary<IPredicate,List<int>> CMap, Dictionary<IPredicate, List<int>> TMap)
         {
             
             foreach (var op in GroundActions)

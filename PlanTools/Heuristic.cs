@@ -100,7 +100,7 @@ namespace BoltFreezer.PlanTools
             }
 
             // find the gorund action that minimizes the heuristic estimate
-            foreach (var groundAction in CacheMaps.CausalMap[condition])
+            foreach (var groundAction in CacheMaps.GetCndts(condition))
             {
                 int thisVal;
                 if (visitedOps.ContainsKey(groundAction))
@@ -149,7 +149,7 @@ namespace BoltFreezer.PlanTools
         // Number of open conditions heuristic
         public static int NumOCs(IPlan plan)
         {
-            return plan.Flaws.Count;
+            return plan.Flaws.OpenConditions.Count;
         }
     }
 }

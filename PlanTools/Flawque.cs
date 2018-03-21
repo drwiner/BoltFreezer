@@ -32,6 +32,10 @@ namespace BoltFreezer.PlanTools
 
         public void Insert(Plan plan, OpenCondition oc)
         {
+            // don't ass an open condition if it's already in the plan.
+            if (OpenConditions.Contains(oc))
+                return;
+
             // Static? 
             if (GroundActionFactory.Statics.Contains(oc.precondition))
             {
@@ -94,10 +98,12 @@ namespace BoltFreezer.PlanTools
             if (!threatenedLinks.IsEmpty())
                 return threatenedLinks.PopRoot();
 
+            if (OpenConditions.Count == 0)
+                return null;
 
-            OpenCondition best_flaw = OpenConditions[0];
+            var best_flaw = OpenConditions[0].Clone() as OpenCondition;
 
-            foreach(var oc in OpenConditions.Skip(0))
+            foreach(var oc in OpenConditions.Skip(1))
             {
                 if (oc < best_flaw)
                     best_flaw = oc;
@@ -105,7 +111,7 @@ namespace BoltFreezer.PlanTools
 
             //if (!OpenConditions.IsEmpty())
             //    return OpenConditions.PopRoot();
-
+            OpenConditions.Remove(best_flaw);
             return best_flaw;
         }
 
@@ -143,11 +149,12 @@ namespace BoltFreezer.PlanTools
             }
             //var openConditionHeap = new Heap<OpenCondition>(HeapType.MinHeap, newOpenConditions);
 
+            // Threatened links are never updated during planning. Thus, they are read-only and need not be cloned.
             var newThreatenedLinks = new List<ThreatenedLinkFlaw>();
             foreach (var tclf in threatenedLinks.ToList())
             {
-                newThreatenedLinks.Add(tclf.Clone());
-                //newThreatenedLinks.Add(tclf);
+                //newThreatenedLinks.Add(tclf.Clone());
+                newThreatenedLinks.Add(tclf);
             }
             var tclfHeap = new Heap<ThreatenedLinkFlaw>(HeapType.MinHeap, newThreatenedLinks);
 

@@ -99,6 +99,10 @@ namespace BoltFreezer.PlanSpace
                     Solutions.Add(plan);
                     if (Solutions.Count >= k)
                     {
+                        if (console_log)
+                        {
+                            Console.Write(plan.ToStringOrdered());
+                        }
                         return Solutions;
                     }
                     continue;
@@ -131,6 +135,12 @@ namespace BoltFreezer.PlanSpace
                 var plan = Unexplored.Pop();
 
                 var flaw = plan.Flaws.Next();
+
+                if (console_log)
+                {
+                    Console.WriteLine(plan);
+                    Console.WriteLine(flaw);
+                }
 
                 // Termination criteria
                 if (flaw == null)
@@ -176,6 +186,12 @@ namespace BoltFreezer.PlanSpace
 
                 var flaw = plan.Flaws.Next();
 
+                if (console_log)
+                {
+                    Console.WriteLine(plan);
+                    Console.WriteLine(flaw);
+                }
+
                 // Termination criteria
                 if (flaw == null)
                 {
@@ -216,7 +232,7 @@ namespace BoltFreezer.PlanSpace
                 var planClone = plan.Clone() as IPlan;
                 var newStep = new PlanStep(cndt.Clone() as IOperator);
                 planClone.Insert(newStep);
-                planClone.Repair(oc.step, oc.precondition, newStep);
+                planClone.Repair(oc, newStep);
 
                 // check if inserting new Step (with orderings given by Repair) add cndts/risks to existing open conditions, affecting their status in the heap
                 planClone.Flaws.UpdateFlaws(planClone, newStep);
@@ -231,7 +247,7 @@ namespace BoltFreezer.PlanSpace
             if (plan.Initial.InState(oc.precondition))
             {
                 var planClone = plan.Clone() as IPlan;
-                planClone.Repair(oc.step, oc.precondition, planClone.InitialStep);
+                planClone.Repair(oc, planClone.InitialStep);
                 Insert(planClone);
                 
             }
@@ -240,7 +256,7 @@ namespace BoltFreezer.PlanSpace
             {
                 if (CacheMaps.IsCndt(oc.precondition, step)){
                     var planClone = plan.Clone() as IPlan;
-                    planClone.Repair(oc.step, oc.precondition, step);
+                    planClone.Repair(oc, step);
                     Insert(planClone);
                 }
             }

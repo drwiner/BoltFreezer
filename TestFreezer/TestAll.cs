@@ -42,22 +42,26 @@ namespace TestFreezer
             }
             else if(deserialize)
             {
-                List<IOperator> Operators = new List<IOperator>();
+
+                GroundActionFactory.GroundActions = new List<IOperator>();
+                GroundActionFactory.GroundLibrary = new Dictionary<int, IOperator>();
                 foreach (var file in Directory.GetFiles(Parser.GetTopDirectory() + @"Cached\CachedOperators\", testDomainName + "_" + testProblem.Name + "*.CachedOperator"))
                 {
                     var op = BinarySerializer.DeSerializeObject<IOperator>(file);
-                    Operators.Add(op);
+                    GroundActionFactory.GroundActions.Add(op);
+                    GroundActionFactory.GroundLibrary[op.ID] = op;
                 }
-                GroundActionFactory.GroundActions = Operators;
-                foreach (var ga in GroundActionFactory.GroundActions)
-                {
-                    Console.WriteLine(ga);
-                }
+                //GroundActionFactory.GroundActions = Operators;
+                //foreach (var ga in GroundActionFactory.GroundActions)
+                //{
+                    
+                //    Console.WriteLine(ga);
+                //}
 
 
                 Console.WriteLine("\nCmap:\n");
 
-                var cmap = BinarySerializer.DeSerializeObject<Dictionary<IPredicate, List<IOperator>>>(CausalMapFileName + ".CachedCausalMap");
+                var cmap = BinarySerializer.DeSerializeObject<Dictionary<IPredicate, List<int>>>(CausalMapFileName + ".CachedCausalMap");
                 CacheMaps.CausalMap = cmap;
                 //foreach(var kval in cmap)
                 //{
@@ -69,7 +73,7 @@ namespace TestFreezer
                 //}
 
                 Console.WriteLine("\nTmap:\n");
-                var tcmap = BinarySerializer.DeSerializeObject<Dictionary<IPredicate, List<IOperator>>>(ThreatMapFileName + ".CachedThreatMap");
+                var tcmap = BinarySerializer.DeSerializeObject<Dictionary<IPredicate, List<int>>>(ThreatMapFileName + ".CachedThreatMap");
                 CacheMaps.ThreatMap = tcmap;
                 //foreach (var kval in tcmap)
                 //{
@@ -108,15 +112,15 @@ namespace TestFreezer
             Console.WriteLine("First POP");
             var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new AddReuseHeuristic().Heuristic, true);
             var bestFirstSolutions = AStarPOP.Solve(1, 6000f);
-            Console.WriteLine(bestFirstSolutions[0]);
+            Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
 
             var BFSPOP = new PlanSpacePlanner(initialPlan, SearchType.BFS, new ZeroHeuristic().Heuristic, true);
             var BFSSolutions = BFSPOP.Solve(1, 6000f);
-            Console.WriteLine(BFSSolutions[0]);
+            Console.WriteLine(BFSSolutions[0].ToStringOrdered());
 
             var DFSPOP = new PlanSpacePlanner(initialPlan, SearchType.DFS, new ZeroHeuristic().Heuristic, true);
             var DFSSolutions = DFSPOP.Solve(1, 6000f);
-            Console.WriteLine(DFSSolutions[0]);
+            Console.WriteLine(DFSSolutions[0].ToStringOrdered());
 
 
         }

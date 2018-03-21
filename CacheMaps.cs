@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using BoltFreezer.Interfaces;
+using System.Linq;
 
 namespace BoltFreezer.PlanTools
 {
@@ -10,24 +11,27 @@ namespace BoltFreezer.PlanTools
         /// <summary>
         /// Stored mappings for repair applicability. Do Not Use unless you are serializing
         /// </summary>
-        public static Dictionary<IPredicate, List<IOperator>> CausalMap = new Dictionary<IPredicate, List<IOperator>>();
+        public static Dictionary<IPredicate, List<int>> CausalMap = new Dictionary<IPredicate, List<int>>();
 
         /// <summary>
         /// Stored mappings for threat detection. Do Not Use unless you are serializing
         /// </summary>
-        public static Dictionary<IPredicate, List<IOperator>> ThreatMap = new Dictionary<IPredicate, List<IOperator>>();
+        public static Dictionary<IPredicate, List<int>> ThreatMap = new Dictionary<IPredicate, List<int>>();
 
-        public static List<IOperator> GetCndts(IPredicate pred)
+        public static IEnumerable<IOperator> GetCndts(IPredicate pred)
         {
             if (CausalMap.ContainsKey(pred))
-                return CausalMap[pred];
+                return CausalMap[pred].Select(intID => GroundActionFactory.GroundLibrary[intID]);
+            //return from intID in CausalMap[pred] select GroundActionFactory.GroundLibrary[intID];
             return new List<IOperator>();
         }
 
-        public static List<IOperator> GetThreats(IPredicate pred)
+        public static IEnumerable<IOperator> GetThreats(IPredicate pred)
         {
             if (ThreatMap.ContainsKey(pred))
-                return ThreatMap[pred];
+                return ThreatMap[pred].Select(intID => GroundActionFactory.GroundLibrary[intID]);
+            //        Where(intID => x.First.Equals(elm)).Select(x => x.Second);
+            //return from intID in ThreatMap[pred] select GroundActionFactory.GroundLibrary[intID];
             return new List<IOperator>();
         }
 
@@ -36,7 +40,7 @@ namespace BoltFreezer.PlanTools
             if (!CausalMap.ContainsKey(pred))
                 return false;
 
-            return CausalMap[pred].Contains(ps.Action);
+            return CausalMap[pred].Contains(ps.Action.ID);
         }
 
         public static bool IsThreat(IPredicate pred, IPlanStep ps)
@@ -44,7 +48,7 @@ namespace BoltFreezer.PlanTools
             if (!ThreatMap.ContainsKey(pred))
                 return false;
 
-            return ThreatMap[pred].Contains(ps.Action);
+            return ThreatMap[pred].Contains(ps.Action.ID);
         }
 
         // Checks for mappings pairwise
@@ -65,16 +69,16 @@ namespace BoltFreezer.PlanTools
                         if (hstep.Effects.Contains(tprecond))
                         {
                             if (!CausalMap.ContainsKey(tprecond))
-                                CausalMap.Add(tprecond, new List<IOperator>() { hstep });
+                                CausalMap.Add(tprecond, new List<int>() { hstep.ID });
                             else
-                                CausalMap[tprecond].Add(hstep);
+                                CausalMap[tprecond].Add(hstep.ID);
                         }
                         if (hstep.Effects.Contains(tprecond.GetReversed()))
                         {
                             if (!ThreatMap.ContainsKey(tprecond))
-                                ThreatMap.Add(tprecond, new List<IOperator>() { hstep });
+                                ThreatMap.Add(tprecond, new List<int>() { hstep.ID });
                             else
-                                ThreatMap[tprecond].Add(hstep);
+                                ThreatMap[tprecond].Add(hstep.ID);
                         }
                     }
 
@@ -92,7 +96,7 @@ namespace BoltFreezer.PlanTools
 
                     foreach (var hstep in heads)
                     {
-                        if (CausalMap[tprecond].Contains(hstep) || ThreatMap[tprecond].Contains(hstep))
+                        if (CausalMap[tprecond].Contains(hstep.ID) || ThreatMap[tprecond].Contains(hstep.ID))
                         {
                             // then this head step has already been checked for this condition
                             continue;
@@ -101,16 +105,16 @@ namespace BoltFreezer.PlanTools
                         if (hstep.Effects.Contains(tprecond))
                         {
                             if (!CausalMap.ContainsKey(tprecond))
-                                CausalMap.Add(tprecond, new List<IOperator>() { hstep });
+                                CausalMap.Add(tprecond, new List<int>() { hstep.ID });
                             else
-                                CausalMap[tprecond].Add(hstep);
+                                CausalMap[tprecond].Add(hstep.ID);
                         }
                         if (hstep.Effects.Contains(tprecond.GetReversed()))
                         {
                             if (!ThreatMap.ContainsKey(tprecond))
-                                ThreatMap.Add(tprecond, new List<IOperator>() { hstep });
+                                ThreatMap.Add(tprecond, new List<int>() { hstep.ID });
                             else
-                                ThreatMap[tprecond].Add(hstep);
+                                ThreatMap[tprecond].Add(hstep.ID);
                         }
                     }
                 }
@@ -128,16 +132,16 @@ namespace BoltFreezer.PlanTools
                     if (gstep.Effects.Contains(goalCondition))
                     {
                         if (!CausalMap.ContainsKey(goalCondition))
-                            CausalMap.Add(goalCondition, new List<IOperator>() { gstep });
+                            CausalMap.Add(goalCondition, new List<int>() { gstep.ID });
                         else
-                            CausalMap[goalCondition].Add(gstep);
+                            CausalMap[goalCondition].Add(gstep.ID);
                     }
                     if (gstep.Effects.Contains(goalCondition.GetReversed()))
                     {
                         if (!ThreatMap.ContainsKey(goalCondition))
-                            ThreatMap.Add(goalCondition, new List<IOperator>() { gstep });
+                            ThreatMap.Add(goalCondition, new List<int>() { gstep.ID });
                         else
-                            ThreatMap[goalCondition].Add(gstep);
+                            ThreatMap[goalCondition].Add(gstep.ID);
                     }
                 }
             }

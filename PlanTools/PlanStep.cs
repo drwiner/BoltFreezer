@@ -122,7 +122,11 @@ namespace BoltFreezer.PlanTools
             // Store the object as a state space action.
             PlanStep step = obj as PlanStep;
 
-            if (step.Action.Equals(Action) && step.ID == ID)
+            if (step.ID == ID)
+            {
+                return true;
+            }
+            if (step.Action.ID == Action.ID)
             {
                 return true;
             }
@@ -151,9 +155,10 @@ namespace BoltFreezer.PlanTools
             }
         }
 
+        // the clone doesn't need to mutate the underlying action (Action)
         public Object Clone()
         {
-            return new PlanStep(Action.Clone() as IOperator, OpenConditions, ID);
+            return new PlanStep(Action, OpenConditions, ID);
         }
 
         public string TermAt(int position)

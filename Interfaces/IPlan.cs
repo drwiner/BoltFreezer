@@ -43,12 +43,14 @@ namespace BoltFreezer.Interfaces
         void Insert(IPlanStep newStep);
 
         // Repair Condition; also checks if this new causal link is threatened
-        void Repair(IPlanStep needStep, IPredicate needPrecond, IPlanStep repairStep);
+        void Repair(OpenCondition oc, IPlanStep repairStep);
 
         // Detect threats for this specific step
         void DetectThreats(IPlanStep newStep);
 
         // The plan can be cloned.
         Object Clone();
+
+        string ToStringOrdered();
     }
 }

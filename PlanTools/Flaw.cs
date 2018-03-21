@@ -123,6 +123,19 @@ namespace BoltFreezer.PlanTools
             return false;
         }
 
+        public override bool Equals(object obj)
+        {
+            var oc = obj as OpenCondition;
+            if (oc.step.Equals(step) && oc.precondition.Equals(precondition))
+                return true;
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.step.GetHashCode() * 23 + this.precondition.GetHashCode();
+        }
+
         public OpenCondition Clone()
         {
             var oc = new OpenCondition(precondition.Clone() as IPredicate, step.Clone() as IPlanStep)

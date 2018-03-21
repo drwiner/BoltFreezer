@@ -135,6 +135,22 @@ namespace BoltFreezer.PlanTools
 
         }
 
+        public IPlanStep Find(IPlanStep stepClonedFromOpenCondition)
+        {
+            if (GoalStep.Equals(stepClonedFromOpenCondition))
+                return GoalStep;
+
+            // For now, this condition is impossible
+            if (InitialStep.Equals(stepClonedFromOpenCondition))
+                return InitialStep;
+
+            if (!Steps.Contains(stepClonedFromOpenCondition))
+            {
+                throw new System.Exception();
+            }
+            return Steps.Single(s => s.Equals(stepClonedFromOpenCondition));
+        }
+
         public void DetectThreats(IPlanStep possibleThreat)
         {
             foreach (var clink in causalLinks)
@@ -158,11 +174,14 @@ namespace BoltFreezer.PlanTools
             }
         }
 
-        public void Repair(IPlanStep needStep, IPredicate needPrecond, IPlanStep repairStep)
+        public void Repair(OpenCondition oc, IPlanStep repairStep)
         {
-            needStep.Fulfill(needPrecond);
+            // oc = <needStep, needPrecond>. Need to find needStep in plan, because open conditions have been mutated before arrival.
+            var needStep = Find(oc.step);
+            needStep.Fulfill(oc.precondition);
+
             orderings.Insert(repairStep, needStep);
-            var clink = new CausalLink<IPlanStep>(needPrecond as Predicate, repairStep, needStep);
+            var clink = new CausalLink<IPlanStep>(oc.precondition as Predicate, repairStep, needStep);
             causalLinks.Add(clink);
 
             foreach (var step in Steps)
@@ -171,7 +190,7 @@ namespace BoltFreezer.PlanTools
                 {
                     continue;
                 }
-                if (!CacheMaps.IsThreat(needPrecond, step))
+                if (!CacheMaps.IsThreat(oc.precondition, step))
                 {
                     continue;
                 }
@@ -194,49 +213,68 @@ namespace BoltFreezer.PlanTools
             return (State)Initial.Clone();
         }
 
+        public List<IPlanStep> TopoSort()
+        {
+            List<IPlanStep> sortedList = new List<IPlanStep>();
+
+            foreach (var item in Orderings.TopoSort(InitialStep))
+            {
+                if (item.Equals(InitialStep) || item.Equals(GoalStep))
+                    continue;
+
+                sortedList.Add(item);
+            }
+
+            return sortedList;
+
+        }
+
         // Displays the contents of the plan.
         public override string ToString ()
         {
             StringBuilder sb = new StringBuilder();
 
-            foreach (Operator step in steps)
+            foreach (var step in steps)
                 sb.AppendLine(step.ToString());
 
             return sb.ToString();
         }
 
         // Displays the contents of the plan.
-        public string ToStringDetailed ()
+        public string ToStringOrdered ()
         {
             StringBuilder sb = new StringBuilder();
 
-            foreach (Operator step in steps)
+            foreach (var step in TopoSort())
                 sb.AppendLine(step.ToString());
 
             return sb.ToString();
         }
 
-        // Creates a clone of the plan. (Steps, orderings, and Links are Read-only, so only their host containers are replaced
+        // Creates a clone of the plan. (orderings, and Links are Read-only, so only their host containers are replaced)
         public Object Clone ()
         {
             List<IPlanStep> newSteps = new List<IPlanStep>();
 
             foreach (var step in steps)
             {
-                newSteps.Add(step);
-                //newSteps.Add((IPlanStep)step.Clone());
+                // need clone because these have fulfilled conditions that are mutable.
+                newSteps.Add(step.Clone() as IPlanStep);
             }
 
+            // these are static read only things
             //IState newInitial = initial.Clone() as IState;
             //IState newGoal = goal.Clone() as IState;
 
-            //IPlanStep newInitialStep = initialStep.Clone() as IPlanStep;
-            //IPlanStep newGoalStep = goalStep.Clone() as IPlanStep;
 
-            // Assuming for now that members of the ordering graph are never mutated.  If they are, then a clone will keep references to mutated members.
-            // ToDo: Sanity check after HTN implementation
+            IPlanStep newInitialStep = initialStep.Clone() as IPlanStep;
+            // need clone of goal step because this as fulfillable conditions
+            IPlanStep newGoalStep = goalStep.Clone() as IPlanStep;
+
+            // Assuming for now that members of the ordering graph are never mutated.  If they are, then a clone will keep references to mutated members
             Graph<IPlanStep> newOrderings = orderings.Clone() as Graph<IPlanStep>;
 
+            // Causal Links are containers whose members are not mutated.
             List<CausalLink<IPlanStep>> newLinks = new List<CausalLink<IPlanStep>>();
             foreach (var cl in causalLinks)
             {
@@ -244,11 +282,11 @@ namespace BoltFreezer.PlanTools
                 //newLinks.Add(cl.Clone() as CausalLink<IPlanStep>);
             }
 
-            // Inherit all flaws
+            // Inherit all flaws, must clone very flaw
             Flawque flawList = flaws.Clone();
 
             //return new Plan(newSteps, newInitial, newGoal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList);
-            return new Plan(newSteps, Initial, Goal, InitialStep, GoalStep, newOrderings, newLinks, flawList);
+            return new Plan(newSteps, Initial, Goal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList);
         }
     }
 }
