@@ -182,14 +182,14 @@ namespace BoltFreezer.PlanTools
             {
                 if (causallink.Predicate.Equals(other.causallink.Predicate))
                 {
-                    if (!causallink.Head.Equals(other.causallink.Head))
+                    if (causallink.Head.ID != other.causallink.Head.ID)
                     {
                         if (causallink.Head.ID < other.causallink.Head.ID)
                             return -1;
                         else
                             return 1;
                     }
-                    else if (!causallink.Tail.Equals(other.causallink.Tail))
+                    else if (causallink.Tail.ID != other.causallink.Tail.ID)
                     {
                         if (causallink.Tail.ID < other.causallink.Tail.ID)
                             return -1;

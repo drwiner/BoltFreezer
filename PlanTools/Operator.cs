@@ -28,6 +28,11 @@ namespace BoltFreezer.PlanTools
         private List<IPredicate> exceptionalEffects;
 
 
+        public static void SetCounterExternally(int newVal)
+        {
+            Counter = newVal;
+        }
+
         // Access the operator's predicate.
         public IPredicate Predicate
         {

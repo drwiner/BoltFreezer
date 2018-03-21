@@ -42,7 +42,6 @@ namespace TestFreezer
             }
             else if(deserialize)
             {
-
                 GroundActionFactory.GroundActions = new List<IOperator>();
                 GroundActionFactory.GroundLibrary = new Dictionary<int, IOperator>();
                 foreach (var file in Directory.GetFiles(Parser.GetTopDirectory() + @"Cached\CachedOperators\", testDomainName + "_" + testProblem.Name + "*.CachedOperator"))
@@ -51,38 +50,17 @@ namespace TestFreezer
                     GroundActionFactory.GroundActions.Add(op);
                     GroundActionFactory.GroundLibrary[op.ID] = op;
                 }
-                //GroundActionFactory.GroundActions = Operators;
-                //foreach (var ga in GroundActionFactory.GroundActions)
-                //{
-                    
-                //    Console.WriteLine(ga);
-                //}
+                // THIS is so that initial and goal steps created don't get matched with these
+                Operator.SetCounterExternally(GroundActionFactory.GroundActions.Count + 1);
 
-
-                Console.WriteLine("\nCmap:\n");
+                Console.WriteLine("\nCmap\n");
 
                 var cmap = BinarySerializer.DeSerializeObject<Dictionary<IPredicate, List<int>>>(CausalMapFileName + ".CachedCausalMap");
                 CacheMaps.CausalMap = cmap;
-                //foreach(var kval in cmap)
-                //{
-                //    Console.WriteLine(kval.Key);
-                //    foreach (var op in kval.Value)
-                //    {
-                //        Console.WriteLine(op);
-                //    }
-                //}
 
-                Console.WriteLine("\nTmap:\n");
+                Console.WriteLine("\nTmap\n");
                 var tcmap = BinarySerializer.DeSerializeObject<Dictionary<IPredicate, List<int>>>(ThreatMapFileName + ".CachedThreatMap");
                 CacheMaps.ThreatMap = tcmap;
-                //foreach (var kval in tcmap)
-                //{
-                //    Console.WriteLine(kval.Key);
-                //    foreach(var op in kval.Value)
-                //    {
-                //        Console.WriteLine(op);
-                //    }
-                //}
 
                 Console.WriteLine("Finding Statics");
                 GroundActionFactory.DetectStatics(CacheMaps.CausalMap, CacheMaps.ThreatMap);
@@ -93,9 +71,31 @@ namespace TestFreezer
             }
         }
 
-        public static void RunPOP()
-        {
 
+        public static void RunAddReusePop(IPlan initialPlan)
+        {
+            Console.WriteLine("First POP");
+            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new AddReuseHeuristic().Heuristic, true);
+            var bestFirstSolutions = AStarPOP.Solve(1, 6000f);
+            Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        }
+
+        public static void RunBFSPOP(IPlan initialPlan)
+        {
+            var BFSPOP = new PlanSpacePlanner(initialPlan, SearchType.BFS, new ZeroHeuristic().Heuristic, true);
+            var BFSSolutions = BFSPOP.Solve(1, 6000f);
+            Console.WriteLine(BFSSolutions[0].ToStringOrdered());
+        }
+
+        public static void RunDFSPop(IPlan initialPlan)
+        {
+            var DFSPOP = new PlanSpacePlanner(initialPlan, SearchType.DFS, new ZeroHeuristic().Heuristic, true);
+            var DFSSolutions = DFSPOP.Solve(1, 6000f);
+            Console.WriteLine(DFSSolutions[0].ToStringOrdered());
+        }
+
+        public static IPlan CreateInitialPlan()
+        {
             Console.WriteLine("Creating initial Plan");
 
             // Create Initial Plan
@@ -108,37 +108,24 @@ namespace TestFreezer
 
             Console.WriteLine("Insert First Ordering");
             initialPlan.Orderings.Insert(initialPlan.InitialStep, initialPlan.GoalStep);
-
-            Console.WriteLine("First POP");
-            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new AddReuseHeuristic().Heuristic, true);
-            var bestFirstSolutions = AStarPOP.Solve(1, 6000f);
-            Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
-
-            var BFSPOP = new PlanSpacePlanner(initialPlan, SearchType.BFS, new ZeroHeuristic().Heuristic, true);
-            var BFSSolutions = BFSPOP.Solve(1, 6000f);
-            Console.WriteLine(BFSSolutions[0].ToStringOrdered());
-
-            var DFSPOP = new PlanSpacePlanner(initialPlan, SearchType.DFS, new ZeroHeuristic().Heuristic, true);
-            var DFSSolutions = DFSPOP.Solve(1, 6000f);
-            Console.WriteLine(DFSSolutions[0].ToStringOrdered());
-
-
+            return initialPlan;
         }
 
         static void Main(string[] args)
         {
             Console.Write("hello world\n");
-            //FreezeProblem(true, false);
-            //Console.WriteLine("\nFinishedLoading!\n");
             FreezeProblem(false, true);
             Console.WriteLine("\nFinishedUNLoading!\n");
+            var initPlan = CreateInitialPlan();
 
-            RunPOP();
-
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            RunAddReusePop(initPlan);
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            Console.Write(elapsedMs);
 
             Console.WriteLine(Console.Read());
             
-            //Console.Write("hello world");
         }
     }
 }

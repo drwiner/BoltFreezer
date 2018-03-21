@@ -4,3 +4,9 @@ D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\bin\x64\Release\BoltFre
 D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x64\Release\BoltFreezer.csproj.CoreCompileInputs.cache
 D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x64\Release\BoltFreezer.dll
 D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x64\Release\BoltFreezer.pdb
+D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\bin\x64\Release\BoltFreezer.dll.config
+D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\bin\x64\Release\BoltFreezer.dll
+D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\bin\x64\Release\BoltFreezer.pdb
+D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\obj\x64\Release\BoltFreezer.csproj.CoreCompileInputs.cache
+D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\obj\x64\Release\BoltFreezer.dll
+D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\obj\x64\Release\BoltFreezer.pdb

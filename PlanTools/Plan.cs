@@ -148,7 +148,7 @@ namespace BoltFreezer.PlanTools
             {
                 throw new System.Exception();
             }
-            return Steps.Single(s => s.Equals(stepClonedFromOpenCondition));
+            return Steps.Single(s => s.ID == stepClonedFromOpenCondition.ID);
         }
 
         public void DetectThreats(IPlanStep possibleThreat)
