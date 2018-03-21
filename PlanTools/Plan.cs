@@ -221,11 +221,13 @@ namespace BoltFreezer.PlanTools
         {
             List<IPlanStep> newSteps = new List<IPlanStep>();
 
-            foreach (IPlanStep step in steps)
-                newSteps.Add((IPlanStep)step.Clone());
+            //foreach (IPlanStep step in steps)
+            //    newSteps.Add((IPlanStep)step.Clone());
+            foreach (var step in steps)
+                newSteps.Add(step);
 
-            IState newInitial = initial.Clone() as IState;
-            IState newGoal = goal.Clone() as IState;
+            //IState newInitial = initial.Clone() as IState;
+            //IState newGoal = goal.Clone() as IState;
 
             IPlanStep newInitialStep = initialStep.Clone() as IPlanStep;
             IPlanStep newGoalStep = goalStep.Clone() as IPlanStep;
@@ -236,12 +238,13 @@ namespace BoltFreezer.PlanTools
 
             List<CausalLink<IPlanStep>> newLinks = new List<CausalLink<IPlanStep>>();
             foreach (var cl in causalLinks)
-                newLinks.Add(cl.Clone() as CausalLink<IPlanStep>);
+                newLinks.Add(cl);
+                //newLinks.Add(cl.Clone() as CausalLink<IPlanStep>);
 
             // Inherit all flaws
             Flawque flawList = flaws.Clone();
 
-            return new Plan(newSteps, newInitial, newGoal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList);
+            return new Plan(newSteps, initial, goal, initialStep, goalStep, newOrderings, newLinks, flawList);
         }
     }
 }

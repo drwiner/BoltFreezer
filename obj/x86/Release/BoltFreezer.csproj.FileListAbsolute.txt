@@ -1,7 +1,0 @@
-D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\bin\Release\BoltFreezer.dll.config
-D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\bin\Release\BoltFreezer.dll
-D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\bin\Release\BoltFreezer.pdb
-D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x86\Release\BoltFreezer.csprojResolveAssemblyReference.cache
-D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x86\Release\BoltFreezer.csproj.CoreCompileInputs.cache
-D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x86\Release\BoltFreezer.dll
-D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x86\Release\BoltFreezer.pdb

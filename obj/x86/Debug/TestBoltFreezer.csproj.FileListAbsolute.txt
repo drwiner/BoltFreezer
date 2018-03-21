@@ -1,2 +1,0 @@
-D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x86\Debug\TestBoltFreezer.csprojResolveAssemblyReference.cache
-D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x86\Debug\TestBoltFreezer.csproj.CoreCompileInputs.cache
