@@ -132,7 +132,7 @@ namespace BoltFreezer.PlanTools
             }
 
             // Don't check for threats when inserting.
-            
+
         }
 
         public void DetectThreats(IPlanStep possibleThreat)
@@ -216,19 +216,22 @@ namespace BoltFreezer.PlanTools
             return sb.ToString();
         }
 
-        // Creates a clone of the plan.
+        // Creates a clone of the plan. (Steps, orderings, and Links are Read-only, so only their host containers are replaced
         public Object Clone ()
         {
             List<IPlanStep> newSteps = new List<IPlanStep>();
 
-            foreach (IPlanStep step in steps)
-                newSteps.Add((IPlanStep)step.Clone());
+            foreach (var step in steps)
+            {
+                newSteps.Add(step);
+                //newSteps.Add((IPlanStep)step.Clone());
+            }
 
-            IState newInitial = initial.Clone() as IState;
-            IState newGoal = goal.Clone() as IState;
+            //IState newInitial = initial.Clone() as IState;
+            //IState newGoal = goal.Clone() as IState;
 
-            IPlanStep newInitialStep = initialStep.Clone() as IPlanStep;
-            IPlanStep newGoalStep = goalStep.Clone() as IPlanStep;
+            //IPlanStep newInitialStep = initialStep.Clone() as IPlanStep;
+            //IPlanStep newGoalStep = goalStep.Clone() as IPlanStep;
 
             // Assuming for now that members of the ordering graph are never mutated.  If they are, then a clone will keep references to mutated members.
             // ToDo: Sanity check after HTN implementation
@@ -236,12 +239,16 @@ namespace BoltFreezer.PlanTools
 
             List<CausalLink<IPlanStep>> newLinks = new List<CausalLink<IPlanStep>>();
             foreach (var cl in causalLinks)
-                newLinks.Add(cl.Clone() as CausalLink<IPlanStep>);
+            {
+                newLinks.Add(cl as CausalLink<IPlanStep>);
+                //newLinks.Add(cl.Clone() as CausalLink<IPlanStep>);
+            }
 
             // Inherit all flaws
             Flawque flawList = flaws.Clone();
 
-            return new Plan(newSteps, newInitial, newGoal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList);
+            //return new Plan(newSteps, newInitial, newGoal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList);
+            return new Plan(newSteps, Initial, Goal, InitialStep, GoalStep, newOrderings, newLinks, flawList);
         }
     }
 }

@@ -44,7 +44,7 @@ namespace BoltFreezer.PlanTools
         {
 
             int sumo = 0;
-            foreach (var oc in plan.Flaws.OpenConditionGenerator())
+            foreach (var oc in plan.Flaws.OpenConditions)
             {
 
                 // Refresh to new list

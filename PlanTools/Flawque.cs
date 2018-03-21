@@ -4,24 +4,29 @@ using BoltFreezer.Enums;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace BoltFreezer.PlanTools
 {
 
     public class Flawque
     {
-        private Heap<OpenCondition> openConditions;
+        // cannot use heap because the values are mutable and won't be kept sorted unless they are all re-inserted. If we have to do that, there's no benefit
+        public List<OpenCondition> OpenConditions;
+        //private Heap<OpenCondition> openConditions;
         private Heap<ThreatenedLinkFlaw> threatenedLinks;
 
         public Flawque()
         {
-            openConditions = new Heap<OpenCondition>(HeapType.MinHeap);
+            //openConditions = new Heap<OpenCondition>(HeapType.MinHeap);
+            OpenConditions = new List<OpenCondition>();
             threatenedLinks = new Heap<ThreatenedLinkFlaw>(HeapType.MinHeap);
         }
 
-        public Flawque(Heap<OpenCondition> ocs, Heap<ThreatenedLinkFlaw> tclfs)
+        //public Flawque(Heap<OpenCondition> ocs, Heap<ThreatenedLinkFlaw> tclfs)
+        public Flawque(List<OpenCondition> ocs, Heap<ThreatenedLinkFlaw> tclfs)
         {
-            openConditions = ocs;
+            OpenConditions = ocs;
             threatenedLinks = tclfs;
         }
 
@@ -56,7 +61,8 @@ namespace BoltFreezer.PlanTools
                 oc.isInit = true;
             }
 
-            openConditions.Insert(oc);
+            OpenConditions.Add(oc);
+            //openConditions.Insert(oc);
         }
 
         public void Insert(ThreatenedLinkFlaw tclf)
@@ -67,7 +73,7 @@ namespace BoltFreezer.PlanTools
 
         public IEnumerable<OpenCondition> OpenConditionGenerator()
         {
-            foreach (var item in openConditions.ToList())
+            foreach (var item in OpenConditions.ToList())
             {
                 yield return item.Clone();
             }
@@ -75,7 +81,7 @@ namespace BoltFreezer.PlanTools
 
         public int Count
         {
-            get { return openConditions.Count; }
+            get { return OpenConditions.Count + threatenedLinks.Count; }
         }
 
         /// <summary>
@@ -88,50 +94,65 @@ namespace BoltFreezer.PlanTools
             if (!threatenedLinks.IsEmpty())
                 return threatenedLinks.PopRoot();
 
-            if (!openConditions.IsEmpty())
-                return openConditions.PopRoot();
 
-            return null;
+            OpenCondition best_flaw = OpenConditions[0];
+
+            foreach(var oc in OpenConditions.Skip(0))
+            {
+                if (oc < best_flaw)
+                    best_flaw = oc;
+            }
+
+            //if (!OpenConditions.IsEmpty())
+            //    return OpenConditions.PopRoot();
+
+            return best_flaw;
         }
 
-        // What to do here --> how can we reassign?
-        public void AddCndtsAndRisks(IPlan plan, IPlanStep action)
+        // When we add a new step, update cndts and risks
+        public void UpdateFlaws(IPlan plan, IPlanStep action)
         {
-            foreach (var oc in openConditions.ToList())
+            foreach (var oc in OpenConditions.ToList())
             {
                 // ignore any open conditions that cannot possibly be affected by this action's effects, such as those occurring after
                 if (plan.Orderings.IsPath(oc.step, action))
                     continue;
 
-                if (action.Effects.Contains(oc.precondition))
+                if (CacheMaps.IsCndt(oc.precondition, action))
+                //if (action.Effects.Contains(oc.precondition))
                     oc.cndts += 1;
 
-                if (action.Effects.Any(x => oc.precondition.IsInverse(x)))
+                if (CacheMaps.IsThreat(oc.precondition, action))
+                //if (action.Effects.Any(x => oc.precondition.IsInverse(x)))
                     oc.risks += 1;
             }
         }
 
         /// <summary>
-        /// Clone of Flawque requires clone of all individual flaws
+        /// Clone of Flawque requires clone of individual flaws because these have mutable properties
         /// </summary>
         /// <returns></returns>
         public Flawque Clone()
         {
             var newOpenConditions = new List<OpenCondition>();
-            foreach (var oc in openConditions.ToList())
+            //foreach (var oc in OpenConditions.ToList())
+            foreach (var oc in OpenConditions)
             {
                 newOpenConditions.Add(oc.Clone());
+                //newOpenConditions.Add(oc);
             }
-            var openConditionHeap = new Heap<OpenCondition>(HeapType.MinHeap, newOpenConditions);
+            //var openConditionHeap = new Heap<OpenCondition>(HeapType.MinHeap, newOpenConditions);
 
-            var newThreatenedLinks = new List<ThreatenedLinkFlaw>();                 
+            var newThreatenedLinks = new List<ThreatenedLinkFlaw>();
             foreach (var tclf in threatenedLinks.ToList())
             {
                 newThreatenedLinks.Add(tclf.Clone());
+                //newThreatenedLinks.Add(tclf);
             }
-            var tclfHeap =  new Heap<ThreatenedLinkFlaw>(HeapType.MinHeap, newThreatenedLinks);
+            var tclfHeap = new Heap<ThreatenedLinkFlaw>(HeapType.MinHeap, newThreatenedLinks);
 
-            return new Flawque(openConditionHeap, tclfHeap);
+            return new Flawque(newOpenConditions, tclfHeap);
+            //return new Flawque(openConditionHeap, tclfHeap);
         }
 
     }

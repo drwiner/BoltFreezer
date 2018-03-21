@@ -112,5 +112,10 @@ namespace BoltFreezer.PlanTools
         {
             return new CausalLink<T>(predicate.Clone() as IPredicate, (T)head.Clone(), (T)tail.Clone(), ID);
         }
+
+        public Object ShallowCopy()
+        {
+            return new CausalLink<T>(predicate as IPredicate, head, tail, ID);
+        }
     }
 }

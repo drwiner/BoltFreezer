@@ -217,6 +217,9 @@ namespace BoltFreezer.PlanSpace
                 var newStep = new PlanStep(cndt.Clone() as IOperator);
                 planClone.Insert(newStep);
                 planClone.Repair(oc.step, oc.precondition, newStep);
+
+                // check if inserting new Step (with orderings given by Repair) add cndts/risks to existing open conditions, affecting their status in the heap
+                planClone.Flaws.UpdateFlaws(planClone, newStep);
                 planClone.DetectThreats(newStep);
                 Insert(planClone);
             }
@@ -230,6 +233,7 @@ namespace BoltFreezer.PlanSpace
                 var planClone = plan.Clone() as IPlan;
                 planClone.Repair(oc.step, oc.precondition, planClone.InitialStep);
                 Insert(planClone);
+                
             }
 
             foreach (var step in plan.Steps)

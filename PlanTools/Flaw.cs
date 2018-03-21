@@ -109,6 +109,20 @@ namespace BoltFreezer.PlanTools
                 return 1;
         }
 
+        public static bool operator < (OpenCondition self, OpenCondition other)
+        {
+            if (self.CompareTo(other) < 0)
+                return true;
+            return false;
+        }
+
+        public static bool operator > (OpenCondition self, OpenCondition other)
+        {
+            if (self.CompareTo(other) > 0)
+                return true;
+            return false;
+        }
+
         public OpenCondition Clone()
         {
             var oc = new OpenCondition(precondition.Clone() as IPredicate, step.Clone() as IPlanStep)
