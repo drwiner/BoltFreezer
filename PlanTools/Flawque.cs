@@ -95,7 +95,7 @@ namespace BoltFreezer.PlanTools
         }
 
         // What to do here --> how can we reassign?
-        public void AddCndtsAndRisks(IPlan plan, IOperator action)
+        public void AddCndtsAndRisks(IPlan plan, IPlanStep action)
         {
             foreach (var oc in openConditions.ToList())
             {
@@ -117,16 +117,20 @@ namespace BoltFreezer.PlanTools
         /// <returns></returns>
         public Flawque Clone()
         {
-            var openConditionHeap = new Heap<OpenCondition>(HeapType.MinHeap);
+            var newOpenConditions = new List<OpenCondition>();
             foreach (var oc in openConditions.ToList())
             {
-                openConditionHeap.Insert(oc.Clone());
+                newOpenConditions.Add(oc.Clone());
             }
-            var tclfHeap = new Heap<ThreatenedLinkFlaw>(HeapType.MinHeap);
+            var openConditionHeap = new Heap<OpenCondition>(HeapType.MinHeap, newOpenConditions);
+
+            var newThreatenedLinks = new List<ThreatenedLinkFlaw>();                 
             foreach (var tclf in threatenedLinks.ToList())
             {
-                tclfHeap.Insert(tclf.Clone());
+                newThreatenedLinks.Add(tclf.Clone());
             }
+            var tclfHeap =  new Heap<ThreatenedLinkFlaw>(HeapType.MinHeap, newThreatenedLinks);
+
             return new Flawque(openConditionHeap, tclfHeap);
         }
 

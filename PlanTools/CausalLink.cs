@@ -9,12 +9,22 @@ using BoltFreezer.Interfaces;
 namespace BoltFreezer.PlanTools
 {
     [Serializable]
-    public class CausalLink
+    public class CausalLink<T> where T : IOperator
     {
+        private static int Counter = -1;
+
         private IPredicate predicate;
-        private IOperator head;
-        private IOperator tail;
+        private T head;
+        private T tail;
+        private int id;
         //private List<IOperator> span;
+
+
+        // Access the operator's ID.
+        public int ID
+        {
+            get { return id; }
+        }
 
         // Access the link's predicate.
         public IPredicate Predicate
@@ -24,63 +34,60 @@ namespace BoltFreezer.PlanTools
         }
 
         // Access the link's head.
-        public IOperator Head
+        public T Head
         {
             get { return head; }
             set { head = value; }
         }
 
         // Access the link's tail.
-        public IOperator Tail
+        public T Tail
         {
             get { return tail; }
             set { tail = value; }
         }
 
-        //// Access the link's span.
-        //public List<IOperator> Span
-        //{
-        //    get { return span; }
-        //    set { span = value; }
-        //}
-
         public CausalLink ()
         {
             predicate = new Predicate();
-            head = new Operator();
-            tail = new Operator();
-            //span = new List<IOperator>();
+            head = default(T);
+            tail = default(T);
+            id = System.Threading.Interlocked.Increment(ref Counter);
         }
 
-        public CausalLink (IPredicate predicate, IOperator head, IOperator tail)
+        public CausalLink (IPredicate predicate, T head, T tail)
         {
             this.predicate = predicate;
             this.head = head;
             this.tail = tail;
-            //this.span = new List<IOperator>();
+            id = System.Threading.Interlocked.Increment(ref Counter);
         }
 
-        //public CausalLink(IPredicate predicate, IOperator head,I Operator tail, List<IOperator> span)
-        //{
-        //    this.predicate = predicate;
-        //    this.head = head;
-        //    this.tail = tail;
-        //    //this.span = span;
-        //}
+        public CausalLink(IPredicate predicate, T head, T tail, int _id)
+        {
+            this.predicate = predicate;
+            this.head = head;
+            this.tail = tail;
+            id = _id;
+        }
+
+        // Checks if two causal links are equal.
+        public bool Equals(CausalLink<T> link)
+        {
+            if (link.head.Equals(head) && link.tail.Equals(tail) && link.predicate.Equals(predicate))
+            {
+                if (link.ID == ID)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         // Returns a bound copy of the predicate.
         public Predicate GetBoundPredicate ()
         {
-            // Clone the predicate.
             Predicate boundPred = (Predicate)predicate.Clone();
-
-            // Bind the predicate to the tail's bindings.
-            /*if (tail.Bindings.Keys.Count > 0)
-                boundPred.BindTerms(tail.Bindings);
-            else
-                boundPred.BindTerms(head.Bindings);*/
-
-            // Return the bound predicate.
             return boundPred;
         }
 
@@ -95,13 +102,15 @@ namespace BoltFreezer.PlanTools
             
             sb.AppendLine("Head: " + head.ToString());
 
+            sb.AppendLine("ID: " + ID.ToString());
+
             return sb.ToString();
         }
 
         // Create a clone of the causal link.
-        public Object Clone ()
+        public Object Clone()
         {
-            return new CausalLink(predicate.Clone() as IPredicate, head.Clone() as IOperator, tail.Clone() as IOperator);
+            return new CausalLink<T>(predicate.Clone() as IPredicate, (T)head.Clone(), (T)tail.Clone(), ID);
         }
     }
 }

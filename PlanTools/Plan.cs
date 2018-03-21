@@ -12,29 +12,22 @@ namespace BoltFreezer.PlanTools
     [Serializable]
     public class Plan : IPlan
     {
-        private List<IOperator> steps;
+        private List<IPlanStep> steps;
         private IState initial;
         private IState goal;
+        private IPlanStep initialStep = null;
+        private IPlanStep goalStep = null;
 
-        private Graph<IOperator> orderings;
-        private ICausalLinkGraph causalLinks;
+        private Graph<IPlanStep> orderings;
+        private List<CausalLink<IPlanStep>> causalLinks;
         private Flawque flaws;
 
         // Access the plan's steps.
-        public List<IOperator> Steps
+        public List<IPlanStep> Steps
         {
             get { return steps; }
             set { steps = value; }
         }
-
-        public ICausalLinkGraph CausalLinks
-        {
-            get
-            {
-                return causalLinks;
-            }
-            set { causalLinks = value; }
-        }   
 
         // Access the plan's initial state.
         public IState Initial
@@ -50,6 +43,7 @@ namespace BoltFreezer.PlanTools
             set { goal = value; }
         }
 
+        // Access to plan's flaw library
         public Flawque Flaws
         {
             get { return flaws; }
@@ -57,80 +51,141 @@ namespace BoltFreezer.PlanTools
         }
 
         // Access the plan's initial step.
-        public Operator InitialStep
+        public IPlanStep InitialStep
         {
-            get { return new Operator("initial", new List<IPredicate>(), initial.Predicates); }
-            set { Initial.Predicates = value.Effects; }
+            get { return initialStep; }
+            set { initialStep = value; }
         }
 
         // Access the plan's goal step.
-        public Operator GoalStep
+        public IPlanStep GoalStep
         {
-            get { return new Operator("goal", goal.Predicates, new List<IPredicate>()); }
-            set { Goal.Predicates = value.Preconditions; }
+            get { return goalStep; }
+            set { goalStep = value; }
         }
 
-        public Graph<IOperator> Orderings
+        // Access to plan's ordering graph
+        public Graph<IPlanStep> Orderings
         {
             get { return orderings; }
             set   { throw new NotImplementedException(); }
         }
 
+        // Access to plan's causal links
+        public List<CausalLink<IPlanStep>> CausalLinks
+        {
+            get { return causalLinks; }
+            set { causalLinks = value; }
+        }
+
         public Plan ()
         {
             // S
-            steps = new List<IOperator>();
+            steps = new List<IPlanStep>();
             // O
-            orderings = new Graph<IOperator>();
+            orderings = new Graph<IPlanStep>();
             // L
-            causalLinks = new CausalLinkGraph();
+            causalLinks = new List<CausalLink<IPlanStep>>();
             
             flaws = new Flawque();
             initial = new State();
             goal = new State();
+            initialStep = new PlanStep(new Operator("initial", new List<IPredicate>(), initial.Predicates));
+            goalStep = new PlanStep(new Operator("goal", goal.Predicates, new List<IPredicate>()));
         }
 
         public Plan(IState _initial, IState _goal)
         {
-            steps = new List<IOperator>();
-            causalLinks = new CausalLinkGraph();
-            orderings = new Graph<IOperator>();
+            steps = new List<IPlanStep>();
+            causalLinks = new List<CausalLink<IPlanStep>>();
+            orderings = new Graph<IPlanStep>();
             flaws = new Flawque();
             initial = _initial;
             goal = _goal;
+            initialStep = new PlanStep(new Operator("initial", new List<IPredicate>(), initial.Predicates));
+            goalStep = new PlanStep(new Operator("goal", goal.Predicates, new List<IPredicate>()));
         }
-
-        //// MARK for delete
-        //public Plan(List<IOperator> steps, IState initial)
-        //{
-        //    this.steps = steps;
-        //    this.causalLinks = new CausalLinkGraph();
-        //    this.initial = initial;
-        //    goal = new State();
-        //    flaws = new Flawque();
-        //}
 
         // Used when cloning a plan: <S, O, L>, F
-        public Plan(List<IOperator> steps, IState initial, IState goal, Graph<IOperator> og, ICausalLinkGraph clg, Flawque flawQueue)
+        public Plan(List<IPlanStep> steps, IState initial, IState goal, IPlanStep initialStep, IPlanStep goalStep, Graph<IPlanStep> orderings, List<CausalLink<IPlanStep>> causalLinks, Flawque flaws)
         {
             this.steps = steps;
-            this.causalLinks = clg;
-            this.orderings = og;
-            this.flaws = flawQueue;
+            this.causalLinks = causalLinks;
+            this.orderings = orderings;
+            this.flaws = flaws;
             this.initial = initial;
             this.goal = goal;
+            this.initialStep = initialStep;
+            this.goalStep = goalStep;
         }
 
-        public void Insert(IOperator newStep)
+        public void Insert(IPlanStep newStep)
         {
             steps.Add(newStep);
             orderings.Insert(InitialStep, newStep);
             orderings.Insert(newStep, GoalStep);
+
+            // Add new flaws
+            foreach (var pre in newStep.OpenConditions)
+            {
+                Flaws.Insert(this, new OpenCondition(pre, newStep));
+            }
+
+            // Don't check for threats when inserting.
+            
         }
 
-        public void Repair(IOperator needStep, IPredicate needPrecond, IOperator repairStep)
+        public void DetectThreats(IPlanStep possibleThreat)
         {
-            causalLinks.Insert(new CausalLink(needPrecond as Predicate, repairStep, needStep));
+            foreach (var clink in causalLinks)
+            {
+                // Let it be for now that a newly inserted step cannot already be in a causal link in the plan (a head or tail). If not true, then check first.
+                if (!CacheMaps.IsThreat(clink.Predicate, possibleThreat))
+                {
+                    continue;
+                }
+                // new step can possibly threaten 
+                if (Orderings.IsPath(clink.Tail as IPlanStep, possibleThreat))
+                {
+                    continue;
+                }
+                if (Orderings.IsPath(possibleThreat, clink.Head as IPlanStep))
+                {
+                    continue;
+                }
+                
+                Flaws.Insert(new ThreatenedLinkFlaw(clink, possibleThreat));
+            }
+        }
+
+        public void Repair(IPlanStep needStep, IPredicate needPrecond, IPlanStep repairStep)
+        {
+            needStep.Fulfill(needPrecond);
+            orderings.Insert(repairStep, needStep);
+            var clink = new CausalLink<IPlanStep>(needPrecond as Predicate, repairStep, needStep);
+            causalLinks.Add(clink);
+
+            foreach (var step in Steps)
+            {
+                if (step.ID == repairStep.ID || step.ID == needStep.ID)
+                {
+                    continue;
+                }
+                if (!CacheMaps.IsThreat(needPrecond, step))
+                {
+                    continue;
+                }
+                // step is a threat to need precondition
+                if (Orderings.IsPath(needStep, step))
+                {
+                    continue;
+                }
+                if (Orderings.IsPath(step, repairStep))
+                {
+                    continue;
+                }
+                Flaws.Insert(new ThreatenedLinkFlaw(clink, step));
+            }
         }
 
         // Return the first state of the plan.
@@ -164,23 +219,29 @@ namespace BoltFreezer.PlanTools
         // Creates a clone of the plan.
         public Object Clone ()
         {
-            List<IOperator> newSteps = new List<IOperator>();
+            List<IPlanStep> newSteps = new List<IPlanStep>();
 
-            foreach (IOperator step in steps)
-                newSteps.Add((IOperator)step.Clone());
+            foreach (IPlanStep step in steps)
+                newSteps.Add((IPlanStep)step.Clone());
 
             IState newInitial = initial.Clone() as IState;
             IState newGoal = goal.Clone() as IState;
 
+            IPlanStep newInitialStep = initialStep.Clone() as IPlanStep;
+            IPlanStep newGoalStep = goalStep.Clone() as IPlanStep;
+
             // Assuming for now that members of the ordering graph are never mutated.  If they are, then a clone will keep references to mutated members.
             // ToDo: Sanity check after HTN implementation
-            Graph<IOperator> newOrderings = orderings.Clone() as Graph<IOperator>;
-            ICausalLinkGraph newlinks = causalLinks.Clone() as ICausalLinkGraph;
+            Graph<IPlanStep> newOrderings = orderings.Clone() as Graph<IPlanStep>;
+
+            List<CausalLink<IPlanStep>> newLinks = new List<CausalLink<IPlanStep>>();
+            foreach (var cl in causalLinks)
+                newLinks.Add(cl.Clone() as CausalLink<IPlanStep>);
 
             // Inherit all flaws
             Flawque flawList = flaws.Clone();
 
-            return new Plan(newSteps, newInitial, newGoal, newOrderings, newlinks, flawList);
+            return new Plan(newSteps, newInitial, newGoal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList);
         }
     }
 }

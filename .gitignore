@@ -2,3 +2,4 @@
 *.CachedCausalMap
 *.CachedThreatMap
 *.CachedOperator
+.vs/

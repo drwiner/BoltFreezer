@@ -7,11 +7,45 @@ namespace BoltFreezer.PlanTools
     [Serializable]
     public static class CacheMaps
     {
-        // Stored mappings for repair applicability
+        /// <summary>
+        /// Stored mappings for repair applicability. Do Not Use unless you are serializing
+        /// </summary>
         public static Dictionary<IPredicate, List<IOperator>> CausalMap = new Dictionary<IPredicate, List<IOperator>>();
 
-        // Stored mappings for threat detection
+        /// <summary>
+        /// Stored mappings for threat detection. Do Not Use unless you are serializing
+        /// </summary>
         public static Dictionary<IPredicate, List<IOperator>> ThreatMap = new Dictionary<IPredicate, List<IOperator>>();
+
+        public static List<IOperator> GetCndts(IPredicate pred)
+        {
+            if (CausalMap.ContainsKey(pred))
+                return CausalMap[pred];
+            return new List<IOperator>();
+        }
+
+        public static List<IOperator> GetThreats(IPredicate pred)
+        {
+            if (ThreatMap.ContainsKey(pred))
+                return ThreatMap[pred];
+            return new List<IOperator>();
+        }
+
+        public static bool IsCndt(IPredicate pred, IPlanStep ps)
+        {
+            if (!CausalMap.ContainsKey(pred))
+                return false;
+
+            return CausalMap[pred].Contains(ps.Action);
+        }
+
+        public static bool IsThreat(IPredicate pred, IPlanStep ps)
+        {
+            if (!ThreatMap.ContainsKey(pred))
+                return false;
+
+            return ThreatMap[pred].Contains(ps.Action);
+        }
 
         // Checks for mappings pairwise
         public static void CacheLinks(List<IOperator> groundSteps)
@@ -20,6 +54,11 @@ namespace BoltFreezer.PlanTools
             {
                 foreach (var tprecond in tstep.Preconditions)
                 {
+                    if (CausalMap.ContainsKey(tprecond) || ThreatMap.ContainsKey(tprecond))
+                    {
+                        // Then this precondition has already been evaluated.
+                        continue;
+                    }
 
                     foreach (var hstep in groundSteps)
                     {
@@ -50,8 +89,15 @@ namespace BoltFreezer.PlanTools
             {
                 foreach (var tprecond in tstep.Preconditions)
                 {
+
                     foreach (var hstep in heads)
                     {
+                        if (CausalMap[tprecond].Contains(hstep) || ThreatMap[tprecond].Contains(hstep))
+                        {
+                            // then this head step has already been checked for this condition
+                            continue;
+                        }
+
                         if (hstep.Effects.Contains(tprecond))
                         {
                             if (!CausalMap.ContainsKey(tprecond))

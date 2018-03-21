@@ -63,7 +63,7 @@ namespace BoltFreezer.PlanTools
                     if (plan.Orderings.IsPath(oc.step, existingStep))
                         continue;
 
-                    if (CacheMaps.CausalMap[oc.precondition].Contains(existingStep))
+                    if (CacheMaps.IsCndt(oc.precondition, existingStep))
                     {
                         existsA = true;
                         break;

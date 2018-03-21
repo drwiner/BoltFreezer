@@ -81,7 +81,7 @@ namespace BoltFreezer.FileIO
             init.Effects = problem.Initial;
 
             // Add the step to the plan.
-            plan.InitialStep = init;
+            plan.InitialStep = new PlanStep(init);
 
             // Read the file into an array.
             string[] input = System.IO.File.ReadAllLines(file);
@@ -165,7 +165,7 @@ namespace BoltFreezer.FileIO
                     step.Effects = effects;
 
                     // Add the current step to the plan.
-                    plan.Steps.Add(step);
+                    plan.Steps.Add(new PlanStep(step));
                 }
                 // Otherwise, if this is a state space plan...
                 else if (domain.Type == PlanType.StateSpace)
@@ -222,7 +222,7 @@ namespace BoltFreezer.FileIO
                     step.Conditionals = conditionals;
 
                     // Add the current step to the plan.
-                    plan.Steps.Add(step);
+                    plan.Steps.Add(new PlanStep(step));
                 }
             }
 
@@ -236,7 +236,7 @@ namespace BoltFreezer.FileIO
             goal.Preconditions = problem.Goal;
 
             // Add the step to the plan.
-            plan.GoalStep = goal;
+            plan.GoalStep = new PlanStep(goal);
 
             // Overwrite file.
             using (StreamWriter writer = new StreamWriter(file, false))

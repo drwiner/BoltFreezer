@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
+using BoltFreezer.Interfaces;
 using BoltFreezer.PlanTools;
 
 namespace BoltFreezer.PlanSpace
@@ -11,17 +11,17 @@ namespace BoltFreezer.PlanSpace
     public class PlanSpaceEdge
     {
         public Operator action;
-        public CausalLink clobberedLink;
+        public CausalLink<IPlanStep> clobberedLink;
         public State state;
 
         public PlanSpaceEdge ()
         {
             action = new Operator();
-            clobberedLink = new CausalLink();
+            clobberedLink = new CausalLink<IPlanStep>();
             state = new State();
         }
 
-        public PlanSpaceEdge (Operator action, CausalLink clobberedLink, State state)
+        public PlanSpaceEdge (Operator action, CausalLink<IPlanStep> clobberedLink, State state)
         {
             this.action = action;
             this.clobberedLink = clobberedLink;

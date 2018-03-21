@@ -15,7 +15,7 @@ namespace BoltFreezer.StateSpace
         private ActionType actionType;
         private List<IOperator> systemActions;
 
-        public CausalLink clobberedLink;
+        public CausalLink<IPlanStep> clobberedLink;
 
         // Access the edge's action.
         public IOperator Action
@@ -42,7 +42,7 @@ namespace BoltFreezer.StateSpace
         {
             action = new Operator();
             actionType = new ActionType();
-            clobberedLink = new CausalLink();
+            clobberedLink = new CausalLink<IPlanStep>();
         }
 
         public StateSpaceEdge(Operator action, ActionType actionType)

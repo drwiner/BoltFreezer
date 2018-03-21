@@ -12,12 +12,14 @@ namespace BoltFreezer.PlanSpace
         private SimplePriorityQueue<IPlan, float> frontier;
         private Func<IPlan, int> heuristic;
         private SearchType search;
+        private bool console_log;
 
         // TODO: keep track of plan-space search tree and not just frontier
         //private List<PlanSpaceEdge> PlanSpaceGraph;
 
-        public PlanSpacePlanner(IPlan initialPlan, SearchType _search, Func<IPlan, int> _heuristic)
+        public PlanSpacePlanner(IPlan initialPlan, SearchType _search, Func<IPlan, int> _heuristic, bool consoleLog)
         {
+            console_log = consoleLog;
             heuristic = _heuristic;
             search = _search;
             frontier = new SimplePriorityQueue<IPlan, float>();
@@ -26,6 +28,7 @@ namespace BoltFreezer.PlanSpace
 
         public PlanSpacePlanner(IPlan initialPlan)
         {
+            console_log = false;
             //heuristic = HeuristicType.AddReuseHeuristic;
             heuristic = new AddReuseHeuristic().Heuristic;
             search = SearchType.BestFirst;
@@ -39,6 +42,8 @@ namespace BoltFreezer.PlanSpace
             {
                 frontier.Enqueue(plan, EstimatePlan(plan));
             }
+            else
+                Console.WriteLine("CHeck");
         }
 
         public int EstimatePlan(IPlan plan)
@@ -48,7 +53,7 @@ namespace BoltFreezer.PlanSpace
             return cost + hEstimate;
         }
 
-        public List<IPlan> Solve(int k=4, float cutoff = 6000f)
+        public List<IPlan> Solve(int k, float cutoff)
         {
             if (search == SearchType.BestFirst)
             {
@@ -66,17 +71,27 @@ namespace BoltFreezer.PlanSpace
                 return null;
         }
 
-        public List<IPlan> BestFirst(int k=4, float cutoff=6000f)
+        public List<IPlan> BestFirst(int k, float cutoff)
         {
             var Solutions = new List<IPlan>();
 
             //var t0 = Time.time;
+            if (frontier.Count == 0)
+            {
+                Console.WriteLine("check");
+            }
 
             while (frontier.Count > 0)
             {
                 var plan = frontier.Dequeue();
 
                 var flaw = plan.Flaws.Next();
+
+                if (console_log)
+                {
+                    Console.WriteLine(plan);
+                    Console.WriteLine(flaw);
+                }
 
                 // Termination criteria
                 if (flaw == null)
@@ -105,7 +120,7 @@ namespace BoltFreezer.PlanSpace
             return null;
         }
 
-        public List<IPlan> DFS(int k=4, float cutoff = 6000f)
+        public List<IPlan> DFS(int k, float cutoff)
         {
             var Solutions = new List<IPlan>();
             var Unexplored = new Stack<IPlan>();
@@ -149,7 +164,7 @@ namespace BoltFreezer.PlanSpace
             return null;
         }
 
-        public List<IPlan> BFS(int k = 4, float cutoff = 6000f)
+        public List<IPlan> BFS(int k, float cutoff)
         {
             var Solutions = new List<IPlan>();
             var Unexplored = new Queue<IPlan>();
@@ -195,21 +210,31 @@ namespace BoltFreezer.PlanSpace
 
         public void AddStep(IPlan plan, OpenCondition oc)
         {
-            foreach(var cndt in CacheMaps.CausalMap[oc.precondition])
+                
+            foreach(var cndt in CacheMaps.GetCndts(oc.precondition))
             {
                 var planClone = plan.Clone() as IPlan;
-                var newStep = cndt.Clone() as IOperator;
+                var newStep = new PlanStep(cndt.Clone() as IOperator);
                 planClone.Insert(newStep);
                 planClone.Repair(oc.step, oc.precondition, newStep);
+                planClone.DetectThreats(newStep);
                 Insert(planClone);
             }
         }
 
         public void Reuse(IPlan plan, OpenCondition oc)
         {
-            foreach(var step in plan.Steps)
+            // if repaired by initial state
+            if (plan.Initial.InState(oc.precondition))
             {
-                if (CacheMaps.CausalMap[oc.precondition].Contains(step)){
+                var planClone = plan.Clone() as IPlan;
+                planClone.Repair(oc.step, oc.precondition, planClone.InitialStep);
+                Insert(planClone);
+            }
+
+            foreach (var step in plan.Steps)
+            {
+                if (CacheMaps.IsCndt(oc.precondition, step)){
                     var planClone = plan.Clone() as IPlan;
                     planClone.Repair(oc.step, oc.precondition, step);
                     Insert(planClone);

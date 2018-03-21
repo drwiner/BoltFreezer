@@ -28,6 +28,12 @@ namespace BoltFreezer.Utilities
             this.MinOrMax = type;
         }
 
+        public Heap(HeapType type, List<T> existingList)
+        {
+            items = existingList;
+            this.MinOrMax = type;
+        }
+
         public List<T> ToList()
         {
             return items;

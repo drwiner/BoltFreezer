@@ -18,28 +18,35 @@ namespace BoltFreezer.Interfaces
         //Problem Problem { get; set; }
 
         // Plans have an ordered list of steps.
-        List<IOperator> Steps { get; set; }
+        List<IPlanStep> Steps { get; set; }
 
         // Ordering Graph
-        Graph<IOperator> Orderings { get; set; }
+        Graph<IPlanStep> Orderings { get; set; }
 
         // CausalLinkGraph
-        ICausalLinkGraph CausalLinks { get; set; }
+        List<CausalLink<IPlanStep>> CausalLinks { get; set; }
 
         // The plan will have an initial state.
         IState Initial { get; set; }
 
+        IPlanStep InitialStep { get; }
+
         // The plan will have a goal state.
         IState Goal { get; set; }
+
+        IPlanStep GoalStep { get; }
 
         // Keep track of flaws in each plan.
         Flawque Flaws { get; set; }
 
         // Insert step
-        void Insert(IOperator newStep);
+        void Insert(IPlanStep newStep);
 
-        // Repair Condition
-        void Repair(IOperator needStep, IPredicate needPrecond, IOperator repairStep);
+        // Repair Condition; also checks if this new causal link is threatened
+        void Repair(IPlanStep needStep, IPredicate needPrecond, IPlanStep repairStep);
+
+        // Detect threats for this specific step
+        void DetectThreats(IPlanStep newStep);
 
         // The plan can be cloned.
         Object Clone();

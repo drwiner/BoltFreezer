@@ -1,4 +1,3 @@
-D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\TestFreezer\obj\x64\Debug\TestFreezer.csprojResolveAssemblyReference.cache
 D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\TestFreezer\obj\x64\Debug\TestFreezer.csproj.CoreCompileInputs.cache
 D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\TestFreezer\bin\x64\Debug\TestFreezer.exe.config
 D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\TestFreezer\bin\x64\Debug\TestFreezer.exe
@@ -8,3 +7,4 @@ D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\TestFreezer\bin\x64\Deb
 D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\TestFreezer\bin\x64\Debug\BoltFreezer.dll.config
 D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\TestFreezer\obj\x64\Debug\TestFreezer.exe
 D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\TestFreezer\obj\x64\Debug\TestFreezer.pdb
+D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\TestFreezer\obj\x64\Debug\TestFreezer.csprojResolveAssemblyReference.cache

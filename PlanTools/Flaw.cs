@@ -16,7 +16,7 @@ namespace BoltFreezer.PlanTools
     public class OpenCondition : IComparable<OpenCondition>, IFlaw
     {
         public IPredicate precondition;
-        public IOperator step;
+        public IPlanStep step;
         public bool isStatic = false;
         public bool isInit = false;
         public int risks = 0;
@@ -31,10 +31,10 @@ namespace BoltFreezer.PlanTools
         public OpenCondition ()
         {
             precondition = new Predicate();
-            step = new Operator();
+            step = new PlanStep();
         }
 
-        public OpenCondition (IPredicate precondition, IOperator step)
+        public OpenCondition (IPredicate precondition, IPlanStep step)
         {
             this.precondition = precondition;
             this.step = step;
@@ -111,11 +111,13 @@ namespace BoltFreezer.PlanTools
 
         public OpenCondition Clone()
         {
-            var oc = new OpenCondition(precondition.Clone() as IPredicate, step.Clone() as IOperator);
-            oc.risks = risks;
-            oc.isInit = isInit;
-            oc.isStatic = isStatic;
-            oc.cndts = cndts;
+            var oc = new OpenCondition(precondition.Clone() as IPredicate, step.Clone() as IPlanStep)
+            {
+                risks = risks,
+                isInit = isInit,
+                isStatic = isStatic,
+                cndts = cndts
+            };
             return oc;
         }
     }
@@ -123,16 +125,16 @@ namespace BoltFreezer.PlanTools
     [Serializable]
     public class ThreatenedLinkFlaw : IComparable<ThreatenedLinkFlaw>, IFlaw
     {
-        public CausalLink causallink;
-        public IOperator threatener;
+        public CausalLink<IPlanStep> causallink;
+        public IPlanStep threatener;
 
         public ThreatenedLinkFlaw()
         {
-            causallink = new CausalLink();
-            threatener = new Operator() as IOperator;
+            causallink = new CausalLink<IPlanStep>();
+            threatener = new Operator() as IPlanStep;
         }
 
-        public ThreatenedLinkFlaw(CausalLink _causallink, IOperator _threat)
+        public ThreatenedLinkFlaw(CausalLink<IPlanStep> _causallink, IPlanStep _threat)
         {
             this.causallink = _causallink;
             this.threatener = _threat;
@@ -194,8 +196,8 @@ namespace BoltFreezer.PlanTools
 
         public ThreatenedLinkFlaw Clone()
         {
-            var cl = causallink.Clone() as CausalLink;
-            var thrt = threatener.Clone() as IOperator;
+            var cl = causallink.Clone() as CausalLink<IPlanStep>;
+            var thrt = threatener.Clone() as IPlanStep;
             return new ThreatenedLinkFlaw(cl, thrt);
         }
     }

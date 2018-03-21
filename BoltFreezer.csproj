@@ -84,10 +84,10 @@
     <Compile Include="Interfaces\IDependency.cs" />
     <Compile Include="Interfaces\IDomain.cs" />
     <Compile Include="Interfaces\IFlaw.cs" />
-    <Compile Include="Interfaces\IGraph.cs" />
     <Compile Include="Interfaces\IHeuristic.cs" />
     <Compile Include="Interfaces\IIntention.cs" />
     <Compile Include="Interfaces\IMediationEdge.cs" />
+    <Compile Include="Interfaces\IPlanStep.cs" />
     <Compile Include="Interfaces\IObject.cs" />
     <Compile Include="Interfaces\IOperator.cs" />
     <Compile Include="Interfaces\IPlan.cs" />
@@ -100,7 +100,7 @@
     <Compile Include="PlanSpace\PlanSpacePlanner.cs" />
     <Compile Include="PlanTools\Axiom.cs" />
     <Compile Include="PlanTools\CausalLink.cs" />
-    <Compile Include="PlanTools\CausalLinkGraph.cs" />
+    <Compile Include="PlanTools\PlanStep.cs" />
     <Compile Include="PlanTools\Domain.cs" />
     <Compile Include="PlanTools\Flaw.cs" />
     <Compile Include="PlanTools\Flawque.cs" />
@@ -109,7 +109,6 @@
     <Compile Include="PlanTools\Intention.cs" />
     <Compile Include="PlanTools\Obj.cs" />
     <Compile Include="PlanTools\Operator.cs" />
-    <Compile Include="PlanTools\OrderingGraph.cs" />
     <Compile Include="PlanTools\Plan.cs" />
     <Compile Include="PlanTools\Predicate.cs" />
     <Compile Include="PlanTools\Problem.cs" />

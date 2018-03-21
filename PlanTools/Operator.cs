@@ -18,12 +18,15 @@ namespace BoltFreezer.PlanTools
         private IPredicate predicate;
         private List<IPredicate> preconditions;
         private List<IPredicate> effects;
+
+        private int id;
+        private Hashtable bindings;
+
+        // use these do I?
         private List<IAxiom> conditionals;
         private List<ITerm> consenting;
         private List<IPredicate> exceptionalEffects;
-        private int id;
 
-        private Hashtable bindings;
 
         // Access the operator's predicate.
         public IPredicate Predicate
@@ -196,6 +199,7 @@ namespace BoltFreezer.PlanTools
             exceptionalEffects = new List<IPredicate>();
         }
 
+
         public Operator(string name, List<ITerm> terms, Hashtable bindings, List<IPredicate> preconditions, List<IPredicate> effects, List<IAxiom> conditionals, int id)
         {
             this.predicate = new Predicate(name, terms, true);
@@ -205,7 +209,7 @@ namespace BoltFreezer.PlanTools
             this.bindings = bindings;
             this.id = id;
             consenting = new List<ITerm>();
-            exceptionalEffects = new List<IPredicate>();
+            exceptionalEffects = new List<IPredicate>(); 
         }
 
         // Updates terms from a bindings table.
@@ -342,7 +346,6 @@ namespace BoltFreezer.PlanTools
             Bindings = newBindings;
         }
 
-
         // Return the term at the nth position.
         public string TermAt(int position)
         {
@@ -392,7 +395,7 @@ namespace BoltFreezer.PlanTools
         public override bool Equals(Object obj)
         {
             // Store the object as a state space action.
-            Operator action = obj as Operator;
+            var action = obj as Operator;
 
             // If the predicates are equal...
             if (action.Predicate.Equals(Predicate))
