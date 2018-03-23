@@ -10,3 +10,4 @@ D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\bin\x64\Release\BoltFr
 D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\obj\x64\Release\BoltFreezer.csproj.CoreCompileInputs.cache
 D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\obj\x64\Release\BoltFreezer.dll
 D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\obj\x64\Release\BoltFreezer.pdb
+D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x64\Release\BoltFreezer.csprojResolveAssemblyReference.cache

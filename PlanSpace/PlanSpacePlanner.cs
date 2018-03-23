@@ -229,6 +229,10 @@ namespace BoltFreezer.PlanSpace
                 
             foreach(var cndt in CacheMaps.GetCndts(oc.precondition))
             {
+                // only possible for some cndtmaps
+                if (cndt.ID == plan.InitialStep.Action.ID)
+                    continue;
+
                 var planClone = plan.Clone() as IPlan;
                 var newStep = new PlanStep(cndt.Clone() as IOperator);
                 planClone.Insert(newStep);

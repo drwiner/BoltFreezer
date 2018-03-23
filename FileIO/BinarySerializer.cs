@@ -30,6 +30,7 @@ namespace BoltFreezer.FileIO
             }
             return default(T);
         }
+ 
 
         public static Stream WaitForFile(string fullPath, FileMode mode)
         {

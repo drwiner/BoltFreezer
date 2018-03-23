@@ -106,6 +106,18 @@ namespace BoltFreezer.PlanTools
             goalStep = new PlanStep(new Operator("goal", goal.Predicates, new List<IPredicate>()));
         }
 
+        public Plan(Operator _initial, Operator _goal)
+        {
+            steps = new List<IPlanStep>();
+            causalLinks = new List<CausalLink<IPlanStep>>();
+            orderings = new Graph<IPlanStep>();
+            flaws = new Flawque();
+            initial = new State(_initial.Preconditions);
+            goal = new State(_goal.Preconditions);
+            initialStep = new PlanStep(_initial);
+            goalStep = new PlanStep(_goal);
+        }
+
         // Used when cloning a plan: <S, O, L>, F
         public Plan(List<IPlanStep> steps, IState initial, IState goal, IPlanStep initialStep, IPlanStep goalStep, Graph<IPlanStep> orderings, List<CausalLink<IPlanStep>> causalLinks, Flawque flaws)
         {
