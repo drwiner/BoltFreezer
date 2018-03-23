@@ -18,3 +18,13 @@ D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\TestFreezer\obj\x64\Re
 D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\TestFreezer\obj\x64\Release\TestFreezer.csproj.CoreCompileInputs.cache
 D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\TestFreezer\obj\x64\Release\TestFreezer.exe
 D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\TestFreezer\obj\x64\Release\TestFreezer.pdb
+D:\Documents\Frostbow\boltfreezer\TestFreezer\bin\x64\Release\TestFreezer.exe.config
+D:\Documents\Frostbow\boltfreezer\TestFreezer\bin\x64\Release\TestFreezer.exe
+D:\Documents\Frostbow\boltfreezer\TestFreezer\bin\x64\Release\TestFreezer.pdb
+D:\Documents\Frostbow\boltfreezer\TestFreezer\bin\x64\Release\BoltFreezer.dll
+D:\Documents\Frostbow\boltfreezer\TestFreezer\bin\x64\Release\BoltFreezer.pdb
+D:\Documents\Frostbow\boltfreezer\TestFreezer\bin\x64\Release\BoltFreezer.dll.config
+D:\Documents\Frostbow\boltfreezer\TestFreezer\obj\x64\Release\TestFreezer.csprojResolveAssemblyReference.cache
+D:\Documents\Frostbow\boltfreezer\TestFreezer\obj\x64\Release\TestFreezer.csproj.CoreCompileInputs.cache
+D:\Documents\Frostbow\boltfreezer\TestFreezer\obj\x64\Release\TestFreezer.exe
+D:\Documents\Frostbow\boltfreezer\TestFreezer\obj\x64\Release\TestFreezer.pdb

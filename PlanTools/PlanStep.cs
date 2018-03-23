@@ -11,6 +11,7 @@ namespace BoltFreezer.PlanTools
         private static int Counter = -1;
         private IOperator action;
         private List<IPredicate> openConditions;
+        private int depth = 0;
 
         private int id;
 
@@ -23,6 +24,18 @@ namespace BoltFreezer.PlanTools
         public int ID
         {
             get { return id; }
+        }
+
+        public int Height
+        {
+            get { return Action.Height; }
+            set { Action.Height = value; }
+        }
+
+        public int Depth
+        {
+            get { return depth; }
+            set { depth = value; }
         }
 
         // Access the operator's preconditions.

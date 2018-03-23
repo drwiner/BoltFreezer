@@ -1,9 +1,11 @@
 ﻿using BoltFreezer.Enums;
 using BoltFreezer.Interfaces;
 using BoltFreezer.PlanTools;
+using BoltFreezer.Utilities;
 using Priority_Queue;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace BoltFreezer.PlanSpace
 {
@@ -13,6 +15,10 @@ namespace BoltFreezer.PlanSpace
         private Func<IPlan, int> heuristic;
         private SearchType search;
         private bool console_log;
+        private int opened, expanded = 0;
+        public int problemNumber;
+        public string directory;
+        public HeuristicType heuristicType;
 
         // TODO: keep track of plan-space search tree and not just frontier
         //private List<PlanSpaceEdge> PlanSpaceGraph;
@@ -41,6 +47,7 @@ namespace BoltFreezer.PlanSpace
             if (!plan.Orderings.HasCycle())
             {
                 frontier.Enqueue(plan, EstimatePlan(plan));
+                opened++;
             }
             else
                 Console.WriteLine("CHeck");
@@ -75,6 +82,10 @@ namespace BoltFreezer.PlanSpace
         {
             var Solutions = new List<IPlan>();
 
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            //
+            //var elapsedMs = watch.ElapsedMilliseconds;
+            //Console.Write(elapsedMs);
             //var t0 = Time.time;
             if (frontier.Count == 0)
             {
@@ -84,7 +95,7 @@ namespace BoltFreezer.PlanSpace
             while (frontier.Count > 0)
             {
                 var plan = frontier.Dequeue();
-
+                expanded++;
                 var flaw = plan.Flaws.Next();
 
                 if (console_log)
@@ -96,16 +107,26 @@ namespace BoltFreezer.PlanSpace
                 // Termination criteria
                 if (flaw == null)
                 {
+                    watch.Stop();
+                    var elapsedMs = watch.ElapsedMilliseconds;
                     Solutions.Add(plan);
                     if (Solutions.Count >= k)
                     {
                         if (console_log)
                         {
-                            Console.Write(plan.ToStringOrdered());
+                            //Console.Write(plan.ToStringOrdered());
                         }
+                        WriteToFile(elapsedMs, plan as Plan);
+                        
                         return Solutions;
                     }
                     continue;
+                }
+
+                if (watch.ElapsedMilliseconds > cutoff)
+                {
+                    watch.Stop();
+                    WriteToFile(watch.ElapsedMilliseconds, plan as Plan);
                 }
 
                 if (flaw.Ftype == Enums.FlawType.Link)
@@ -126,6 +147,7 @@ namespace BoltFreezer.PlanSpace
 
         public List<IPlan> DFS(int k, float cutoff)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             var Solutions = new List<IPlan>();
             var Unexplored = new Stack<IPlan>();
             var initialPlan = frontier.Dequeue();
@@ -133,7 +155,7 @@ namespace BoltFreezer.PlanSpace
             while (Unexplored.Count > 0)
             {
                 var plan = Unexplored.Pop();
-
+                expanded++;
                 var flaw = plan.Flaws.Next();
 
                 if (console_log)
@@ -145,12 +167,21 @@ namespace BoltFreezer.PlanSpace
                 // Termination criteria
                 if (flaw == null)
                 {
+                    watch.Stop();
+                    var elapsedMs = watch.ElapsedMilliseconds;
                     Solutions.Add(plan);
                     if (Solutions.Count >= k)
                     {
+                        WriteToFile(elapsedMs, plan as Plan);
                         return Solutions;
                     }
                     continue;
+                }
+
+                if (watch.ElapsedMilliseconds > cutoff)
+                {
+                    watch.Stop();
+                    WriteToFile(watch.ElapsedMilliseconds, plan as Plan);
                 }
 
                 if (flaw.Ftype == Enums.FlawType.Link)
@@ -176,6 +207,7 @@ namespace BoltFreezer.PlanSpace
 
         public List<IPlan> BFS(int k, float cutoff)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             var Solutions = new List<IPlan>();
             var Unexplored = new Queue<IPlan>();
             var initialPlan = frontier.Dequeue();
@@ -183,7 +215,7 @@ namespace BoltFreezer.PlanSpace
             while (Unexplored.Count > 0)
             {
                 var plan = Unexplored.Dequeue();
-
+                expanded++;
                 var flaw = plan.Flaws.Next();
 
                 if (console_log)
@@ -195,12 +227,23 @@ namespace BoltFreezer.PlanSpace
                 // Termination criteria
                 if (flaw == null)
                 {
+                    watch.Stop();
+                    var elapsedMs = watch.ElapsedMilliseconds;
                     Solutions.Add(plan);
                     if (Solutions.Count >= k)
                     {
+                        WriteToFile(elapsedMs, plan as Plan);
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
                         return Solutions;
                     }
                     continue;
+                }
+
+                if (watch.ElapsedMilliseconds > cutoff)
+                {
+                    watch.Stop();
+                    WriteToFile(watch.ElapsedMilliseconds, plan as Plan);
                 }
 
                 if (flaw.Ftype == Enums.FlawType.Link)
@@ -229,8 +272,15 @@ namespace BoltFreezer.PlanSpace
                 
             foreach(var cndt in CacheMaps.GetCndts(oc.precondition))
             {
-                // only possible for some cndtmaps
+                if (cndt == null)
+                    continue;
+                // only possible for reading in python json
                 if (cndt.ID == plan.InitialStep.Action.ID)
+                    continue;
+                // same with above: cannot insert a dummy step. These will get inserted when composite step is inserted.
+                if (cndt.Name.Split(':')[0].Equals("begin") || cndt.Name.Split(':')[0].Equals("finish"))
+                    continue;
+                if (cndt.Height > 0)
                     continue;
 
                 var planClone = plan.Clone() as IPlan;
@@ -288,6 +338,34 @@ namespace BoltFreezer.PlanSpace
                 Insert(demote);
             }
 
+        }
+
+        public void WriteToFile(long elapsedMs, Plan plan) {
+            var primitives = plan.Steps.FindAll(step => step.Height == 0).Count;
+            var composites = plan.Steps.FindAll(step => step.Height > 0).Count;
+            var decomps = plan.Decomps;
+            var namedData = new List<Tuple<string, string>>
+                        {
+                            new Tuple<string, string>("problem", problemNumber.ToString()),
+                            new Tuple<string, string>("heuristic", heuristicType.ToString()),
+                            new Tuple<string, string>("search", search.ToString()),
+                            new Tuple<string,string>("runtime", elapsedMs.ToString()),
+                            new Tuple<string, string>("opened", opened.ToString()),
+                            new Tuple<string, string>("expanded", expanded.ToString()),
+                            new Tuple<string, string>("primitives", primitives.ToString() ),
+                            new Tuple<string, string>("decomps", decomps.ToString() ),
+                            new Tuple<string, string>("composites", composites.ToString() ),
+                            new Tuple<string, string>("hdepth", plan.Hdepth.ToString() )
+                        };
+
+            var file = directory + problemNumber.ToString() + "-" + search.ToString() + "-" + heuristicType.ToString() + ".txt";
+            using (StreamWriter writer = new StreamWriter(file, false))
+            {
+                foreach (Tuple<string, string> dataItem in namedData)
+                {
+                    writer.WriteLine(dataItem.First + "\t" + dataItem.Second);
+                }
+            }
         }
 
 

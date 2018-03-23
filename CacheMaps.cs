@@ -21,8 +21,8 @@ namespace BoltFreezer.PlanTools
         public static IEnumerable<IOperator> GetCndts(IPredicate pred)
         {
             if (CausalMap.ContainsKey(pred))
-                return CausalMap[pred].Select(intID => GroundActionFactory.GroundLibrary[intID]);
-            //return from intID in CausalMap[pred] select GroundActionFactory.GroundLibrary[intID];
+                return from intID in CausalMap[pred] select GroundActionFactory.GroundLibrary[intID];
+
             return new List<IOperator>();
         }
 

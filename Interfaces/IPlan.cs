@@ -39,6 +39,10 @@ namespace BoltFreezer.Interfaces
         // Keep track of flaws in each plan.
         Flawque Flaws { get; set; }
 
+        int Decomps { get; set; }
+
+        int Hdepth { get; set; }
+
         // Insert step
         void Insert(IPlanStep newStep);
 

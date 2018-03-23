@@ -21,6 +21,8 @@ namespace BoltFreezer.PlanTools
         private Graph<IPlanStep> orderings;
         private List<CausalLink<IPlanStep>> causalLinks;
         private Flawque flaws;
+        private int decomps;
+        private int hdepth;
 
         // Access the plan's steps.
         public List<IPlanStep> Steps
@@ -48,6 +50,18 @@ namespace BoltFreezer.PlanTools
         {
             get { return flaws; }
             set { Flaws = value;  }
+        }
+
+        public int Decomps
+        {
+            get { return decomps; }
+            set { decomps = value; }
+        }
+
+        public int Hdepth
+        {
+            get { return hdepth; }
+            set { hdepth = value; }
         }
 
         // Access the plan's initial step.
@@ -112,7 +126,7 @@ namespace BoltFreezer.PlanTools
             causalLinks = new List<CausalLink<IPlanStep>>();
             orderings = new Graph<IPlanStep>();
             flaws = new Flawque();
-            initial = new State(_initial.Preconditions);
+            initial = new State(_initial.Effects);
             goal = new State(_goal.Preconditions);
             initialStep = new PlanStep(_initial);
             goalStep = new PlanStep(_goal);
@@ -133,6 +147,18 @@ namespace BoltFreezer.PlanTools
 
         public void Insert(IPlanStep newStep)
         {
+            if (newStep.Height > 0)
+            {
+                InsertDecomp(newStep);
+            }
+            else
+            {
+                InsertPrimitive(newStep);
+            }
+        }
+
+        public void InsertPrimitive(IPlanStep newStep)
+        {
             steps.Add(newStep);
             orderings.Insert(InitialStep, newStep);
             orderings.Insert(newStep, GoalStep);
@@ -144,7 +170,11 @@ namespace BoltFreezer.PlanTools
             }
 
             // Don't check for threats when inserting.
+        }
 
+        public void InsertDecomp(IPlanStep newStep)
+        {
+            decomps += 1;
         }
 
         public IPlanStep Find(IPlanStep stepClonedFromOpenCondition)

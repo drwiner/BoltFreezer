@@ -16,6 +16,8 @@ namespace BoltFreezer.Interfaces
         // Action predicates have a name.
         string Name { get; set; }
 
+        int Height { get; set; }
+
         // Action predicates have terms.
         List<ITerm> Terms { get; set; }
 

@@ -15,6 +15,7 @@ namespace BoltFreezer.PlanTools
     {
         private static int Counter = -1;
 
+        private int height;
         private IPredicate predicate;
         private List<IPredicate> preconditions;
         private List<IPredicate> effects;
@@ -31,6 +32,12 @@ namespace BoltFreezer.PlanTools
         public static void SetCounterExternally(int newVal)
         {
             Counter = newVal;
+        }
+
+        public int Height
+        {
+            get { return height; }
+            set { height = value; }
         }
 
         // Access the operator's predicate.

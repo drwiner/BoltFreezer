@@ -81,8 +81,8 @@ namespace TestFreezer
             for (int i = 0; i < jsontermlist.Count; i++)
             {
                 var jsonterm = jsontermlist[i] as JsonObject;
-                var name = jsonterm["Name"] as string;
-                var _type = jsonterm["Types"] as string;
+                var name = jsonterm["Name"].ToString();
+                var _type = jsonterm["Types"].ToString();
                 var term = new Term(i.ToString(), name, _type);
                 Terms.Add(term);
             }
@@ -92,17 +92,17 @@ namespace TestFreezer
         
         public static Predicate JsonPreconToPrecon(JsonObject jsonPrecon)
         {
-            var Name = jsonPrecon["name"] as string;
+            var Name = jsonPrecon["name"].ToString();
             var Terms = JsonTermListtoTerms(jsonPrecon["Terms"] as JsonArray);
-            var sign = jsonPrecon["Sign"] as string;
+            var sign = jsonPrecon["Sign"].ToString();
             bool Sign = false;
-            if (Sign.Equals("true"))
+            if (sign.Equals("True"))
             {
                 Sign = true;
             }
 
             var newPredicate = new Predicate(Name, Terms, Sign);
-            if (jsonPrecon["Static"].Equals("true"))
+            if (jsonPrecon["Static"].ToString().Equals("True"))
             {
                 GroundActionFactory.Statics.Add(newPredicate);
             }
@@ -149,8 +149,12 @@ namespace TestFreezer
         public static Plan DeserializeJsonTravelDomain(int whichOne)
         {
             //var problemFile = @"D:\Unity projects\BoltFreezer\travel_domain.travel\travel_domain.travel\1\1.json";
-            var problemFile = @"D:\Unity projects\BoltFreezer\travel_domain.travel\travel_domain.travel\" + whichOne.ToString() + @"\" + whichOne.ToString() + @".json";
+            var problemFile = @"D:\Documents\workspace\travel_domain.travel\" + whichOne.ToString() + @"\" + whichOne.ToString() + @".json";
+            //var problemFile = @"D:\Unity projects\BoltFreezer\travel_domain.travel\travel_domain.travel\" + whichOne.ToString() + @"\" + whichOne.ToString() + @".json";
             //problemFile
+
+            var travelProblem = Parser.GetProblem(@"D:\Documents\workspace\travel_domain.travel\" + whichOne.ToString() + @"\travel-" + whichOne.ToString() + @".pddl");
+
             var problemText = System.IO.File.ReadAllText(problemFile);
 
             var jsonArray = SimpleJson.DeserializeObject(problemText) as JsonArray;
@@ -168,9 +172,11 @@ namespace TestFreezer
             {
                 // ID, Name, Terms, Preconditions, Effects
                 var ID = jsonObject["ID"];
-                var Name = jsonObject["Name"] as string;
+                var Name = jsonObject["Name"].ToString();
                 var Terms = JsonTermListtoTerms(jsonObject["Terms"] as JsonArray);
-                var Preconditions = JsonPreconditionsToPreconditions(jsonObject["Preconditions"] as JsonArray);
+                var Preconditions = JsonPreconditionsToPreconditions(jsonObject["Preconditions"] as JsonArray) as List<IPredicate>;
+                var Effects = new List<IPredicate>();
+                var Height = int.Parse(jsonObject["height"].ToString());
                 if (Name.Equals("dummy_goal"))
                 {
                     Name = "goal";
@@ -178,8 +184,14 @@ namespace TestFreezer
                 if (Name.Equals("dummy_init"))
                 {
                     Name = "initial";
+                    Effects = travelProblem.Initial;
+                    Preconditions = new List<IPredicate>();
                 }
-                var Action = new Operator(Name, Terms, new Hashtable(), Preconditions as List<IPredicate>, new List<IPredicate>());
+                var Action = new Operator(Name, Terms, new Hashtable(), Preconditions, Effects, int.Parse(ID.ToString()))
+                {
+                    Height = Height
+                };
+
                 if (Name.Equals("goal"))
                     goalOp = Action;
                 else if (Name.Equals("initial"))
@@ -188,6 +200,7 @@ namespace TestFreezer
                     GroundActionFactory.GroundActions.Add(Action);
                     GroundActionFactory.GroundLibrary[Action.ID] = Action;
                 }
+
                 if (jsonObject.ContainsKey("CausalMap"))
                 {
                     var CausalMap = jsonObject["CausalMap"] as JsonObject;
@@ -198,17 +211,8 @@ namespace TestFreezer
                         {
                             var intList = new List<object>();
                             var jsonList = keyvalue.Value as JsonArray;
-                            
-                            //foreach (var item in jsonList)
-                            //{
-                            //    intList.Add(item);
-                            //    //Console.WriteLine("stop");
-                            //    //item
-                            //    //intList.Add(item);
-                            //}
                             var enumItems = from item in jsonList select int.Parse(item.ToString());
                             CacheMaps.CausalMap[predKey] = enumItems.ToList() as List<int>;
-                                //keyvalue.Value as List<int>;
                         }
                         
                     }
@@ -230,6 +234,9 @@ namespace TestFreezer
                                 
             }
 
+            GroundActionFactory.GroundLibrary[initialOp.ID] = null;
+            GroundActionFactory.GroundLibrary[goalOp.ID] = null;
+
             Operator.SetCounterExternally(GroundActionFactory.GroundActions.Count + 1);
 
             var plan = new Plan(initialOp, goalOp);
@@ -244,25 +251,66 @@ namespace TestFreezer
         }
 
 
-        public static void RunAddReusePop(IPlan initialPlan)
+        public static void RunAddReusePop(IPlan initialPlan, string directoryToSaveTo, int problem)
         {
             Console.WriteLine("First POP");
-            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new AddReuseHeuristic().Heuristic, true);
-            var bestFirstSolutions = AStarPOP.Solve(1, 6000f);
+            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new AddReuseHeuristic().Heuristic, true)
+            {
+                directory = directoryToSaveTo,
+                problemNumber = problem,
+                heuristicType = HeuristicType.AddReuseHeuristic
+            };
+            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
             Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
         }
 
-        public static void RunBFSPOP(IPlan initialPlan)
+        public static void RunNumOCsPOP(IPlan initialPlan, string directoryToSaveTo, int problem)
         {
-            var BFSPOP = new PlanSpacePlanner(initialPlan, SearchType.BFS, new ZeroHeuristic().Heuristic, true);
-            var BFSSolutions = BFSPOP.Solve(1, 6000f);
+            Console.WriteLine("First POP");
+            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new NumOpenConditionsHeuristic().Heuristic, true)
+            {
+                directory = directoryToSaveTo,
+                problemNumber = problem,
+                heuristicType = HeuristicType.NumOCsHeuristic
+            };
+            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
+            Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        }
+
+        public static void RunBestFirstZeroPOP(IPlan initialPlan, string directoryToSaveTo, int problem)
+        {
+            Console.WriteLine("First POP");
+            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new ZeroHeuristic().Heuristic, true)
+            {
+                directory = directoryToSaveTo,
+                problemNumber = problem,
+                heuristicType = HeuristicType.ZeroHeuristic
+            };
+            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
+            Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        }
+
+        public static void RunBFSPOP(IPlan initialPlan, string directoryToSaveTo, int problem)
+        {
+            var BFSPOP = new PlanSpacePlanner(initialPlan, SearchType.BFS, new ZeroHeuristic().Heuristic, true)
+            {
+                directory = directoryToSaveTo,
+                problemNumber = problem,
+                heuristicType = HeuristicType.ZeroHeuristic
+            };
+            var BFSSolutions = BFSPOP.Solve(1, 14400f);
             Console.WriteLine(BFSSolutions[0].ToStringOrdered());
         }
 
-        public static void RunDFSPop(IPlan initialPlan)
+        public static void RunDFSPop(IPlan initialPlan, string directoryToSaveTo, int problem)
         {
-            var DFSPOP = new PlanSpacePlanner(initialPlan, SearchType.DFS, new ZeroHeuristic().Heuristic, true);
-            var DFSSolutions = DFSPOP.Solve(1, 6000f);
+            var DFSPOP = new PlanSpacePlanner(initialPlan, SearchType.DFS, new ZeroHeuristic().Heuristic, true)
+            {
+                directory = directoryToSaveTo,
+                problemNumber = problem,
+                heuristicType = HeuristicType.ZeroHeuristic
+            };
+            var DFSSolutions = DFSPOP.Solve(1, 14400f);
             Console.WriteLine(DFSSolutions[0].ToStringOrdered());
         }
 
@@ -287,8 +335,16 @@ namespace TestFreezer
         {
 
             Console.Write("hello world\n");
-            var initPlan = DeserializeJsonTravelDomain(1);
-            RunAddReusePop(initPlan);
+
+            for (int i = 1; i < 9; i++)
+            {
+                var initPlan = DeserializeJsonTravelDomain(i);
+                RunAddReusePop(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                RunNumOCsPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                RunBestFirstZeroPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                RunBFSPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                RunDFSPop(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+            }
 
             //FreezeProblem(false, true);
             //Console.WriteLine("\nFinishedUNLoading!\n");
@@ -300,7 +356,7 @@ namespace TestFreezer
             //var elapsedMs = watch.ElapsedMilliseconds;
             //Console.Write(elapsedMs);
 
-            Console.WriteLine(Console.Read());
+            //Console.WriteLine(Console.Read());
 
         }
     }
