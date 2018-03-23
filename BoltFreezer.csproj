@@ -81,6 +81,8 @@
     <Compile Include="FileIO\Writer.cs" />
     <Compile Include="GroundActionFactory.cs" />
     <Compile Include="Interfaces\IAxiom.cs" />
+    <Compile Include="Interfaces\IComposite.cs" />
+    <Compile Include="Interfaces\ICompositePlanStep.cs" />
     <Compile Include="Interfaces\IDependency.cs" />
     <Compile Include="Interfaces\IDomain.cs" />
     <Compile Include="Interfaces\IFlaw.cs" />
@@ -100,6 +102,8 @@
     <Compile Include="PlanSpace\PlanSpacePlanner.cs" />
     <Compile Include="PlanTools\Axiom.cs" />
     <Compile Include="PlanTools\CausalLink.cs" />
+    <Compile Include="PlanTools\Composite.cs" />
+    <Compile Include="PlanTools\CompositePlanStep.cs" />
     <Compile Include="PlanTools\PlanStep.cs" />
     <Compile Include="PlanTools\Domain.cs" />
     <Compile Include="PlanTools\Flaw.cs" />

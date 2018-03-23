@@ -8,6 +8,7 @@ using BoltFreezer.FileIO;
 using BoltFreezer.Interfaces;
 using BoltFreezer.PlanSpace;
 using BoltFreezer.PlanTools;
+using BoltFreezer.Utilities;
 //using SimpleJSON;
 
 namespace TestFreezer
@@ -89,19 +90,67 @@ namespace TestFreezer
 
             return Terms;
         }
-        
-        public static Predicate JsonPreconToPrecon(JsonObject jsonPrecon)
+
+        public static List<int> IntListFromJsonArray(JsonArray jsonintlist)
         {
-            var Name = jsonPrecon["name"].ToString();
-            var Terms = JsonTermListtoTerms(jsonPrecon["Terms"] as JsonArray);
-            var sign = jsonPrecon["Sign"].ToString();
+            var enumItems = from item in jsonintlist select int.Parse(item.ToString());
+            return enumItems.ToList() as List<int>;
+        }
+
+        public static Tuple<IOperator, IOperator> IntTupleFromJsonArray(JsonArray jsonintlist)
+        {
+            var enumItems = from item in jsonintlist select GroundActionFactory.GroundLibrary[int.Parse(item.ToString())];
+            var intList = enumItems.ToList() as List<IOperator>;
+            return new Tuple<IOperator, IOperator>(intList[0], intList[1]);
+        }
+
+        public static List<Tuple<IOperator, IOperator>> IntTupleListFromJsonArray(JsonArray jsontuplelist)
+        {
+            var tupleList = new List<Tuple<IOperator, IOperator>>();
+            foreach (var jsonTuple in jsontuplelist)
+            {
+                var tupleItem = IntTupleFromJsonArray(jsonTuple as JsonArray);
+                tupleList.Add(tupleItem);
+            }
+            return tupleList;
+        }
+
+        public static CausalLink<IOperator> CausalLinkFromJsonArray(JsonArray jsonlink)
+        {
+            var pred = PredicateFromJsonObject(jsonlink[1] as JsonObject);
+            var source = GroundActionFactory.GroundLibrary[int.Parse(jsonlink[0].ToString())];
+            var sink = GroundActionFactory.GroundLibrary[int.Parse(jsonlink[2].ToString())];
+            return new CausalLink<IOperator>(pred, source, sink);
+        }
+
+        public static List<CausalLink<IOperator>> CausalLinksFromJsonArray(JsonArray jsoncausallinkslist)
+        {
+            var clinks = new List<CausalLink<IOperator>>();
+            foreach (var jsonlink in jsoncausallinkslist)
+            {
+                var clink = CausalLinkFromJsonArray(jsonlink as JsonArray);
+                clinks.Add(clink);
+            }
+            return clinks;
+        }
+
+        public static Predicate PredicateFromJsonObject(JsonObject jsonpredicate)
+        {
+            var Name = jsonpredicate["name"].ToString();
+            var Terms = JsonTermListtoTerms(jsonpredicate["Terms"] as JsonArray);
+            var sign = jsonpredicate["Sign"].ToString();
             bool Sign = false;
             if (sign.Equals("True"))
             {
                 Sign = true;
             }
 
-            var newPredicate = new Predicate(Name, Terms, Sign);
+            return new Predicate(Name, Terms, Sign);
+        }
+
+        public static Predicate JsonPreconToPrecon(JsonObject jsonPrecon)
+        {
+            var newPredicate = PredicateFromJsonObject(jsonPrecon);
             if (jsonPrecon["Static"].ToString().Equals("True"))
             {
                 GroundActionFactory.Statics.Add(newPredicate);
@@ -177,6 +226,7 @@ namespace TestFreezer
                 var Preconditions = JsonPreconditionsToPreconditions(jsonObject["Preconditions"] as JsonArray) as List<IPredicate>;
                 var Effects = new List<IPredicate>();
                 var Height = int.Parse(jsonObject["height"].ToString());
+                
                 if (Name.Equals("dummy_goal"))
                 {
                     Name = "goal";
@@ -187,18 +237,40 @@ namespace TestFreezer
                     Effects = travelProblem.Initial;
                     Preconditions = new List<IPredicate>();
                 }
-                var Action = new Operator(Name, Terms, new Hashtable(), Preconditions, Effects, int.Parse(ID.ToString()))
+
+                var action = new Operator(Name, Terms, new Hashtable(), Preconditions, Effects, int.Parse(ID.ToString()))
                 {
                     Height = Height
                 };
 
+                if (Height > 0)
+                {
+                    Console.Write("here");
+                    var init = GroundActionFactory.GroundLibrary[int.Parse(jsonObject["DummyInitial"].ToString())];
+                    var goal = GroundActionFactory.GroundLibrary[int.Parse(jsonObject["DummyGoal"].ToString())];
+                    var subSteps = new List<IOperator>();
+                    foreach(var intItem in IntListFromJsonArray(jsonObject["SubSteps"] as JsonArray))
+                    {
+                        var substep = GroundActionFactory.GroundLibrary[intItem] as IOperator;
+                        subSteps.Add(substep);
+                    }
+                    //var subSteps = from item in IntListFromJsonArray(jsonObject["SubSteps"] as JsonArray) select GroundActionFactory.GroundLibrary[item] as IOperator;
+                    var subOrderingTuples = IntTupleListFromJsonArray(jsonObject["SubOrderings"] as JsonArray);
+                    var subLinks = CausalLinksFromJsonArray(jsonObject["SubLinks"] as JsonArray);
+
+                    action = new Composite(action, init, goal, subSteps, subOrderingTuples, subLinks);
+
+                }
+
+                //Console.WriteLine(action.ToString() + "  " + action.Height);
+
                 if (Name.Equals("goal"))
-                    goalOp = Action;
+                    goalOp = action;
                 else if (Name.Equals("initial"))
-                    initialOp = Action;
+                    initialOp = action;
                 else {
-                    GroundActionFactory.GroundActions.Add(Action);
-                    GroundActionFactory.GroundLibrary[Action.ID] = Action;
+                    GroundActionFactory.GroundActions.Add(action);
+                    GroundActionFactory.GroundLibrary[action.ID] = action;
                 }
 
                 if (jsonObject.ContainsKey("CausalMap"))
@@ -209,10 +281,7 @@ namespace TestFreezer
                         var predKey = StringToPredicate(keyvalue.Key);
                         if (!CacheMaps.CausalMap.ContainsKey(predKey))
                         {
-                            var intList = new List<object>();
-                            var jsonList = keyvalue.Value as JsonArray;
-                            var enumItems = from item in jsonList select int.Parse(item.ToString());
-                            CacheMaps.CausalMap[predKey] = enumItems.ToList() as List<int>;
+                            CacheMaps.CausalMap[predKey] = IntListFromJsonArray(keyvalue.Value as JsonArray);
                         }
                         
                     }
@@ -262,6 +331,45 @@ namespace TestFreezer
             };
             var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
             Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        }
+
+        public static void RunAddReusePopE1(IPlan initialPlan, string directoryToSaveTo, int problem)
+        {
+            Console.WriteLine("First POP");
+            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new E1().Heuristic, true)
+            {
+                directory = directoryToSaveTo,
+                problemNumber = problem,
+                heuristicType = HeuristicType.E1
+            };
+            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
+            //Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        }
+
+        public static void RunAddReusePopE2(IPlan initialPlan, string directoryToSaveTo, int problem)
+        {
+            Console.WriteLine("First POP");
+            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new E2().Heuristic, true)
+            {
+                directory = directoryToSaveTo,
+                problemNumber = problem,
+                heuristicType = HeuristicType.E2
+            };
+            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
+            //Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        }
+
+        public static void RunAddReusePopE3(IPlan initialPlan, string directoryToSaveTo, int problem)
+        {
+            Console.WriteLine("First POP");
+            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new E3().Heuristic, true)
+            {
+                directory = directoryToSaveTo,
+                problemNumber = problem,
+                heuristicType = HeuristicType.E3
+            };
+            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
+            //Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
         }
 
         public static void RunNumOCsPOP(IPlan initialPlan, string directoryToSaveTo, int problem)
@@ -340,9 +448,12 @@ namespace TestFreezer
             {
                 var initPlan = DeserializeJsonTravelDomain(i);
                 //RunAddReusePop(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                //RunAddReusePopE1(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                RunAddReusePopE2(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                RunAddReusePopE3(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
                 //RunNumOCsPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
                 //RunBestFirstZeroPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
-                RunBFSPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                //RunBFSPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
                 //RunDFSPop(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
             }
 

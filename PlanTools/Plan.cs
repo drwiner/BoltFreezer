@@ -149,7 +149,8 @@ namespace BoltFreezer.PlanTools
         {
             if (newStep.Height > 0)
             {
-                InsertDecomp(newStep);
+                var ns = newStep as ICompositePlanStep;
+                InsertDecomp(ns);
             }
             else
             {
@@ -172,9 +173,131 @@ namespace BoltFreezer.PlanTools
             // Don't check for threats when inserting.
         }
 
-        public void InsertDecomp(IPlanStep newStep)
+        public void InsertDecomp(ICompositePlanStep newStep)
         {
             decomps += 1;
+            var IDMap = new Dictionary<int, IPlanStep>();
+            var dummyInit = new PlanStep(newStep.InitialStep.Clone() as IOperator);
+            IDMap[newStep.InitialStep.ID] = dummyInit;
+
+            
+            steps.Add(dummyInit);
+            orderings.Insert(InitialStep, dummyInit);
+            orderings.Insert(dummyInit, GoalStep);
+
+            var dummyGoal = new PlanStep(newStep.GoalStep.Clone() as IOperator);
+            Insert(dummyGoal);
+            IDMap[newStep.GoalStep.ID] = dummyGoal;
+            Orderings.Insert(dummyInit, dummyGoal);
+
+            // is this needed?
+            //var newStepCopy = newStep.Clone();
+            //newStepCopy.InitialStep = dummyInit;
+            //newStepCopy.GoalStep = dummyGoal;
+
+            var newSubSteps = new List<IPlanStep>();
+            
+            foreach (var substep in newStep.SubSteps)
+            {
+                if (substep.Height > 0)
+                {
+                    var compositeSubStep = new CompositePlanStep(substep.Clone() as IComposite)
+                    {
+                        Depth = newStep.Depth + 1
+                    };
+                    Insert(compositeSubStep);
+                    Orderings.Insert(compositeSubStep, dummyGoal);
+                    Orderings.Insert(dummyInit, compositeSubStep);
+                    IDMap[compositeSubStep.CompositeAction.ID] = compositeSubStep;
+                    newSubSteps.Add(compositeSubStep);
+                }
+                else
+                {
+                    var newsubstep = new PlanStep(substep.Clone() as IOperator)
+                    {
+                        Depth = newStep.Depth + 1
+                    };
+                    
+                    Insert(newsubstep);
+                    Orderings.Insert(newsubstep, dummyGoal);
+                    Orderings.Insert(dummyInit, newsubstep);
+                    IDMap[newsubstep.Action.ID] = newsubstep;
+                    newSubSteps.Add(newsubstep);
+                }
+                if (newStep.Depth + 1 > Hdepth)
+                {
+                    Hdepth = newStep.Depth + 1;
+                }
+
+            }
+            //var subOrderings = newStep.SubOre
+            foreach (var tupleOrdering in newStep.SubOrderings)
+            {
+                if (tupleOrdering.First.Name.Split(':')[0].Equals("begin") || tupleOrdering.First.Name.Split(':')[0].Equals("finish"))
+                    continue;
+                if (tupleOrdering.Second.Name.Split(':')[0].Equals("begin") || tupleOrdering.Second.Name.Split(':')[0].Equals("finish"))
+                    continue;
+                var head = IDMap[tupleOrdering.First.ID];
+                var tail = IDMap[tupleOrdering.Second.ID];
+                //if (head.Height > 0)
+                //{
+                //    var temp = head as ICompositePlanStep;
+                //    head = temp.GoalStep as IPlanStep;
+                //}
+                //if (tail.Height > 0)
+                //{
+                //    var temp = tail as ICompositePlanStep;
+                //    tail = temp.InitialStep as IPlanStep;
+                //}
+                Orderings.Insert(head, tail);
+            }
+
+            foreach (var clink in newStep.SubLinks)
+            {
+                var head = IDMap[clink.Head.ID];
+                var tail = IDMap[clink.Tail.ID];
+                if (head.Height > 0)
+                {
+                    var temp = head as CompositePlanStep;
+                    head = temp.GoalStep as IPlanStep;
+                }
+                if (tail.Height > 0)
+                {
+                    var temp = tail as CompositePlanStep;
+                    tail = temp.InitialStep as IPlanStep;
+                }
+                var newclink = new CausalLink<IPlanStep>(clink.Predicate, head, tail);
+                CausalLinks.Add(newclink);
+                foreach (var step in newSubSteps)
+                {
+                    if (step.ID == head.ID || step.ID == tail.ID)
+                    {
+                        continue;
+                    }
+                    if (!CacheMaps.IsThreat(clink.Predicate, step))
+                    {
+                        continue;
+                    }
+                    // step is a threat to need precondition
+                    if (Orderings.IsPath(head, step))
+                    {
+                        continue;
+                    }
+                    if (Orderings.IsPath(step, tail))
+                    {
+                        continue;
+                    }
+                    Flaws.Insert(new ThreatenedLinkFlaw(newclink, step));
+                }
+            }
+
+            foreach (var pre in newStep.OpenConditions)
+            {
+                Flaws.Insert(this, new OpenCondition(pre, dummyInit as IPlanStep));
+            }
+
+            //newStep.dummy
+
         }
 
         public IPlanStep Find(IPlanStep stepClonedFromOpenCondition)
@@ -192,6 +315,14 @@ namespace BoltFreezer.PlanTools
             }
             return Steps.Single(s => s.ID == stepClonedFromOpenCondition.ID);
         }
+
+        //public void DetectThreatsFromComposite(List<IPlanStep> possibleThreats)
+        //{
+        //    foreach (var pt in possibleThreats)
+        //    {
+        //        DetectThreats(pt);
+        //    }
+        //}
 
         public void DetectThreats(IPlanStep possibleThreat)
         {
@@ -218,9 +349,22 @@ namespace BoltFreezer.PlanTools
 
         public void Repair(OpenCondition oc, IPlanStep repairStep)
         {
+            if (repairStep.Height > 0)
+            {
+                RepairWithComposite(oc, repairStep as CompositePlanStep);
+            }
+            else
+            {
+                RepairWithPrimitive(oc, repairStep);
+            }
+        }
+
+        public void RepairWithPrimitive(OpenCondition oc, IPlanStep repairStep)
+        {
             // oc = <needStep, needPrecond>. Need to find needStep in plan, because open conditions have been mutated before arrival.
             var needStep = Find(oc.step);
-            needStep.Fulfill(oc.precondition);
+            if (!needStep.Name.Split(':')[0].Equals("begin") && !needStep.Name.Split(':')[0].Equals("finish"))
+                needStep.Fulfill(oc.precondition);
 
             orderings.Insert(repairStep, needStep);
             var clink = new CausalLink<IPlanStep>(oc.precondition as Predicate, repairStep, needStep);
@@ -242,6 +386,40 @@ namespace BoltFreezer.PlanTools
                     continue;
                 }
                 if (Orderings.IsPath(step, repairStep))
+                {
+                    continue;
+                }
+                Flaws.Insert(new ThreatenedLinkFlaw(clink, step));
+            }
+        }
+
+        public void RepairWithComposite(OpenCondition oc, CompositePlanStep repairStep)
+        {
+            // oc = <needStep, needPrecond>. Need to find needStep in plan, because open conditions have been mutated before arrival.
+            var needStep = Find(oc.step);
+            if (!needStep.Name.Split(':')[0].Equals("begin") && !needStep.Name.Split(':')[0].Equals("finish"))
+                needStep.Fulfill(oc.precondition);
+            
+            orderings.Insert(repairStep.GoalStep as IPlanStep, needStep);
+            var clink = new CausalLink<IPlanStep>(oc.precondition as Predicate, repairStep.GoalStep as IPlanStep, needStep);
+            causalLinks.Add(clink);
+
+            foreach (var step in Steps)
+            {
+                if (step.ID == repairStep.ID || step.ID == needStep.ID)
+                {
+                    continue;
+                }
+                if (!CacheMaps.IsThreat(oc.precondition, step))
+                {
+                    continue;
+                }
+                // step is a threat to need precondition
+                if (Orderings.IsPath(needStep, step))
+                {
+                    continue;
+                }
+                if (Orderings.IsPath(step, repairStep.InitialStep as IPlanStep))
                 {
                     continue;
                 }

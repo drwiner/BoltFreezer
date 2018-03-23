@@ -4,10 +4,35 @@ using System.Collections.Generic;
 
 namespace BoltFreezer.PlanTools
 {
+
+    public class E1 : IHeuristic
+    {
+        public float Heuristic(IPlan plan)
+        {
+            return HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth*2;
+        }
+    }
+
+    public class E2 : IHeuristic
+    {
+        public float Heuristic(IPlan plan)
+        {
+            return (float)HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth * 4 - (float)System.Math.Log((double)plan.Hdepth*2000f + 1f);
+        }
+    }
+
+    public class E3 : IHeuristic
+    {
+        public float Heuristic(IPlan plan)
+        {
+            return (HeuristicMethods.AddReuseHeuristic(plan) / (float)(1 + System.Math.Log((double)plan.Hdepth * 2000f + 1f))) - plan.Hdepth * 4;
+        }
+    }
+
     public class AddReuseHeuristic : IHeuristic
     {
 
-        public int Heuristic(IPlan plan)
+        public float Heuristic(IPlan plan)
         {
             return HeuristicMethods.AddReuseHeuristic(plan);
         }
@@ -16,7 +41,7 @@ namespace BoltFreezer.PlanTools
 
     public class NumOpenConditionsHeuristic : IHeuristic
     {
-        public int Heuristic(IPlan plan)
+        public float Heuristic(IPlan plan)
         {
             return HeuristicMethods.NumOCs(plan);
         }
@@ -24,9 +49,9 @@ namespace BoltFreezer.PlanTools
 
     public class ZeroHeuristic : IHeuristic
     {
-        public int Heuristic(IPlan plan)
+        public float Heuristic(IPlan plan)
         {
-            return 0;
+            return 0f;
         }
     }
 

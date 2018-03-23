@@ -12,7 +12,7 @@ namespace BoltFreezer.PlanSpace
     public class PlanSpacePlanner
     {
         private SimplePriorityQueue<IPlan, float> frontier;
-        private Func<IPlan, int> heuristic;
+        private Func<IPlan, float> heuristic;
         private SearchType search;
         private bool console_log;
         private int opened, expanded = 0;
@@ -23,7 +23,7 @@ namespace BoltFreezer.PlanSpace
         // TODO: keep track of plan-space search tree and not just frontier
         //private List<PlanSpaceEdge> PlanSpaceGraph;
 
-        public PlanSpacePlanner(IPlan initialPlan, SearchType _search, Func<IPlan, int> _heuristic, bool consoleLog)
+        public PlanSpacePlanner(IPlan initialPlan, SearchType _search, Func<IPlan, float> _heuristic, bool consoleLog)
         {
             console_log = consoleLog;
             heuristic = _heuristic;
@@ -53,7 +53,7 @@ namespace BoltFreezer.PlanSpace
                 Console.WriteLine("CHeck");
         }
 
-        public int EstimatePlan(IPlan plan)
+        public float EstimatePlan(IPlan plan)
         {
             var hEstimate = heuristic(plan);
             var cost = plan.Steps.Count;
@@ -97,11 +97,11 @@ namespace BoltFreezer.PlanSpace
                 var plan = frontier.Dequeue();
                 expanded++;
                 var flaw = plan.Flaws.Next();
-
+                Console.WriteLine(plan.Decomps);
                 if (console_log)
                 {
-                    Console.WriteLine(plan);
-                    Console.WriteLine(flaw);
+                    //Console.WriteLine(plan);
+                    //Console.WriteLine(flaw);
                 }
 
                 // Termination criteria
@@ -127,6 +127,7 @@ namespace BoltFreezer.PlanSpace
                 {
                     watch.Stop();
                     WriteToFile(watch.ElapsedMilliseconds, plan as Plan);
+                    return null;
                 }
 
                 if (flaw.Ftype == Enums.FlawType.Link)
@@ -182,6 +183,7 @@ namespace BoltFreezer.PlanSpace
                 {
                     watch.Stop();
                     WriteToFile(watch.ElapsedMilliseconds, plan as Plan);
+                    return null;
                 }
 
                 if (flaw.Ftype == Enums.FlawType.Link)
@@ -215,6 +217,7 @@ namespace BoltFreezer.PlanSpace
             while (Unexplored.Count > 0)
             {
                 var plan = Unexplored.Dequeue();
+                
                 expanded++;
                 var flaw = plan.Flaws.Next();
 
@@ -244,6 +247,7 @@ namespace BoltFreezer.PlanSpace
                 {
                     watch.Stop();
                     WriteToFile(watch.ElapsedMilliseconds, plan as Plan);
+                    return null;
                 }
 
                 if (flaw.Ftype == Enums.FlawType.Link)
@@ -280,11 +284,20 @@ namespace BoltFreezer.PlanSpace
                 // same with above: cannot insert a dummy step. These will get inserted when composite step is inserted.
                 if (cndt.Name.Split(':')[0].Equals("begin") || cndt.Name.Split(':')[0].Equals("finish"))
                     continue;
-                if (cndt.Height > 0)
-                    continue;
+                //if (cndt.Height > 0)
+                //    continue;
 
                 var planClone = plan.Clone() as IPlan;
-                var newStep = new PlanStep(cndt.Clone() as IOperator);
+                IPlanStep newStep;
+                if (cndt.Height > 0)
+                {
+                    newStep = new CompositePlanStep(cndt as IComposite);
+                }
+                else
+                {
+                    newStep = new PlanStep(cndt.Clone() as IOperator);
+                }
+                //newStep.Height = cndt.Height;
                 planClone.Insert(newStep);
                 planClone.Repair(oc, newStep);
 

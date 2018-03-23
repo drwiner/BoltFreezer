@@ -97,6 +97,12 @@ namespace BoltFreezer.PlanTools
             }
         }
 
+        public PlanStep (IOperator groundAction, int _id)
+        {
+            action = groundAction;
+            id = _id;
+        }
+
         public PlanStep(IPlanStep planStep, int _id)
         {
             action = planStep.Action;

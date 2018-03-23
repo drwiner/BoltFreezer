@@ -43,18 +43,21 @@ namespace BoltFreezer.PlanTools
                 return;
             }
 
+            //var stepToLookAt = plan.Find(oc.Ste)
             // accumulate risks and cndts
             foreach (var step in plan.Steps)
             {
+                
                 if (step.ID == oc.step.ID)
                     continue;
                 if (plan.Orderings.IsPath(oc.step, step))
                     continue;
                 // CHECK THAT THIS WORKS AS INTENDED: or else I will have created a causal and threat map
-                if (step.Effects.Contains(oc.precondition))
+                if (CacheMaps.IsCndt(oc.precondition, step))
                     oc.cndts += 1;
 
-                if (step.Effects.Any(x => oc.precondition.IsInverse(x)))
+                if (CacheMaps.IsThreat(oc.precondition, step))
+                //if (step.Effects.Any(x => oc.precondition.IsInverse(x)))
                     oc.risks += 1;
 
             }
@@ -118,22 +121,29 @@ namespace BoltFreezer.PlanTools
         // When we add a new step, update cndts and risks
         public void UpdateFlaws(IPlan plan, IPlanStep action)
         {
-            foreach (var oc in OpenConditions.ToList())
+            if (action.Height > 0)
             {
-                // ignore any open conditions that cannot possibly be affected by this action's effects, such as those occurring after
-                if (plan.Orderings.IsPath(oc.step, action))
-                    continue;
+                return;
 
-                if (CacheMaps.IsCndt(oc.precondition, action))
-                //if (action.Effects.Contains(oc.precondition))
-                    oc.cndts += 1;
+            }
+            else
+            {
+                foreach (var oc in OpenConditions.ToList())
+                {
+                    // ignore any open conditions that cannot possibly be affected by this action's effects, such as those occurring after
+                    if (plan.Orderings.IsPath(oc.step, action))
+                        continue;
 
-                if (CacheMaps.IsThreat(oc.precondition, action))
-                //if (action.Effects.Any(x => oc.precondition.IsInverse(x)))
-                    oc.risks += 1;
+                    if (CacheMaps.IsCndt(oc.precondition, action))
+                        //if (action.Effects.Contains(oc.precondition))
+                        oc.cndts += 1;
+
+                    if (CacheMaps.IsThreat(oc.precondition, action))
+                        //if (action.Effects.Any(x => oc.precondition.IsInverse(x)))
+                        oc.risks += 1;
+                }
             }
         }
-
         /// <summary>
         /// Clone of Flawque requires clone of individual flaws because these have mutable properties
         /// </summary>
