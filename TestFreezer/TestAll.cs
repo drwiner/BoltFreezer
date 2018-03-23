@@ -339,11 +339,11 @@ namespace TestFreezer
             for (int i = 1; i < 9; i++)
             {
                 var initPlan = DeserializeJsonTravelDomain(i);
-                RunAddReusePop(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
-                RunNumOCsPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
-                RunBestFirstZeroPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                //RunAddReusePop(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                //RunNumOCsPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                //RunBestFirstZeroPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
                 RunBFSPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
-                RunDFSPop(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                //RunDFSPop(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
             }
 
             //FreezeProblem(false, true);
