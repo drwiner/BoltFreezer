@@ -9,7 +9,7 @@ namespace BoltFreezer.PlanTools
     {
         public float Heuristic(IPlan plan)
         {
-            return HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth*2;
+            return plan.Steps.Count + HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth*2;
         }
     }
 
@@ -17,7 +17,7 @@ namespace BoltFreezer.PlanTools
     {
         public float Heuristic(IPlan plan)
         {
-            return (float)HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth * 4 - (float)System.Math.Log((double)plan.Hdepth*2000f + 1f);
+            return plan.Steps.Count + (float)HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth - (float)System.Math.Log((double)plan.Hdepth*2 + 1f);
         }
     }
 
@@ -25,7 +25,15 @@ namespace BoltFreezer.PlanTools
     {
         public float Heuristic(IPlan plan)
         {
-            return (HeuristicMethods.AddReuseHeuristic(plan) / (float)(1 + System.Math.Log((double)plan.Hdepth * 2000f + 1f))) - plan.Hdepth * 4;
+            return HeuristicMethods.AddReuseHeuristic(plan) + (plan.Steps.Count  / (float)(1 + System.Math.Log((double)plan.Hdepth*2 + 1f))) ;
+        }
+    }
+
+    public class E4 : IHeuristic
+    {
+        public float Heuristic(IPlan plan)
+        {
+            return HeuristicMethods.AddReuseHeuristic(plan) + plan.Steps.Count - plan.Decomps;
         }
     }
 

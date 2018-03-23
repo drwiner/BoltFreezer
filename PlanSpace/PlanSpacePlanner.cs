@@ -55,9 +55,10 @@ namespace BoltFreezer.PlanSpace
 
         public float EstimatePlan(IPlan plan)
         {
-            var hEstimate = heuristic(plan);
-            var cost = plan.Steps.Count;
-            return cost + hEstimate;
+            //var hEstimate = heuristic(plan);
+            //var cost = plan.Steps.Count;
+            //return cost + hEstimate;
+            return heuristic(plan);
         }
 
         public List<IPlan> Solve(int k, float cutoff)
