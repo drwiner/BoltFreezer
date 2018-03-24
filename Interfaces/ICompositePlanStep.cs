@@ -13,7 +13,7 @@ namespace BoltFreezer.Interfaces
 
         IPlanStep InitialStep { get; set; }
         IPlanStep GoalStep { get; set; }
-        List<IOperator> SubSteps { get; }
+        List<IPlanStep> SubSteps { get; }
         List<Tuple<IOperator, IOperator>> SubOrderings { get; }
         List<CausalLink<IOperator>> SubLinks { get; }
         new Object Clone();

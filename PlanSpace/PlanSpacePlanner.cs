@@ -1,4 +1,5 @@
-﻿using BoltFreezer.Enums;
+﻿using BoltFreezer.CacheTools;
+using BoltFreezer.Enums;
 using BoltFreezer.Interfaces;
 using BoltFreezer.PlanTools;
 using BoltFreezer.Utilities;
@@ -21,7 +22,6 @@ namespace BoltFreezer.PlanSpace
         private int opened, expanded = 0;
         public int problemNumber;
         public string directory;
-        public HeuristicType heuristicType;
 
         // TODO: keep track of plan-space search tree and not just frontier
         //private List<PlanSpaceEdge> PlanSpaceGraph;
@@ -66,6 +66,15 @@ namespace BoltFreezer.PlanSpace
             Insert(initialPlan);
         }
 
+        public static IPlan CreateInitialPlan(ProblemFreezer PF)
+        {
+            var initialPlan = new Plan(new State(PF.testProblem.Initial) as IState, new State(PF.testProblem.Goal) as IState);
+            foreach (var goal in PF.testProblem.Goal)
+                initialPlan.Flaws.Insert(initialPlan, new OpenCondition(goal, initialPlan.GoalStep as IPlanStep));
+            initialPlan.Orderings.Insert(initialPlan.InitialStep, initialPlan.GoalStep);
+            return initialPlan;
+        }
+
         public void Insert(IPlan plan)
         {
             if (!plan.Orderings.HasCycle())
@@ -107,7 +116,7 @@ namespace BoltFreezer.PlanSpace
                 IPlanStep newStep;
                 if (cndt.Height > 0)
                 {
-                    newStep = new CompositePlanStep(cndt as IComposite);
+                    newStep = new CompositePlanStep(cndt.Clone() as IComposite);
                 }
                 else
                 {
@@ -137,7 +146,15 @@ namespace BoltFreezer.PlanSpace
 
             foreach (var step in plan.Steps)
             {
+                if (oc.step.ID == step.ID)
+                {
+                    continue;
+                }
                 if (CacheMaps.IsCndt(oc.precondition, step)){
+                    // before adding a repair, check if there is a path.
+                    if (plan.Orderings.IsPath(oc.step, step))
+                        continue;
+                    
                     var planClone = plan.Clone() as IPlan;
                     planClone.Repair(oc, step);
                     Insert(planClone);
@@ -185,7 +202,7 @@ namespace BoltFreezer.PlanSpace
             var namedData = new List<Tuple<string, string>>
                         {
                             new Tuple<string, string>("problem", problemNumber.ToString()),
-                            new Tuple<string, string>("heuristic", heuristicType.ToString()),
+                            new Tuple<string, string>("heuristic", heuristic.ToString()),
                             new Tuple<string, string>("search", search.ToString()),
                             new Tuple<string,string>("runtime", elapsedMs.ToString()),
                             new Tuple<string, string>("opened", opened.ToString()),
@@ -196,7 +213,7 @@ namespace BoltFreezer.PlanSpace
                             new Tuple<string, string>("hdepth", plan.Hdepth.ToString() )
                         };
 
-            var file = directory + problemNumber.ToString() + "-" + search.ToString() + "-" + heuristicType.ToString() + ".txt";
+            var file = directory + problemNumber.ToString() + "-" + search.ToString() + "-" + heuristic.ToString() + ".txt";
             using (StreamWriter writer = new StreamWriter(file, false))
             {
                 foreach (Tuple<string, string> dataItem in namedData)

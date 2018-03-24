@@ -15,17 +15,17 @@ namespace BoltFreezer.PlanTools
         public List<OpenCondition> OpenConditions;
 
         //private Heap<OpenCondition> openConditions;
-        private Heap<ThreatenedLinkFlaw> threatenedLinks;
+        private Stack<ThreatenedLinkFlaw> threatenedLinks;
 
         public Flawque()
         {
             //openConditions = new Heap<OpenCondition>(HeapType.MinHeap);
             OpenConditions = new List<OpenCondition>();
-            threatenedLinks = new Heap<ThreatenedLinkFlaw>(HeapType.MinHeap);
+            threatenedLinks = new Stack<ThreatenedLinkFlaw>();
         }
 
         //public Flawque(Heap<OpenCondition> ocs, Heap<ThreatenedLinkFlaw> tclfs)
-        public Flawque(List<OpenCondition> ocs, Heap<ThreatenedLinkFlaw> tclfs)
+        public Flawque(List<OpenCondition> ocs, Stack<ThreatenedLinkFlaw> tclfs)
         {
             OpenConditions = ocs;
             threatenedLinks = tclfs;
@@ -76,7 +76,7 @@ namespace BoltFreezer.PlanTools
         public void Insert(ThreatenedLinkFlaw tclf)
         {
 
-            threatenedLinks.Insert(tclf);
+            threatenedLinks.Push(tclf);
         }
 
         public IEnumerable<OpenCondition> OpenConditionGenerator()
@@ -99,8 +99,8 @@ namespace BoltFreezer.PlanTools
         public IFlaw Next()
         {
             // repair threatened links first
-            if (!threatenedLinks.IsEmpty())
-                return threatenedLinks.PopRoot();
+            if (threatenedLinks.Count != 0)
+                return threatenedLinks.Pop();
 
             if (OpenConditions.Count == 0)
                 return null;
@@ -124,6 +124,17 @@ namespace BoltFreezer.PlanTools
         {
             if (action.Height > 0)
             {
+                //var comp = action as ICompositePlanStep;
+                //foreach (var substep in comp.SubSteps)
+                //{
+                //    if (substep.Height == 0)
+                //    {
+                //        var stepRef = plan.Find(substep as IPlanStep);
+                //        UpdateFlaws(plan, stepRef);
+                //    }
+                //    else
+                //        UpdateFlaws(plan, substep);
+                //}
                 return;
 
             }
@@ -161,15 +172,15 @@ namespace BoltFreezer.PlanTools
             //var openConditionHeap = new Heap<OpenCondition>(HeapType.MinHeap, newOpenConditions);
 
             // Threatened links are never updated during planning. Thus, they are read-only and need not be cloned.
-            var newThreatenedLinks = new List<ThreatenedLinkFlaw>();
+            var newThreatenedLinks = new Stack<ThreatenedLinkFlaw>();
             foreach (var tclf in threatenedLinks.ToList())
             {
                 //newThreatenedLinks.Add(tclf.Clone());
-                newThreatenedLinks.Add(tclf);
+                newThreatenedLinks.Push(tclf);
             }
-            var tclfHeap = new Heap<ThreatenedLinkFlaw>(HeapType.MinHeap, newThreatenedLinks);
+            //var tclfHeap = new Stack<ThreatenedLinkFlaw>(HeapType.MinHeap, newThreatenedLinks);
 
-            return new Flawque(newOpenConditions, tclfHeap);
+            return new Flawque(newOpenConditions, newThreatenedLinks);
             //return new Flawque(openConditionHeap, tclfHeap);
         }
 

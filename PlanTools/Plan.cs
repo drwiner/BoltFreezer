@@ -170,7 +170,7 @@ namespace BoltFreezer.PlanTools
                 Flaws.Insert(this, new OpenCondition(pre, newStep));
             }
 
-            Flaws.UpdateFlaws(this, newStep);
+            //Flaws.UpdateFlaws(this, newStep);
 
             // Don't check for threats when inserting.
         }
@@ -179,15 +179,16 @@ namespace BoltFreezer.PlanTools
         {
             decomps += 1;
             var IDMap = new Dictionary<int, IPlanStep>();
-            var dummyInit = new PlanStep(newStep.InitialStep.Clone() as IOperator);
+            var dummyInit = newStep.InitialStep.Clone() as IPlanStep;
+            //var dummyInit = new PlanStep(newStep.InitialStep.Clone() as IOperator);
             IDMap[newStep.InitialStep.ID] = dummyInit;
-
             
             steps.Add(dummyInit);
             orderings.Insert(InitialStep, dummyInit);
             orderings.Insert(dummyInit, GoalStep);
 
-            var dummyGoal = new PlanStep(newStep.GoalStep.Clone() as IOperator);
+            //var dummyGoal = new PlanStep(newStep.GoalStep.Clone() as IOperator);
+            var dummyGoal = newStep.GoalStep.Clone() as IPlanStep;
             Insert(dummyGoal);
             IDMap[newStep.GoalStep.ID] = dummyGoal;
             Orderings.Insert(dummyInit, dummyGoal);
@@ -201,9 +202,10 @@ namespace BoltFreezer.PlanTools
             
             foreach (var substep in newStep.SubSteps)
             {
+                // substep is either a IPlanStep or ICompositePlanStep
                 if (substep.Height > 0)
                 {
-                    var compositeSubStep = new CompositePlanStep(substep.Clone() as IComposite)
+                    var compositeSubStep = new CompositePlanStep(substep.Clone() as ICompositePlanStep)
                     {
                         Depth = newStep.Depth + 1
                     };
@@ -215,7 +217,7 @@ namespace BoltFreezer.PlanTools
                 }
                 else
                 {
-                    var newsubstep = new PlanStep(substep.Clone() as IOperator)
+                    var newsubstep = new PlanStep(substep.Clone() as IPlanStep)
                     {
                         Depth = newStep.Depth + 1
                     };
@@ -235,6 +237,7 @@ namespace BoltFreezer.PlanTools
             //var subOrderings = newStep.SubOre
             foreach (var tupleOrdering in newStep.SubOrderings)
             {
+                // Don't bother adding orderings to begin and finish. TODO: need to make this implicit via JsonDeserializer
                 if (tupleOrdering.First.Name.Split(':')[0].Equals("begin") || tupleOrdering.First.Name.Split(':')[0].Equals("finish"))
                     continue;
                 if (tupleOrdering.Second.Name.Split(':')[0].Equals("begin") || tupleOrdering.Second.Name.Split(':')[0].Equals("finish"))
@@ -268,6 +271,7 @@ namespace BoltFreezer.PlanTools
                     var temp = tail as CompositePlanStep;
                     tail = temp.InitialStep as IPlanStep;
                 }
+
                 var newclink = new CausalLink<IPlanStep>(clink.Predicate, head, tail);
                 CausalLinks.Add(newclink);
                 foreach (var step in newSubSteps)
@@ -365,6 +369,8 @@ namespace BoltFreezer.PlanTools
         {
             // oc = <needStep, needPrecond>. Need to find needStep in plan, because open conditions have been mutated before arrival.
             var needStep = Find(oc.step);
+
+            //// we are fulfilling open conditions because open conditions can be used to add flaws. Right now, this step is unnecessary.
             if (!needStep.Name.Split(':')[0].Equals("begin") && !needStep.Name.Split(':')[0].Equals("finish"))
                 needStep.Fulfill(oc.precondition);
 

@@ -18,7 +18,7 @@ namespace BoltFreezer.PlanTools
             set { compositeAction = value; }
         }
 
-        public List<IOperator> SubSteps
+        public List<IPlanStep> SubSteps
         {
             get { return compositeAction.SubSteps; }
         }
@@ -57,9 +57,23 @@ namespace BoltFreezer.PlanTools
             goalStep = new PlanStep(comp.GoalStep);
         }
 
+        public CompositePlanStep(ICompositePlanStep comp) : base(comp as IPlanStep)
+        {
+            compositeAction = comp.Action as IComposite;
+            initialStep = new PlanStep(comp.InitialStep);
+            goalStep = new PlanStep(comp.GoalStep);
+        }
+
         public CompositePlanStep(IComposite comp, List<IPredicate> openconditions, IPlanStep init, IPlanStep goal, int ID) : base(comp as IOperator, openconditions, ID)
         {
             compositeAction = comp;
+            initialStep = init;
+            goalStep = goal;
+        }
+
+        public CompositePlanStep(ICompositePlanStep comp, List<IPredicate> openconditions, IPlanStep init, IPlanStep goal, int ID) : base(comp as IPlanStep, openconditions, ID)
+        {
+            compositeAction = comp.Action as IComposite;
             initialStep = init;
             goalStep = goal;
         }

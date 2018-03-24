@@ -39,16 +39,30 @@ namespace BoltFreezer.PlanTools
 
         public float Heuristic(IPlan plan)
         {
-            return plan.Steps.Count - (6 * plan.Decomps) + (float)HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth - (float)System.Math.Log((double)plan.Hdepth*20 + 1f, 2);
+            return plan.Steps.Count - (2 * plan.Decomps) + (float)HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth - (float)System.Math.Log((double)plan.Hdepth*20 + 1f, 2);
         }
     }
 
     public class E3 : IHeuristic
     {
+        private int decompMagnifier;
+        private int denominatorMagnifier;
+
+        public E3()
+        {
+            decompMagnifier = 4;
+            denominatorMagnifier = 20;
+        }
+
+        public E3 (int decompMag, int denominatorMag)
+        {
+            decompMagnifier = decompMag;
+            denominatorMagnifier = denominatorMag;
+        }
 
         public new string ToString()
         {
-            return HType.ToString();
+            return HType.ToString() + "_(" + decompMagnifier.ToString() + ", " + denominatorMagnifier.ToString() + ")";
         }
 
         public HeuristicType HType
@@ -58,7 +72,9 @@ namespace BoltFreezer.PlanTools
 
         public float Heuristic(IPlan plan)
         {
-            return HeuristicMethods.AddReuseHeuristic(plan) + ((plan.Steps.Count - (8* plan.Decomps)) / (float)(1 + System.Math.Log((double)plan.Hdepth*8 + 1f, 2))) ;
+            return HeuristicMethods.AddReuseHeuristic(plan) + 
+                ((plan.Steps.Count - (decompMagnifier* plan.Decomps)) / 
+                (float)(1 + System.Math.Log((double)plan.Hdepth*denominatorMagnifier + 1f, 2))) ;
         }
     }
 

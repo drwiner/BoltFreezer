@@ -59,7 +59,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SimpleJson.cs" />
     <Compile Include="TestAll.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

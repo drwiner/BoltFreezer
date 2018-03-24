@@ -11,17 +11,17 @@ namespace BoltFreezer.PlanSpace
     public class PlanSpaceEdge
     {
         public Operator action;
-        public CausalLink<IPlanStep> clobberedLink;
+        public CausalLink<PlanStep> clobberedLink;
         public State state;
 
         public PlanSpaceEdge ()
         {
             action = new Operator();
-            clobberedLink = new CausalLink<IPlanStep>();
+            clobberedLink = new CausalLink<PlanStep>();
             state = new State();
         }
 
-        public PlanSpaceEdge (Operator action, CausalLink<IPlanStep> clobberedLink, State state)
+        public PlanSpaceEdge (Operator action, CausalLink<PlanStep> clobberedLink, State state)
         {
             this.action = action;
             this.clobberedLink = clobberedLink;

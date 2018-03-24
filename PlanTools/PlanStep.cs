@@ -77,7 +77,7 @@ namespace BoltFreezer.PlanTools
 
         public PlanStep(IPlanStep planStep)
         {
-            action = planStep.Action;
+            action = planStep.Action as IOperator;
             id = System.Threading.Interlocked.Increment(ref Counter);
             openConditions = new List<IPredicate>();
             foreach (var precondition in planStep.OpenConditions)

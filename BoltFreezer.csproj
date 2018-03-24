@@ -68,8 +68,11 @@
     <Content Include="PriorityQueue\Priority Queue.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BinaryHeap.cs" />
-    <Compile Include="CacheMaps.cs" />
+    <Compile Include="CacheTools\ProblemFreezer.cs" />
+    <Compile Include="FileIO\JsonProblemDeserializer.cs" />
+    <Compile Include="FileIO\SimpleJson.cs" />
+    <Compile Include="Utilities\BinaryHeap.cs" />
+    <Compile Include="CacheTools\CacheMaps.cs" />
     <Compile Include="Enums\ActionType.cs" />
     <Compile Include="Enums\FlawType.cs" />
     <Compile Include="Enums\HeuristicType.cs" />
@@ -79,7 +82,7 @@
     <Compile Include="FileIO\BinarySerializer.cs" />
     <Compile Include="FileIO\Parser.cs" />
     <Compile Include="FileIO\Writer.cs" />
-    <Compile Include="GroundActionFactory.cs" />
+    <Compile Include="CacheTools\GroundActionFactory.cs" />
     <Compile Include="Interfaces\IAxiom.cs" />
     <Compile Include="Interfaces\IComposite.cs" />
     <Compile Include="Interfaces\ICompositePlanStep.cs" />

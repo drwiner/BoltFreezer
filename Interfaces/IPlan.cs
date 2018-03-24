@@ -52,6 +52,8 @@ namespace BoltFreezer.Interfaces
         // Detect threats for this specific step
         void DetectThreats(IPlanStep newStep);
 
+        IPlanStep Find(IPlanStep stepClonedFromOpenCondition);
+
         //void DetectThreatsFromComposite(List<IPlanStep> possibleThreats);
 
         // The plan can be cloned.
