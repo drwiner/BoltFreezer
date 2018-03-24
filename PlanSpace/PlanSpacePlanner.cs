@@ -9,11 +9,14 @@ using System.IO;
 
 namespace BoltFreezer.PlanSpace
 {
-    public class PlanSpacePlanner
+    public class PlanSpacePlanner : IPlanner
     {
-        private SimplePriorityQueue<IPlan, float> frontier;
-        private Func<IPlan, float> heuristic;
-        private SearchType search;
+        private IFrontier frontier;
+        //private Func<IPlan, float> heuristic;
+        private IHeuristic heuristic;
+        //private SearchType search;
+        private ISearch search;
+        //private Func<IPlanner, int, float, List<IPlan>> search;
         private bool console_log;
         private int opened, expanded = 0;
         public int problemNumber;
@@ -23,22 +26,43 @@ namespace BoltFreezer.PlanSpace
         // TODO: keep track of plan-space search tree and not just frontier
         //private List<PlanSpaceEdge> PlanSpaceGraph;
 
-        public PlanSpacePlanner(IPlan initialPlan, SearchType _search, Func<IPlan, float> _heuristic, bool consoleLog)
+        public bool Console_log
+        {
+            get { return console_log; }
+            set { console_log = value; }
+        }
+
+        public int Expanded
+        {
+            get { return expanded; }
+            set { expanded = value; }
+        }
+
+        public int Open
+        {
+            get { return opened; }
+            set { opened = value; }
+        }
+
+        public IFrontier Frontier
+        {
+            get { return frontier; }
+        }
+
+        public PlanSpacePlanner(IPlan initialPlan, ISearch _search, IHeuristic _heuristic, bool consoleLog)
         {
             console_log = consoleLog;
             heuristic = _heuristic;
             search = _search;
-            frontier = new SimplePriorityQueue<IPlan, float>();
+            frontier = new PriorityQueue();
             Insert(initialPlan);
         }
 
         public PlanSpacePlanner(IPlan initialPlan)
         {
             console_log = false;
-            //heuristic = HeuristicType.AddReuseHeuristic;
-            heuristic = new AddReuseHeuristic().Heuristic;
-            search = SearchType.BestFirst;
-            frontier = new SimplePriorityQueue<IPlan, float>();
+            heuristic = new AddReuseHeuristic();
+            frontier = new PriorityQueue();
             Insert(initialPlan);
         }
 
@@ -55,221 +79,12 @@ namespace BoltFreezer.PlanSpace
 
         public float EstimatePlan(IPlan plan)
         {
-            //var hEstimate = heuristic(plan);
-            //var cost = plan.Steps.Count;
-            //return cost + hEstimate;
-            return heuristic(plan);
+            return heuristic.Heuristic(plan);
         }
 
         public List<IPlan> Solve(int k, float cutoff)
         {
-            if (search == SearchType.BestFirst)
-            {
-                return BestFirst(k, cutoff);
-            }
-            else if (search == SearchType.DFS)
-            {
-                return DFS(k, cutoff);
-            }
-            else if (search == SearchType.BFS)
-            {
-                return BFS(k, cutoff);
-            }
-            else
-                return null;
-        }
-
-        public List<IPlan> BestFirst(int k, float cutoff)
-        {
-            var Solutions = new List<IPlan>();
-
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            //
-            //var elapsedMs = watch.ElapsedMilliseconds;
-            //Console.Write(elapsedMs);
-            //var t0 = Time.time;
-            if (frontier.Count == 0)
-            {
-                Console.WriteLine("check");
-            }
-
-            while (frontier.Count > 0)
-            {
-                var plan = frontier.Dequeue();
-                expanded++;
-                var flaw = plan.Flaws.Next();
-                Console.WriteLine(plan.Decomps);
-                if (console_log)
-                {
-                    //Console.WriteLine(plan);
-                    //Console.WriteLine(flaw);
-                }
-
-                // Termination criteria
-                if (flaw == null)
-                {
-                    watch.Stop();
-                    var elapsedMs = watch.ElapsedMilliseconds;
-                    Solutions.Add(plan);
-                    if (Solutions.Count >= k)
-                    {
-                        if (console_log)
-                        {
-                            //Console.Write(plan.ToStringOrdered());
-                        }
-                        WriteToFile(elapsedMs, plan as Plan);
-                        
-                        return Solutions;
-                    }
-                    continue;
-                }
-
-                if (watch.ElapsedMilliseconds > cutoff)
-                {
-                    watch.Stop();
-                    WriteToFile(watch.ElapsedMilliseconds, plan as Plan);
-                    return null;
-                }
-
-                if (flaw.Ftype == Enums.FlawType.Link)
-                {
-                    RepairThreat(plan, flaw as ThreatenedLinkFlaw);
-                }
-
-                else if (flaw.Ftype == Enums.FlawType.Condition)
-                {
-                    AddStep(plan, flaw as OpenCondition);
-                    Reuse(plan, flaw as OpenCondition);
-                }
-
-            }
-
-            return null;
-        }
-
-        public List<IPlan> DFS(int k, float cutoff)
-        {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            var Solutions = new List<IPlan>();
-            var Unexplored = new Stack<IPlan>();
-            var initialPlan = frontier.Dequeue();
-            Unexplored.Push(initialPlan);
-            while (Unexplored.Count > 0)
-            {
-                var plan = Unexplored.Pop();
-                expanded++;
-                var flaw = plan.Flaws.Next();
-
-                if (console_log)
-                {
-                    Console.WriteLine(plan);
-                    Console.WriteLine(flaw);
-                }
-
-                // Termination criteria
-                if (flaw == null)
-                {
-                    watch.Stop();
-                    var elapsedMs = watch.ElapsedMilliseconds;
-                    Solutions.Add(plan);
-                    if (Solutions.Count >= k)
-                    {
-                        WriteToFile(elapsedMs, plan as Plan);
-                        return Solutions;
-                    }
-                    continue;
-                }
-
-                if (watch.ElapsedMilliseconds > cutoff)
-                {
-                    watch.Stop();
-                    WriteToFile(watch.ElapsedMilliseconds, plan as Plan);
-                    return null;
-                }
-
-                if (flaw.Ftype == Enums.FlawType.Link)
-                {
-                    RepairThreat(plan, flaw as ThreatenedLinkFlaw);
-                }
-
-                else if (flaw.Ftype == Enums.FlawType.Condition)
-                {
-                    AddStep(plan, flaw as OpenCondition);
-                    Reuse(plan, flaw as OpenCondition);
-                }
-
-                while (frontier.Count > 0)
-                {
-                    var newPlan = frontier.Dequeue();
-                    Unexplored.Push(newPlan);
-                }
-            }
-            
-            return null;
-        }
-
-        public List<IPlan> BFS(int k, float cutoff)
-        {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            var Solutions = new List<IPlan>();
-            var Unexplored = new Queue<IPlan>();
-            var initialPlan = frontier.Dequeue();
-            Unexplored.Enqueue(initialPlan);
-            while (Unexplored.Count > 0)
-            {
-                var plan = Unexplored.Dequeue();
-                
-                expanded++;
-                var flaw = plan.Flaws.Next();
-
-                if (console_log)
-                {
-                    Console.WriteLine(plan);
-                    Console.WriteLine(flaw);
-                }
-
-                // Termination criteria
-                if (flaw == null)
-                {
-                    watch.Stop();
-                    var elapsedMs = watch.ElapsedMilliseconds;
-                    Solutions.Add(plan);
-                    if (Solutions.Count >= k)
-                    {
-                        WriteToFile(elapsedMs, plan as Plan);
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        return Solutions;
-                    }
-                    continue;
-                }
-
-                if (watch.ElapsedMilliseconds > cutoff)
-                {
-                    watch.Stop();
-                    WriteToFile(watch.ElapsedMilliseconds, plan as Plan);
-                    return null;
-                }
-
-                if (flaw.Ftype == Enums.FlawType.Link)
-                {
-                    RepairThreat(plan, flaw as ThreatenedLinkFlaw);
-                }
-
-                else if (flaw.Ftype == Enums.FlawType.Condition)
-                {
-                    AddStep(plan, flaw as OpenCondition);
-                    Reuse(plan, flaw as OpenCondition);
-                }
-
-                while (frontier.Count > 0)
-                {
-                    var newPlan = frontier.Dequeue();
-                    Unexplored.Enqueue(newPlan);
-                }
-            }
-
-            return null;
+            return search.Search(this, k, cutoff);
         }
 
         public void AddStep(IPlan plan, OpenCondition oc)
@@ -303,7 +118,7 @@ namespace BoltFreezer.PlanSpace
                 planClone.Repair(oc, newStep);
 
                 // check if inserting new Step (with orderings given by Repair) add cndts/risks to existing open conditions, affecting their status in the heap
-                planClone.Flaws.UpdateFlaws(planClone, newStep);
+                //planClone.Flaws.UpdateFlaws(planClone, newStep);
                 planClone.DetectThreats(newStep);
                 Insert(planClone);
             }
@@ -343,6 +158,11 @@ namespace BoltFreezer.PlanSpace
                 promote.Orderings.Insert(cl.Tail, threat);
                 Insert(promote);
             }
+            else
+            {
+                Console.WriteLine("no promote");
+
+            }
 
             // Demote
             if (!plan.Orderings.IsPath(cl.Head, threat))
@@ -350,6 +170,10 @@ namespace BoltFreezer.PlanSpace
                 var demote = plan.Clone() as IPlan;
                 demote.Orderings.Insert(threat, cl.Head);
                 Insert(demote);
+            }
+            else
+            {
+                Console.WriteLine("no demote");
             }
 
         }

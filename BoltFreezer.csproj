@@ -86,15 +86,18 @@
     <Compile Include="Interfaces\IDependency.cs" />
     <Compile Include="Interfaces\IDomain.cs" />
     <Compile Include="Interfaces\IFlaw.cs" />
+    <Compile Include="Interfaces\IFrontier.cs" />
     <Compile Include="Interfaces\IHeuristic.cs" />
     <Compile Include="Interfaces\IIntention.cs" />
     <Compile Include="Interfaces\IMediationEdge.cs" />
+    <Compile Include="Interfaces\IPlanner.cs" />
     <Compile Include="Interfaces\IPlanStep.cs" />
     <Compile Include="Interfaces\IObject.cs" />
     <Compile Include="Interfaces\IOperator.cs" />
     <Compile Include="Interfaces\IPlan.cs" />
     <Compile Include="Interfaces\IPredicate.cs" />
     <Compile Include="Interfaces\IProblem.cs" />
+    <Compile Include="Interfaces\ISearch.cs" />
     <Compile Include="Interfaces\IState.cs" />
     <Compile Include="Interfaces\ITerm.cs" />
     <Compile Include="PlanSpace\PlanSpaceEdge.cs" />
@@ -104,6 +107,7 @@
     <Compile Include="PlanTools\CausalLink.cs" />
     <Compile Include="PlanTools\Composite.cs" />
     <Compile Include="PlanTools\CompositePlanStep.cs" />
+    <Compile Include="PlanTools\Frontier.cs" />
     <Compile Include="PlanTools\PlanStep.cs" />
     <Compile Include="PlanTools\Domain.cs" />
     <Compile Include="PlanTools\Flaw.cs" />
@@ -116,6 +120,7 @@
     <Compile Include="PlanTools\Plan.cs" />
     <Compile Include="PlanTools\Predicate.cs" />
     <Compile Include="PlanTools\Problem.cs" />
+    <Compile Include="PlanTools\Search.cs" />
     <Compile Include="PlanTools\State.cs" />
     <Compile Include="PlanTools\Term.cs" />
     <Compile Include="PriorityQueue\FastPriorityQueue.cs" />

@@ -1,4 +1,5 @@
 ﻿
+using BoltFreezer.Enums;
 using BoltFreezer.Interfaces;
 using System.Collections.Generic;
 
@@ -7,59 +8,146 @@ namespace BoltFreezer.PlanTools
 
     public class E1 : IHeuristic
     {
+        public HeuristicType HType
+        {
+            get { return HeuristicType.E1;  }
+        }
+
+        public new string ToString()
+        {
+            return HType.ToString();
+        }
+
         public float Heuristic(IPlan plan)
         {
-            return plan.Steps.Count + HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth*2;
+            return plan.Steps.Count - (2 * plan.Decomps) + HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth*2;
         }
     }
 
     public class E2 : IHeuristic
     {
+
+        public new string ToString()
+        {
+            return HType.ToString();
+        }
+
+        public HeuristicType HType
+        {
+            get { return HeuristicType.E2; }
+        }
+
         public float Heuristic(IPlan plan)
         {
-            return plan.Steps.Count + (float)HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth - (float)System.Math.Log((double)plan.Hdepth*2 + 1f);
+            return plan.Steps.Count - (6 * plan.Decomps) + (float)HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth - (float)System.Math.Log((double)plan.Hdepth*20 + 1f, 2);
         }
     }
 
     public class E3 : IHeuristic
     {
+
+        public new string ToString()
+        {
+            return HType.ToString();
+        }
+
+        public HeuristicType HType
+        {
+            get { return HeuristicType.E3; }
+        }
+
         public float Heuristic(IPlan plan)
         {
-            return HeuristicMethods.AddReuseHeuristic(plan) + (plan.Steps.Count  / (float)(1 + System.Math.Log((double)plan.Hdepth*2 + 1f))) ;
+            return HeuristicMethods.AddReuseHeuristic(plan) + ((plan.Steps.Count - (8* plan.Decomps)) / (float)(1 + System.Math.Log((double)plan.Hdepth*8 + 1f, 2))) ;
         }
     }
 
     public class E4 : IHeuristic
     {
+
+        public new string ToString()
+        {
+            return HType.ToString();
+        }
+
+        public HeuristicType HType
+        {
+            get { return HeuristicType.E4; }
+        }
+
         public float Heuristic(IPlan plan)
         {
-            return HeuristicMethods.AddReuseHeuristic(plan) + plan.Steps.Count - plan.Decomps;
+            return HeuristicMethods.AddReuseHeuristic(plan) + plan.Steps.Count - 3*plan.Decomps;
+        }
+    }
+
+    public class E5 : IHeuristic
+    {
+
+        public new string ToString()
+        {
+            return HType.ToString();
+        }
+
+        public HeuristicType HType
+        {
+            get { return HeuristicType.E5; }
+        }
+
+        public float Heuristic(IPlan plan)
+        {
+            return HeuristicMethods.AddReuseHeuristic(plan) + plan.Steps.Count - 2* plan.Decomps;
         }
     }
 
     public class AddReuseHeuristic : IHeuristic
     {
+        public new string ToString()
+        {
+            return HType.ToString();
+        }
+
+
+        public HeuristicType HType
+        {
+            get { return HeuristicType.AddReuseHeuristic; }
+        }
 
         public float Heuristic(IPlan plan)
         {
-            return HeuristicMethods.AddReuseHeuristic(plan);
+            return plan.Steps.Count - 2 * plan.Decomps + HeuristicMethods.AddReuseHeuristic(plan);
         }
 
     }
 
     public class NumOpenConditionsHeuristic : IHeuristic
     {
+        public HeuristicType HType
+        {
+            get { return HeuristicType.NumOCsHeuristic; }
+        }
+
         public float Heuristic(IPlan plan)
         {
-            return HeuristicMethods.NumOCs(plan);
+            return plan.Steps.Count - 2 * plan.Decomps + HeuristicMethods.NumOCs(plan);
         }
     }
 
     public class ZeroHeuristic : IHeuristic
     {
+        public new string ToString()
+        {
+            return HType.ToString();
+        }
+
+        public HeuristicType HType
+        {
+            get { return HeuristicType.ZeroHeuristic; }
+        }
+
         public float Heuristic(IPlan plan)
         {
-            return 0f;
+            return plan.Steps.Count - 2 * plan.Decomps + 0f;
         }
     }
 
@@ -79,7 +167,7 @@ namespace BoltFreezer.PlanTools
             int sumo = 0;
             foreach (var oc in plan.Flaws.OpenConditions)
             {
-
+                
                 // Refresh to new list
                 currentlyEvaluatedPreds = new List<IPredicate>();
 

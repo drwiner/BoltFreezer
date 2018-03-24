@@ -207,7 +207,7 @@ namespace TestFreezer
             var problemText = System.IO.File.ReadAllText(problemFile);
 
             var jsonArray = SimpleJson.DeserializeObject(problemText) as JsonArray;
-            Console.WriteLine("CHERE");
+            //Console.WriteLine("CHERE");
 
             GroundActionFactory.GroundActions = new List<IOperator>();
             GroundActionFactory.GroundLibrary = new Dictionary<int, IOperator>();
@@ -245,7 +245,7 @@ namespace TestFreezer
 
                 if (Height > 0)
                 {
-                    Console.Write("here");
+                    //Console.Write("here");
                     var init = GroundActionFactory.GroundLibrary[int.Parse(jsonObject["DummyInitial"].ToString())];
                     var goal = GroundActionFactory.GroundLibrary[int.Parse(jsonObject["DummyGoal"].ToString())];
                     var subSteps = new List<IOperator>();
@@ -319,108 +319,132 @@ namespace TestFreezer
             return plan;
         }
 
+        //public static void RunBestFirstPOP(IPlan initialPlan, string directoryToSaveTo, int problem, float cutoff, Func<IPlan, float> heuristic, HeuristicType ht)
+        //{
+        //    var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, heuristic, true)
+        //    {
+        //        directory = directoryToSaveTo,
+        //        problemNumber = problem,
+        //        heuristicType = ht
+        //    };
+        //    var bestFirstSolutions = AStarPOP.Solve(1, cutoff);
+        //}
 
-        public static void RunAddReusePop(IPlan initialPlan, string directoryToSaveTo, int problem)
-        {
-            Console.WriteLine("First POP");
-            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new AddReuseHeuristic().Heuristic, true)
-            {
-                directory = directoryToSaveTo,
-                problemNumber = problem,
-                heuristicType = HeuristicType.AddReuseHeuristic
-            };
-            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
-            Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
-        }
 
-        public static void RunAddReusePopE1(IPlan initialPlan, string directoryToSaveTo, int problem)
-        {
-            Console.WriteLine("First POP");
-            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new E1().Heuristic, true)
-            {
-                directory = directoryToSaveTo,
-                problemNumber = problem,
-                heuristicType = HeuristicType.E1
-            };
-            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
-            //Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
-        }
+        //public static void RunAddReusePop(IPlan initialPlan, string directoryToSaveTo, int problem)
+        //{
+        //    Console.WriteLine("First POP");
+        //    var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new AddReuseHeuristic().Heuristic, true)
+        //    {
+        //        directory = directoryToSaveTo,
+        //        problemNumber = problem,
+        //        heuristicType = HeuristicType.AddReuseHeuristic
+        //    };
+        //    var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
+        //    Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        //}
 
-        public static void RunAddReusePopE2(IPlan initialPlan, string directoryToSaveTo, int problem)
-        {
-            Console.WriteLine("First POP");
-            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new E2().Heuristic, true)
-            {
-                directory = directoryToSaveTo,
-                problemNumber = problem,
-                heuristicType = HeuristicType.E2
-            };
-            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
-            //Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
-        }
+        //public static void RunAddReusePopE1(IPlan initialPlan, string directoryToSaveTo, int problem)
+        //{
+        //    Console.WriteLine("First POP");
+        //    var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new E1().Heuristic, true)
+        //    {
+        //        directory = directoryToSaveTo,
+        //        problemNumber = problem,
+        //        heuristicType = HeuristicType.E1
+        //    };
+        //    var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
+        //    //Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        //}
 
-        public static void RunAddReusePopE3(IPlan initialPlan, string directoryToSaveTo, int problem)
-        {
-            Console.WriteLine("First POP");
-            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new E3().Heuristic, true)
-            {
-                directory = directoryToSaveTo,
-                problemNumber = problem,
-                heuristicType = HeuristicType.E3
-            };
-            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
-            //Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
-        }
+        //public static void RunAddReusePopE2(IPlan initialPlan, string directoryToSaveTo, int problem)
+        //{
+        //    Console.WriteLine("First POP");
+        //    var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new E2().Heuristic, true)
+        //    {
+        //        directory = directoryToSaveTo,
+        //        problemNumber = problem,
+        //        heuristicType = HeuristicType.E2
+        //    };
+        //    var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
+        //    //Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        //}
 
-        public static void RunNumOCsPOP(IPlan initialPlan, string directoryToSaveTo, int problem)
-        {
-            Console.WriteLine("First POP");
-            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new NumOpenConditionsHeuristic().Heuristic, true)
-            {
-                directory = directoryToSaveTo,
-                problemNumber = problem,
-                heuristicType = HeuristicType.NumOCsHeuristic
-            };
-            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
-            Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
-        }
+        //public static void RunAddReusePopE3(IPlan initialPlan, string directoryToSaveTo, int problem, float cutoff)
+        //{
+        //    Console.WriteLine("First POP");
+        //    var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new E3().Heuristic, true)
+        //    {
+        //        directory = directoryToSaveTo,
+        //        problemNumber = problem,
+        //        heuristicType = HeuristicType.E3
+        //    };
+        //    var bestFirstSolutions = AStarPOP.Solve(1, cutoff);
+        //    //Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        //}
 
-        public static void RunBestFirstZeroPOP(IPlan initialPlan, string directoryToSaveTo, int problem)
-        {
-            Console.WriteLine("First POP");
-            var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new ZeroHeuristic().Heuristic, true)
-            {
-                directory = directoryToSaveTo,
-                problemNumber = problem,
-                heuristicType = HeuristicType.ZeroHeuristic
-            };
-            var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
-            Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
-        }
+        //public static void RunAddReusePopE4(IPlan initialPlan, string directoryToSaveTo, int problem)
+        //{
+        //    Console.WriteLine("First POP");
+        //    var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new E4().Heuristic, true)
+        //    {
+        //        directory = directoryToSaveTo,
+        //        problemNumber = problem,
+        //        heuristicType = HeuristicType.E4
+        //    };
+        //    var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
+        //    //Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        //}
 
-        public static void RunBFSPOP(IPlan initialPlan, string directoryToSaveTo, int problem)
-        {
-            var BFSPOP = new PlanSpacePlanner(initialPlan, SearchType.BFS, new ZeroHeuristic().Heuristic, true)
-            {
-                directory = directoryToSaveTo,
-                problemNumber = problem,
-                heuristicType = HeuristicType.ZeroHeuristic
-            };
-            var BFSSolutions = BFSPOP.Solve(1, 14400f);
-            Console.WriteLine(BFSSolutions[0].ToStringOrdered());
-        }
+        //public static void RunNumOCsPOP(IPlan initialPlan, string directoryToSaveTo, int problem)
+        //{
+        //    Console.WriteLine("First POP");
+        //    var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new NumOpenConditionsHeuristic().Heuristic, true)
+        //    {
+        //        directory = directoryToSaveTo,
+        //        problemNumber = problem,
+        //        heuristicType = HeuristicType.NumOCsHeuristic
+        //    };
+        //    var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
+        //    Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        //}
 
-        public static void RunDFSPop(IPlan initialPlan, string directoryToSaveTo, int problem)
-        {
-            var DFSPOP = new PlanSpacePlanner(initialPlan, SearchType.DFS, new ZeroHeuristic().Heuristic, true)
-            {
-                directory = directoryToSaveTo,
-                problemNumber = problem,
-                heuristicType = HeuristicType.ZeroHeuristic
-            };
-            var DFSSolutions = DFSPOP.Solve(1, 14400f);
-            Console.WriteLine(DFSSolutions[0].ToStringOrdered());
-        }
+        //public static void RunBestFirstZeroPOP(IPlan initialPlan, string directoryToSaveTo, int problem)
+        //{
+        //    Console.WriteLine("First POP");
+        //    var AStarPOP = new PlanSpacePlanner(initialPlan, SearchType.BestFirst, new ZeroHeuristic().Heuristic, true)
+        //    {
+        //        directory = directoryToSaveTo,
+        //        problemNumber = problem,
+        //        heuristicType = HeuristicType.ZeroHeuristic
+        //    };
+        //    var bestFirstSolutions = AStarPOP.Solve(1, 14400f);
+        //    Console.WriteLine(bestFirstSolutions[0].ToStringOrdered());
+        //}
+
+        //public static void RunBFSPOP(IPlan initialPlan, string directoryToSaveTo, int problem)
+        //{
+        //    var BFSPOP = new PlanSpacePlanner(initialPlan, SearchType.BFS, new ZeroHeuristic().Heuristic, true)
+        //    {
+        //        directory = directoryToSaveTo,
+        //        problemNumber = problem,
+        //        heuristicType = HeuristicType.ZeroHeuristic
+        //    };
+        //    var BFSSolutions = BFSPOP.Solve(1, 14400f);
+        //    Console.WriteLine(BFSSolutions[0].ToStringOrdered());
+        //}
+
+        //public static void RunDFSPop(IPlan initialPlan, string directoryToSaveTo, int problem)
+        //{
+        //    var DFSPOP = new PlanSpacePlanner(initialPlan, SearchType.DFS, new ZeroHeuristic().Heuristic, true)
+        //    {
+        //        directory = directoryToSaveTo,
+        //        problemNumber = problem,
+        //        heuristicType = HeuristicType.ZeroHeuristic
+        //    };
+        //    var DFSSolutions = DFSPOP.Solve(1, 14400f);
+        //    Console.WriteLine(DFSSolutions[0].ToStringOrdered());
+        //}
 
         //public static IPlan CreateInitialPlan()
         //{
@@ -439,18 +463,38 @@ namespace TestFreezer
         //    return initialPlan;
         //}
 
+        public static void RunPlanner(IPlan initPi, ISearch SearchMethod, IHeuristic HeuristicMethod, int k, float cutoff, string directoryToSaveTo, int problem)
+        {
+            var POP = new PlanSpacePlanner(initPi, SearchMethod, HeuristicMethod, true)
+            {
+                directory = directoryToSaveTo,
+                problemNumber = problem,
+            };
+
+            var Solutions = POP.Solve(k, cutoff);
+        }
+
         static void Main(string[] args)
         {
 
             Console.Write("hello world\n");
+            var directory = @"D:\Documents\workspace\travel_domain.travel\";
 
             for (int i = 1; i < 9; i++)
             {
                 var initPlan = DeserializeJsonTravelDomain(i);
+                //RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new AddReuseHeuristic(), 1, 20000, directory, i);
+                //RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E1(), 1, 20000, directory, i);
+                //RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E2(), 1, 20000, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E3(), 1, 20000, directory, i);
+                //RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E4(), 1, 20000, directory, i);
+                //RunBestFirstPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i, 10000, new E2().Heuristic, HeuristicType.E2);
+
                 //RunAddReusePop(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
                 //RunAddReusePopE1(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
-                RunAddReusePopE2(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
-                RunAddReusePopE3(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
+                //RunAddReusePopE2(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i, 10000f);
+                //RunAddReusePopE3(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i, 10000f);
+                //RunAddReusePopE4(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
                 //RunNumOCsPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
                 //RunBestFirstZeroPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);
                 //RunBFSPOP(initPlan.Clone() as IPlan, @"D:\Documents\workspace\travel_domain.travel\", i);

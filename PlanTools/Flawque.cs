@@ -13,6 +13,7 @@ namespace BoltFreezer.PlanTools
     {
         // cannot use heap because the values are mutable and won't be kept sorted unless they are all re-inserted. If we have to do that, there's no benefit
         public List<OpenCondition> OpenConditions;
+
         //private Heap<OpenCondition> openConditions;
         private Heap<ThreatenedLinkFlaw> threatenedLinks;
 
@@ -32,7 +33,7 @@ namespace BoltFreezer.PlanTools
 
         public void Insert(Plan plan, OpenCondition oc)
         {
-            // don't ass an open condition if it's already in the plan.
+            // don't add an open condition if it's already in the plan.
             if (OpenConditions.Contains(oc))
                 return;
 

@@ -170,6 +170,8 @@ namespace BoltFreezer.PlanTools
                 Flaws.Insert(this, new OpenCondition(pre, newStep));
             }
 
+            Flaws.UpdateFlaws(this, newStep);
+
             // Don't check for threats when inserting.
         }
 
