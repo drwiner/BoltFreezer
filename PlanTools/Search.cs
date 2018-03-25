@@ -107,7 +107,7 @@ namespace BoltFreezer.PlanTools
 
         public IFrontier Frontier
         {
-            get { return Frontier; }
+            get { return frontier; }
         }
 
         public SearchType SType

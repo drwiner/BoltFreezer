@@ -18,4 +18,3 @@ D:\Documents\Frostbow\boltfreezer\obj\x64\Debug\BoltFreezer.csproj.CoreCompileIn
 D:\Documents\Frostbow\boltfreezer\obj\x64\Debug\BoltFreezer.dll
 D:\Documents\Frostbow\boltfreezer\obj\x64\Debug\BoltFreezer.pdb
 D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x64\Debug\BoltFreezer.csprojResolveAssemblyReference.cache
-D:\Documents\Frostbow\boltfreezer\obj\x64\Debug\BoltFreezer.csprojResolveAssemblyReference.cache
