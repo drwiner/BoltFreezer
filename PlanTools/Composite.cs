@@ -12,8 +12,8 @@ namespace BoltFreezer.PlanTools
     {
         private IOperator initialStep;
         private IOperator goalStep;
-        private List<Tuple<IOperator, IOperator>> subOrderings;
-        private List<CausalLink<IOperator>> subLinks;
+        private List<Tuple<IPlanStep, IPlanStep>> subOrderings;
+        private List<CausalLink<IPlanStep>> subLinks;
         private List<IPlanStep> subSteps;
 
         public IOperator InitialStep {
@@ -33,13 +33,13 @@ namespace BoltFreezer.PlanTools
             set { subSteps = value; }
         }
 
-        public List<Tuple<IOperator,IOperator>> SubOrderings
+        public List<Tuple<IPlanStep, IPlanStep>> SubOrderings
         {
             get { return subOrderings; }
             set { subOrderings = value; }
         }
 
-        public List<CausalLink<IOperator>> SubLinks
+        public List<CausalLink<IPlanStep>> SubLinks
         {
             get { return subLinks; }
             set { subLinks = value; }
@@ -47,8 +47,8 @@ namespace BoltFreezer.PlanTools
 
         public Composite() : base()
         {
-            subOrderings = new List<Tuple<IOperator, IOperator>>();
-            subLinks = new List<CausalLink<IOperator>>();
+            subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
+            subLinks = new List<CausalLink<IPlanStep>>();
             subSteps = new List<IPlanStep>();
             initialStep = new Operator();
             goalStep = new Operator();
@@ -57,14 +57,14 @@ namespace BoltFreezer.PlanTools
         public Composite(string name, List<ITerm> terms, IOperator init, IOperator dummy, List<IPredicate> Preconditions, List<IPredicate> Effects, int ID) 
             : base(name, terms, new Hashtable(), Preconditions, Effects, ID)
         {
-            subOrderings = new List<Tuple<IOperator, IOperator>>();
-            subLinks = new List<CausalLink<IOperator>>();
+            subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
+            subLinks = new List<CausalLink<IPlanStep>>();
             subSteps = new List<IPlanStep>();
             initialStep = new Operator();
             goalStep = new Operator();
         }
 
-        public Composite(IOperator core, IOperator init, IOperator goal, List<IPlanStep> substeps, List<Tuple<IOperator, IOperator>> suborderings, List<CausalLink<IOperator>> sublinks)
+        public Composite(IOperator core, IOperator init, IOperator goal, List<IPlanStep> substeps, List<Tuple<IPlanStep, IPlanStep>> suborderings, List<CausalLink<IPlanStep>> sublinks)
             : base(core.Name, core.Terms, new Hashtable(), core.Preconditions, core.Effects, core.ID)
         {
             subOrderings = suborderings;
@@ -77,7 +77,10 @@ namespace BoltFreezer.PlanTools
 
         public new Object Clone()
         {
-            return new Composite(this as IOperator, InitialStep, GoalStep, SubSteps, SubOrderings, SubLinks);
+            return new Composite(this as IOperator, InitialStep, GoalStep, SubSteps, SubOrderings, SubLinks)
+            {
+                Height = this.Height
+            };
         }
     }
 }

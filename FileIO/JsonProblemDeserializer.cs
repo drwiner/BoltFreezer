@@ -60,17 +60,6 @@ namespace BoltFreezer.FileIO
             return new CausalLink<IOperator>(pred, source, sink);
         }
 
-        public static List<CausalLink<IOperator>> CausalLinksFromJsonArray(JsonArray jsoncausallinkslist)
-        {
-            var clinks = new List<CausalLink<IOperator>>();
-            foreach (var jsonlink in jsoncausallinkslist)
-            {
-                var clink = CausalLinkFromJsonArray(jsonlink as JsonArray);
-                clinks.Add(clink);
-            }
-            return clinks;
-        }
-
         public static Predicate PredicateFromJsonObject(JsonObject jsonpredicate)
         {
             var Name = jsonpredicate["name"].ToString();
@@ -160,8 +149,68 @@ namespace BoltFreezer.FileIO
                 
             }
             return substeps;
-        }       
-    
+        }  
+
+        public static List<Tuple<IPlanStep, IPlanStep>> SubOrderingsFromJson(JsonArray suborderingsjson)
+        {
+            var tupleList = new List<Tuple<IPlanStep, IPlanStep>>();
+            foreach (var jsonTuple in suborderingsjson)
+            {
+                var tupleItem = IntTupleFromJsonArray(jsonTuple as JsonArray);
+                IPlanStep head;
+                if (tupleItem.First.Height > 0)
+                {
+                    head = new CompositePlanStep(tupleItem.First as IComposite);
+                }
+                else
+                {
+                    head = new PlanStep(tupleItem.First as IOperator);
+                }
+                IPlanStep tail;
+                if (tupleItem.Second.Height > 0)
+                {
+                    tail = new CompositePlanStep(tupleItem.Second as IComposite);
+                }
+                else
+                {
+                    tail = new PlanStep(tupleItem.Second as IOperator);
+                }
+                var modTuple = new Tuple<IPlanStep, IPlanStep>(head, tail);
+                tupleList.Add(modTuple);
+            }
+            return tupleList;
+        }
+
+        public static List<CausalLink<IPlanStep>> CausalLinksFromJsonArray(JsonArray jsoncausallinkslist)
+        {
+            var clinks = new List<CausalLink<IPlanStep>>();
+            foreach (var jsonlink in jsoncausallinkslist)
+            {
+                var clink = CausalLinkFromJsonArray(jsonlink as JsonArray);
+                IPlanStep head;
+                if (clink.Head.Height > 0)
+                {
+                    head = new CompositePlanStep(clink.Head as IComposite);
+                }
+                else
+                {
+                    head = new PlanStep(clink.Head as IOperator);
+                }
+                IPlanStep tail;
+                if (clink.Tail.Height > 0)
+                {
+                    tail = new CompositePlanStep(clink.Tail as IComposite);
+                }
+                else
+                {
+                    tail = new PlanStep(clink.Tail as IOperator);
+                }
+                var newLink = new CausalLink<IPlanStep>(clink.Predicate, head, tail);
+                clinks.Add(newLink);
+            }
+            return clinks;
+        }
+
         public static Plan DeserializeJsonTravelDomain(int whichOne)
         {
             //var problemFile = @"D:\Unity projects\BoltFreezer\travel_domain.travel\travel_domain.travel\1\1.json";
@@ -212,20 +261,14 @@ namespace BoltFreezer.FileIO
 
                 if (Height > 0)
                 {
-                    //Console.Write("here");
                     var init = GroundActionFactory.GroundLibrary[int.Parse(jsonObject["DummyInitial"].ToString())];
                     var goal = GroundActionFactory.GroundLibrary[int.Parse(jsonObject["DummyGoal"].ToString())];
                     var subSteps = SubStepsFromJson(jsonObject["SubSteps"] as JsonArray);
-                    
-                    //var subSteps = from item in IntListFromJsonArray(jsonObject["SubSteps"] as JsonArray) select GroundActionFactory.GroundLibrary[item] as IOperator;
-                    var subOrderingTuples = IntTupleListFromJsonArray(jsonObject["SubOrderings"] as JsonArray);
+                    var subOrderingTuples = SubOrderingsFromJson(jsonObject["SubOrderings"] as JsonArray);
                     var subLinks = CausalLinksFromJsonArray(jsonObject["SubLinks"] as JsonArray);
-
                     action = new Composite(action, init, goal, subSteps, subOrderingTuples, subLinks);
 
                 }
-
-                //Console.WriteLine(action.ToString() + "  " + action.Height);
 
                 if (Name.Equals("goal"))
                     goalOp = action;

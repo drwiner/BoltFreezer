@@ -12,13 +12,9 @@ namespace BoltFreezer.PlanSpace
 {
     public class PlanSpacePlanner : IPlanner
     {
-        private IFrontier frontier;
-        //private Func<IPlan, float> heuristic;
-        //private IHeuristic heuristic;
         private ISelection selection;
-        //private SearchType search;
         private ISearch search;
-        //private Func<IPlanner, int, float, List<IPlan>> search;
+
         private bool console_log;
         private int opened, expanded = 0;
         public int problemNumber;
@@ -45,9 +41,9 @@ namespace BoltFreezer.PlanSpace
             set { opened = value; }
         }
 
-        public IFrontier Frontier
+        public ISearch Search
         {
-            get { return frontier; }
+            get { return search; }
         }
 
         public PlanSpacePlanner(IPlan initialPlan, ISelection _selection, ISearch _search, bool consoleLog)
@@ -55,7 +51,6 @@ namespace BoltFreezer.PlanSpace
             console_log = consoleLog;
             selection = _selection;
             search = _search;
-            frontier = new PriorityQueue();
             Insert(initialPlan);
         }
 
@@ -63,7 +58,7 @@ namespace BoltFreezer.PlanSpace
         {
             console_log = false;
             selection = new E0(new AddReuseHeuristic());
-            frontier = new PriorityQueue();
+            search = new ADstar();
             Insert(initialPlan);
         }
 
@@ -80,11 +75,9 @@ namespace BoltFreezer.PlanSpace
         {
             if (!plan.Orderings.HasCycle())
             {
-                frontier.Enqueue(plan, Score(plan));
+                Search.Frontier.Enqueue(plan, Score(plan));
                 opened++;
             }
-            else
-                Console.WriteLine("CHeck");
         }
 
         public float Score(IPlan plan)
@@ -110,14 +103,13 @@ namespace BoltFreezer.PlanSpace
                 // same with above: cannot insert a dummy step. These will get inserted when composite step is inserted.
                 if (cndt.Name.Split(':')[0].Equals("begin") || cndt.Name.Split(':')[0].Equals("finish"))
                     continue;
-                //if (cndt.Height > 0)
-                //    continue;
 
                 var planClone = plan.Clone() as IPlan;
                 IPlanStep newStep;
                 if (cndt.Height > 0)
                 {
-                    newStep = new CompositePlanStep(cndt.Clone() as IComposite);
+                    var compCndt = cndt as IComposite;
+                    newStep = new CompositePlanStep(compCndt.Clone() as IComposite);
                 }
                 else
                 {
@@ -142,12 +134,6 @@ namespace BoltFreezer.PlanSpace
                 var planClone = plan.Clone() as IPlan;
                 planClone.Repair(oc, planClone.InitialStep);
                 Insert(planClone);
-                
-            }
-
-            if (oc.step.Name.Split(':')[0].Equals("finish"))
-            {
-                Console.WriteLine("");
             }
 
             foreach (var step in plan.Steps)
@@ -200,7 +186,6 @@ namespace BoltFreezer.PlanSpace
                         {
                             new Tuple<string, string>("problem", problemNumber.ToString()),
                             new Tuple<string, string>("selection", selection.ToString()),
-                            //new Tuple<string, string>("heuristic", heuristic.ToString()),
                             new Tuple<string, string>("search", search.ToString()),
                             new Tuple<string,string>("runtime", elapsedMs.ToString()),
                             new Tuple<string, string>("opened", opened.ToString()),

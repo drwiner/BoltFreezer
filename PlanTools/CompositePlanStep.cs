@@ -58,9 +58,11 @@ namespace BoltFreezer.PlanTools
             compositeAction = comp;
             initialStep = new PlanStep(comp.InitialStep);
             goalStep = new PlanStep(comp.GoalStep);
-            subSteps = new List<IPlanStep>();
-            subLinks = new List<CausalLink<IPlanStep>>();
-            subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
+
+            // Do not bother changing the PlanStep skin of these, as this has to happen during insertion
+            subSteps = comp.SubSteps;
+            subLinks = comp.SubLinks;
+            subOrderings = comp.SubOrderings;
         }
 
         public CompositePlanStep(ICompositePlanStep comp) : base(comp as IPlanStep)
@@ -68,9 +70,11 @@ namespace BoltFreezer.PlanTools
             compositeAction = comp.Action as IComposite;
             initialStep = new PlanStep(comp.InitialStep);
             goalStep = new PlanStep(comp.GoalStep);
-            subSteps = new List<IPlanStep>();
-            subLinks = new List<CausalLink<IPlanStep>>();
-            subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
+
+            // Do not bother changing the PlanStep skin of these, as this has to happen during insertion
+            subSteps = comp.SubSteps;
+            subLinks = comp.SubLinks;
+            subOrderings = comp.SubOrderings;
         }
 
         public CompositePlanStep(IComposite comp, List<IPredicate> openconditions, IPlanStep init, IPlanStep goal, 

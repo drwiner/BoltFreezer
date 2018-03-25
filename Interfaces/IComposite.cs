@@ -11,9 +11,11 @@ namespace BoltFreezer.Interfaces
     {
         IOperator InitialStep { get; set; }
         IOperator GoalStep { get; set; }
+
+        // Sub-plan <S, O, L> must be plan steps to distinguish (labels) and fulfill open conditions
         List<IPlanStep> SubSteps { get; set; }
-        List<Tuple<IOperator,IOperator>> SubOrderings { get; set; }
-        List<CausalLink<IOperator>> SubLinks { get; set; }
+        List<Tuple<IPlanStep, IPlanStep>> SubOrderings { get; set; }
+        List<CausalLink<IPlanStep>> SubLinks { get; set; }
         new Object Clone();
     }
 }

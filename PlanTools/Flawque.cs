@@ -61,7 +61,6 @@ namespace BoltFreezer.PlanTools
 
             }
 
-
             if (oc.risks == 0 && plan.Initial.InState(oc.precondition))
             {
                 oc.isInit = true;
@@ -110,8 +109,6 @@ namespace BoltFreezer.PlanTools
                     best_flaw = oc;
             }
 
-            //if (!OpenConditions.IsEmpty())
-            //    return OpenConditions.PopRoot();
             OpenConditions.Remove(best_flaw);
             return best_flaw;
         }

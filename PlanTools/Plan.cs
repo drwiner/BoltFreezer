@@ -205,15 +205,17 @@ namespace BoltFreezer.PlanTools
                 // substep is either a IPlanStep or ICompositePlanStep
                 if (substep.Height > 0)
                 {
-                    var compositeSubStep = new CompositePlanStep(substep.Clone() as ICompositePlanStep)
-                    {
-                        Depth = newStep.Depth + 1
-                    };
-                    Insert(compositeSubStep);
-                    Orderings.Insert(compositeSubStep, dummyGoal);
-                    Orderings.Insert(dummyInit, compositeSubStep);
-                    IDMap[compositeSubStep.CompositeAction.ID] = compositeSubStep;
+                    var compositeSubStep = new CompositePlanStep(substep.Clone() as ICompositePlanStep);
+
+                    Orderings.Insert(compositeSubStep.GoalStep, dummyGoal);
+                    Orderings.Insert(dummyInit, compositeSubStep.InitialStep);
+                    IDMap[substep.ID] = compositeSubStep;
                     newSubSteps.Add(compositeSubStep);
+                    Insert(compositeSubStep);
+                    if (compositeSubStep.Depth + 1 > Hdepth)
+                    {
+                        Hdepth = newStep.Depth + 1;
+                    }
                 }
                 else
                 {
@@ -221,31 +223,32 @@ namespace BoltFreezer.PlanTools
                     {
                         Depth = newStep.Depth + 1
                     };
-                    
-                    Insert(newsubstep);
                     Orderings.Insert(newsubstep, dummyGoal);
                     Orderings.Insert(dummyInit, newsubstep);
-                    IDMap[newsubstep.Action.ID] = newsubstep;
+                    IDMap[substep.ID] = newsubstep;
                     newSubSteps.Add(newsubstep);
+                    Insert(newsubstep);
+                    if (newStep.Depth + 1 > Hdepth)
+                    {
+                        Hdepth = newStep.Depth + 1;
+                    }
                 }
-                if (newStep.Depth + 1 > Hdepth)
-                {
-                    Hdepth = newStep.Depth + 1;
-                }
-
             }
-            //var subOrderings = newStep.SubOre
+
             foreach (var tupleOrdering in newStep.SubOrderings)
             {
-                // Don't bother adding orderings to begin and finish. TODO: need to make this implicit via JsonDeserializer
-                if (tupleOrdering.First.Name.Split(':')[0].Equals("begin") || tupleOrdering.First.Name.Split(':')[0].Equals("finish"))
+
+                // Don't bother adding orderings to dummies
+                if (tupleOrdering.First.Equals(newStep.InitialStep))
                     continue;
-                if (tupleOrdering.Second.Name.Split(':')[0].Equals("begin") || tupleOrdering.Second.Name.Split(':')[0].Equals("finish"))
+                if (tupleOrdering.Second.Equals(newStep.GoalStep))
                     continue;
+
                 var head = IDMap[tupleOrdering.First.ID];
                 var tail = IDMap[tupleOrdering.Second.ID];
                 //if (head.Height > 0)
                 //{
+                //    // can you pass it back?
                 //    var temp = head as ICompositePlanStep;
                 //    head = temp.GoalStep as IPlanStep;
                 //}
@@ -302,8 +305,6 @@ namespace BoltFreezer.PlanTools
                 Flaws.Add(this, new OpenCondition(pre, dummyInit as IPlanStep));
             }
 
-            //newStep.dummy
-
         }
 
         public IPlanStep Find(IPlanStep stepClonedFromOpenCondition)
@@ -321,14 +322,6 @@ namespace BoltFreezer.PlanTools
             }
             return Steps.Single(s => s.ID == stepClonedFromOpenCondition.ID);
         }
-
-        //public void DetectThreatsFromComposite(List<IPlanStep> possibleThreats)
-        //{
-        //    foreach (var pt in possibleThreats)
-        //    {
-        //        DetectThreats(pt);
-        //    }
-        //}
 
         public void DetectThreats(IPlanStep possibleThreat)
         {
