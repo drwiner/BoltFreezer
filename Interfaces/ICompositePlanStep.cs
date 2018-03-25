@@ -9,13 +9,22 @@ namespace BoltFreezer.Interfaces
 {
     public interface ICompositePlanStep : IPlanStep
     {
+        // Represented action
         IComposite CompositeAction { get; set; }
 
+        // Dummy initial step
         IPlanStep InitialStep { get; set; }
+
+        // Dummy goal step
         IPlanStep GoalStep { get; set; }
+
+        // Sub-plan <S, O, L>
         List<IPlanStep> SubSteps { get; }
-        List<Tuple<IOperator, IOperator>> SubOrderings { get; }
-        List<CausalLink<IOperator>> SubLinks { get; }
+
+        List<Tuple<IPlanStep, IPlanStep>> SubOrderings { get; }
+
+        List<CausalLink<IPlanStep>> SubLinks { get; }
+
         new Object Clone();
     }
 }

@@ -167,7 +167,7 @@ namespace BoltFreezer.PlanTools
             // Add new flaws
             foreach (var pre in newStep.OpenConditions)
             {
-                Flaws.Insert(this, new OpenCondition(pre, newStep));
+                Flaws.Add(this, new OpenCondition(pre, newStep));
             }
 
             //Flaws.UpdateFlaws(this, newStep);
@@ -293,13 +293,13 @@ namespace BoltFreezer.PlanTools
                     {
                         continue;
                     }
-                    Flaws.Insert(new ThreatenedLinkFlaw(newclink, step));
+                    Flaws.Add(new ThreatenedLinkFlaw(newclink, step));
                 }
             }
 
             foreach (var pre in newStep.OpenConditions)
             {
-                Flaws.Insert(this, new OpenCondition(pre, dummyInit as IPlanStep));
+                Flaws.Add(this, new OpenCondition(pre, dummyInit as IPlanStep));
             }
 
             //newStep.dummy
@@ -349,7 +349,7 @@ namespace BoltFreezer.PlanTools
                     continue;
                 }
                 
-                Flaws.Insert(new ThreatenedLinkFlaw(clink, possibleThreat));
+                Flaws.Add(new ThreatenedLinkFlaw(clink, possibleThreat));
             }
         }
 
@@ -397,7 +397,7 @@ namespace BoltFreezer.PlanTools
                 {
                     continue;
                 }
-                Flaws.Insert(new ThreatenedLinkFlaw(clink, step));
+                Flaws.Add(new ThreatenedLinkFlaw(clink, step));
             }
         }
 
@@ -431,7 +431,7 @@ namespace BoltFreezer.PlanTools
                 {
                     continue;
                 }
-                Flaws.Insert(new ThreatenedLinkFlaw(clink, step));
+                Flaws.Add(new ThreatenedLinkFlaw(clink, step));
             }
         }
 
@@ -511,7 +511,7 @@ namespace BoltFreezer.PlanTools
             }
 
             // Inherit all flaws, must clone very flaw
-            Flawque flawList = flaws.Clone();
+            Flawque flawList = flaws.Clone() as Flawque;
 
             //return new Plan(newSteps, newInitial, newGoal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList);
             return new Plan(newSteps, Initial, Goal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList)

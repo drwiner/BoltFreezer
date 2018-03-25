@@ -275,7 +275,7 @@ namespace BoltFreezer.FileIO
             var plan = new Plan(initialOp, goalOp);
             foreach (var goal in plan.Goal.Predicates)
             {
-                plan.Flaws.Insert(plan, new OpenCondition(goal, plan.GoalStep as IPlanStep));
+                plan.Flaws.Add(plan, new OpenCondition(goal, plan.GoalStep as IPlanStep));
             }
 
             Console.WriteLine("Insert First Ordering");
