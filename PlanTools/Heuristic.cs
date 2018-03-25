@@ -6,115 +6,6 @@ using System.Collections.Generic;
 namespace BoltFreezer.PlanTools
 {
 
-    public class E1 : IHeuristic
-    {
-        public HeuristicType HType
-        {
-            get { return HeuristicType.E1;  }
-        }
-
-        public new string ToString()
-        {
-            return HType.ToString();
-        }
-
-        public float Heuristic(IPlan plan)
-        {
-            return plan.Steps.Count - (2 * plan.Decomps) + HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth*2;
-        }
-    }
-
-    public class E2 : IHeuristic
-    {
-
-        public new string ToString()
-        {
-            return HType.ToString();
-        }
-
-        public HeuristicType HType
-        {
-            get { return HeuristicType.E2; }
-        }
-
-        public float Heuristic(IPlan plan)
-        {
-            return plan.Steps.Count - (2 * plan.Decomps) + (float)HeuristicMethods.AddReuseHeuristic(plan) - plan.Hdepth - (float)System.Math.Log((double)plan.Hdepth*20 + 1f, 2);
-        }
-    }
-
-    public class E3 : IHeuristic
-    {
-        private int decompMagnifier;
-        private int denominatorMagnifier;
-
-        public E3()
-        {
-            decompMagnifier = 4;
-            denominatorMagnifier = 20;
-        }
-
-        public E3 (int decompMag, int denominatorMag)
-        {
-            decompMagnifier = decompMag;
-            denominatorMagnifier = denominatorMag;
-        }
-
-        public new string ToString()
-        {
-            return HType.ToString() + "_(" + decompMagnifier.ToString() + ", " + denominatorMagnifier.ToString() + ")";
-        }
-
-        public HeuristicType HType
-        {
-            get { return HeuristicType.E3; }
-        }
-
-        public float Heuristic(IPlan plan)
-        {
-            return HeuristicMethods.AddReuseHeuristic(plan) + 
-                ((plan.Steps.Count - (decompMagnifier* plan.Decomps)) / 
-                (float)(1 + System.Math.Log((double)plan.Hdepth*denominatorMagnifier + 1f, 2))) ;
-        }
-    }
-
-    public class E4 : IHeuristic
-    {
-
-        public new string ToString()
-        {
-            return HType.ToString();
-        }
-
-        public HeuristicType HType
-        {
-            get { return HeuristicType.E4; }
-        }
-
-        public float Heuristic(IPlan plan)
-        {
-            return HeuristicMethods.AddReuseHeuristic(plan) + plan.Steps.Count - 3*plan.Decomps;
-        }
-    }
-
-    public class E5 : IHeuristic
-    {
-
-        public new string ToString()
-        {
-            return HType.ToString();
-        }
-
-        public HeuristicType HType
-        {
-            get { return HeuristicType.E5; }
-        }
-
-        public float Heuristic(IPlan plan)
-        {
-            return HeuristicMethods.AddReuseHeuristic(plan) + plan.Steps.Count - 2* plan.Decomps;
-        }
-    }
 
     public class AddReuseHeuristic : IHeuristic
     {
@@ -123,7 +14,6 @@ namespace BoltFreezer.PlanTools
             return HType.ToString();
         }
 
-
         public HeuristicType HType
         {
             get { return HeuristicType.AddReuseHeuristic; }
@@ -131,7 +21,7 @@ namespace BoltFreezer.PlanTools
 
         public float Heuristic(IPlan plan)
         {
-            return plan.Steps.Count - 2 * plan.Decomps + HeuristicMethods.AddReuseHeuristic(plan);
+            return HeuristicMethods.AddReuseHeuristic(plan);
         }
 
     }
@@ -143,9 +33,14 @@ namespace BoltFreezer.PlanTools
             get { return HeuristicType.NumOCsHeuristic; }
         }
 
+        public new string ToString()
+        {
+            return HType.ToString();
+        }
+
         public float Heuristic(IPlan plan)
         {
-            return plan.Steps.Count - 2 * plan.Decomps + HeuristicMethods.NumOCs(plan);
+            return HeuristicMethods.NumOCs(plan);
         }
     }
 
@@ -163,7 +58,7 @@ namespace BoltFreezer.PlanTools
 
         public float Heuristic(IPlan plan)
         {
-            return plan.Steps.Count - 2 * plan.Decomps + 0f;
+            return 0f;
         }
     }
 

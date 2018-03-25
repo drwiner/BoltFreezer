@@ -14,7 +14,8 @@ namespace BoltFreezer.PlanSpace
     {
         private IFrontier frontier;
         //private Func<IPlan, float> heuristic;
-        private IHeuristic heuristic;
+        //private IHeuristic heuristic;
+        private ISelection selection;
         //private SearchType search;
         private ISearch search;
         //private Func<IPlanner, int, float, List<IPlan>> search;
@@ -49,10 +50,10 @@ namespace BoltFreezer.PlanSpace
             get { return frontier; }
         }
 
-        public PlanSpacePlanner(IPlan initialPlan, ISearch _search, IHeuristic _heuristic, bool consoleLog)
+        public PlanSpacePlanner(IPlan initialPlan, ISelection _selection, ISearch _search, bool consoleLog)
         {
             console_log = consoleLog;
-            heuristic = _heuristic;
+            selection = _selection;
             search = _search;
             frontier = new PriorityQueue();
             Insert(initialPlan);
@@ -61,7 +62,7 @@ namespace BoltFreezer.PlanSpace
         public PlanSpacePlanner(IPlan initialPlan)
         {
             console_log = false;
-            heuristic = new AddReuseHeuristic();
+            selection = new E0(new AddReuseHeuristic());
             frontier = new PriorityQueue();
             Insert(initialPlan);
         }
@@ -79,16 +80,16 @@ namespace BoltFreezer.PlanSpace
         {
             if (!plan.Orderings.HasCycle())
             {
-                frontier.Enqueue(plan, EstimatePlan(plan));
+                frontier.Enqueue(plan, Score(plan));
                 opened++;
             }
             else
                 Console.WriteLine("CHeck");
         }
 
-        public float EstimatePlan(IPlan plan)
+        public float Score(IPlan plan)
         {
-            return heuristic.Heuristic(plan);
+            return selection.Evaluate(plan);
         }
 
         public List<IPlan> Solve(int k, float cutoff)
@@ -144,6 +145,11 @@ namespace BoltFreezer.PlanSpace
                 
             }
 
+            if (oc.step.Name.Split(':')[0].Equals("finish"))
+            {
+                Console.WriteLine("");
+            }
+
             foreach (var step in plan.Steps)
             {
                 if (oc.step.ID == step.ID)
@@ -175,11 +181,6 @@ namespace BoltFreezer.PlanSpace
                 promote.Orderings.Insert(cl.Tail, threat);
                 Insert(promote);
             }
-            else
-            {
-                Console.WriteLine("no promote");
-
-            }
 
             // Demote
             if (!plan.Orderings.IsPath(cl.Head, threat))
@@ -187,10 +188,6 @@ namespace BoltFreezer.PlanSpace
                 var demote = plan.Clone() as IPlan;
                 demote.Orderings.Insert(threat, cl.Head);
                 Insert(demote);
-            }
-            else
-            {
-                Console.WriteLine("no demote");
             }
 
         }
@@ -202,7 +199,8 @@ namespace BoltFreezer.PlanSpace
             var namedData = new List<Tuple<string, string>>
                         {
                             new Tuple<string, string>("problem", problemNumber.ToString()),
-                            new Tuple<string, string>("heuristic", heuristic.ToString()),
+                            new Tuple<string, string>("selection", selection.ToString()),
+                            //new Tuple<string, string>("heuristic", heuristic.ToString()),
                             new Tuple<string, string>("search", search.ToString()),
                             new Tuple<string,string>("runtime", elapsedMs.ToString()),
                             new Tuple<string, string>("opened", opened.ToString()),
@@ -213,7 +211,7 @@ namespace BoltFreezer.PlanSpace
                             new Tuple<string, string>("hdepth", plan.Hdepth.ToString() )
                         };
 
-            var file = directory + problemNumber.ToString() + "-" + search.ToString() + "-" + heuristic.ToString() + ".txt";
+            var file = directory + problemNumber.ToString() + "-" + search.ToString() + "-" + selection.ToString() + ".txt";
             using (StreamWriter writer = new StreamWriter(file, false))
             {
                 foreach (Tuple<string, string> dataItem in namedData)

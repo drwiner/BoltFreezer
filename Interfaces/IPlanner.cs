@@ -13,7 +13,7 @@ namespace BoltFreezer.Interfaces
 
         List<IPlan> Solve(int k, float cutoff);
 
-        float EstimatePlan(IPlan pi);
+        float Score(IPlan pi);
 
         void Insert(IPlan pi);
 

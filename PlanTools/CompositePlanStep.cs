@@ -80,7 +80,10 @@ namespace BoltFreezer.PlanTools
 
         public new Object Clone()
         {
-            return new CompositePlanStep(CompositeAction, OpenConditions, InitialStep, GoalStep, ID);
+            return new CompositePlanStep(CompositeAction, OpenConditions, InitialStep, GoalStep, ID)
+            {
+                Depth = base.Depth
+            };
         }
 
     }

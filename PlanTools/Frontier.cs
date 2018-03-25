@@ -11,7 +11,7 @@ namespace BoltFreezer.PlanTools
     {
         public int Count => priorityQueue.Count;
 
-        private SimplePriorityQueue<IPlan, float> priorityQueue;
+        public SimplePriorityQueue<IPlan, float> priorityQueue;
 
         public PriorityQueue()
         {

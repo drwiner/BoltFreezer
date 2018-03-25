@@ -47,6 +47,7 @@ namespace BoltFreezer.PlanTools
                 {
                     watch.Stop();
                     var elapsedMs = watch.ElapsedMilliseconds;
+                    
                     Solutions.Add(plan);
                     if (Solutions.Count >= k)
                     {
@@ -109,12 +110,10 @@ namespace BoltFreezer.PlanTools
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             var Solutions = new List<IPlan>();
-            var Unexplored = new Stack<IPlan>();
-            var initialPlan = IP.Frontier.Dequeue();
-            Unexplored.Push(initialPlan);
-            while (Unexplored.Count > 0)
+
+            while (IP.Frontier.Count > 0)
             {
-                var plan = Unexplored.Pop();
+                var plan = IP.Frontier.Dequeue();
                 IP.Expanded++;
                 var flaw = plan.Flaws.Next();
 
@@ -145,8 +144,6 @@ namespace BoltFreezer.PlanTools
                     return null;
                 }
 
-
-
                 if (flaw.Ftype == Enums.FlawType.Link)
                 {
                     IP.RepairThreat(plan, flaw as ThreatenedLinkFlaw);
@@ -170,7 +167,12 @@ namespace BoltFreezer.PlanTools
         {
             get { return SearchType.BFS; }
         }
-        
+
+        public new string ToString()
+        {
+            return SType.ToString();
+        }
+
         public List<IPlan> Search(IPlanner IP)
         {
             return Search(IP, 1, 6000f);
@@ -180,12 +182,10 @@ namespace BoltFreezer.PlanTools
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             var Solutions = new List<IPlan>();
-            var Unexplored = new Queue<IPlan>();
-            var initialPlan = IP.Frontier.Dequeue();
-            Unexplored.Enqueue(initialPlan);
-            while (Unexplored.Count > 0)
+
+            while (IP.Frontier.Count > 0)
             {
-                var plan = Unexplored.Dequeue();
+                var plan = IP.Frontier.Dequeue();
 
                 IP.Expanded++;
                 var flaw = plan.Flaws.Next();

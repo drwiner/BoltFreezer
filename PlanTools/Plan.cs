@@ -514,7 +514,11 @@ namespace BoltFreezer.PlanTools
             Flawque flawList = flaws.Clone();
 
             //return new Plan(newSteps, newInitial, newGoal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList);
-            return new Plan(newSteps, Initial, Goal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList);
+            return new Plan(newSteps, Initial, Goal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList)
+            {
+                Hdepth = hdepth,
+                Decomps = decomps
+            };
         }
     }
 }

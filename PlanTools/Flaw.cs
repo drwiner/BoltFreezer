@@ -65,24 +65,20 @@ namespace BoltFreezer.PlanTools
             else if (other.isStatic && !isStatic)
                 return 1;
 
-            // check risks
-            if (risks > 0 || other.risks > 0)
-            {
-                if (risks == 0 && isInit && !other.isInit)
-                    return -1;
-                if (other.risks == 0 && other.isInit)
-                    return 1;
-                if (risks > other.risks)
-                    return -1;
-                else if (risks < other.risks)
-                    return 1;
-            }
-            
             // check init
             if (isInit && !other.isInit)
                 return -1;
             else if (other.isInit && !isInit)
                 return 1;
+
+            // check risks
+            if (risks > 0 || other.risks > 0)
+            {
+                if (risks > other.risks)
+                    return -1;
+                else if (risks < other.risks)
+                    return 1;
+            }
 
             // check cndts
             if (cndts > other.cndts)

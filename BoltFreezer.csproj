@@ -69,8 +69,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheTools\ProblemFreezer.cs" />
+    <Compile Include="Enums\SelectionType.cs" />
     <Compile Include="FileIO\JsonProblemDeserializer.cs" />
     <Compile Include="FileIO\SimpleJson.cs" />
+    <Compile Include="Interfaces\ISelection.cs" />
+    <Compile Include="PlanTools\Selection.cs" />
     <Compile Include="Utilities\BinaryHeap.cs" />
     <Compile Include="CacheTools\CacheMaps.cs" />
     <Compile Include="Enums\ActionType.cs" />

@@ -177,7 +177,10 @@ namespace BoltFreezer.PlanTools
         // the clone doesn't need to mutate the underlying action (Action)
         public Object Clone()
         {
-            return new PlanStep(Action, OpenConditions, ID);
+            return new PlanStep(Action, OpenConditions, ID)
+            {
+                Depth = depth
+            };
         }
 
         public string TermAt(int position)
