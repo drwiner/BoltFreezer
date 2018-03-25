@@ -246,17 +246,17 @@ namespace BoltFreezer.PlanTools
 
                 var head = IDMap[tupleOrdering.First.ID];
                 var tail = IDMap[tupleOrdering.Second.ID];
-                //if (head.Height > 0)
-                //{
-                //    // can you pass it back?
-                //    var temp = head as ICompositePlanStep;
-                //    head = temp.GoalStep as IPlanStep;
-                //}
-                //if (tail.Height > 0)
-                //{
-                //    var temp = tail as ICompositePlanStep;
-                //    tail = temp.InitialStep as IPlanStep;
-                //}
+                if (head.Height > 0)
+                {
+                    // can you pass it back?
+                    var temp = head as ICompositePlanStep;
+                    head = temp.GoalStep as IPlanStep;
+                }
+                if (tail.Height > 0)
+                {
+                    var temp = tail as ICompositePlanStep;
+                    tail = temp.InitialStep as IPlanStep;
+                }
                 Orderings.Insert(head, tail);
             }
 
