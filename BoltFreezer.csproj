@@ -69,11 +69,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheTools\ProblemFreezer.cs" />
+    <Compile Include="Interfaces\DTN\IConstraint.cs" />
+    <Compile Include="Interfaces\DTN\IDecomposition.cs" />
+    <Compile Include="Interfaces\DTN\ITask.cs" />
     <Compile Include="Enums\SelectionType.cs" />
     <Compile Include="FileIO\JsonProblemDeserializer.cs" />
     <Compile Include="FileIO\SimpleJson.cs" />
-    <Compile Include="Interfaces\IFlawLibrary.cs" />
-    <Compile Include="Interfaces\ISelection.cs" />
+    <Compile Include="Interfaces\POP\IFlawLibrary.cs" />
+    <Compile Include="Interfaces\POP\ISelection.cs" />
     <Compile Include="PlanTools\Selection.cs" />
     <Compile Include="Utilities\BinaryHeap.cs" />
     <Compile Include="CacheTools\CacheMaps.cs" />
@@ -89,21 +92,21 @@
     <Compile Include="CacheTools\GroundActionFactory.cs" />
     <Compile Include="Interfaces\IAxiom.cs" />
     <Compile Include="Interfaces\IComposite.cs" />
-    <Compile Include="Interfaces\ICompositePlanStep.cs" />
+    <Compile Include="Interfaces\POP\ICompositePlanStep.cs" />
     <Compile Include="Interfaces\IDomain.cs" />
-    <Compile Include="Interfaces\IFlaw.cs" />
-    <Compile Include="Interfaces\IFrontier.cs" />
-    <Compile Include="Interfaces\IHeuristic.cs" />
+    <Compile Include="Interfaces\POP\IFlaw.cs" />
+    <Compile Include="Interfaces\POP\IFrontier.cs" />
+    <Compile Include="Interfaces\POP\IHeuristic.cs" />
     <Compile Include="Interfaces\IIntention.cs" />
     <Compile Include="Interfaces\IMediationEdge.cs" />
-    <Compile Include="Interfaces\IPlanner.cs" />
-    <Compile Include="Interfaces\IPlanStep.cs" />
+    <Compile Include="Interfaces\POP\IPlanner.cs" />
+    <Compile Include="Interfaces\POP\IPlanStep.cs" />
     <Compile Include="Interfaces\IObject.cs" />
     <Compile Include="Interfaces\IOperator.cs" />
-    <Compile Include="Interfaces\IPlan.cs" />
+    <Compile Include="Interfaces\POP\IPlan.cs" />
     <Compile Include="Interfaces\IPredicate.cs" />
     <Compile Include="Interfaces\IProblem.cs" />
-    <Compile Include="Interfaces\ISearch.cs" />
+    <Compile Include="Interfaces\POP\ISearch.cs" />
     <Compile Include="Interfaces\IState.cs" />
     <Compile Include="Interfaces\ITerm.cs" />
     <Compile Include="PlanSpace\PlanSpaceEdge.cs" />
@@ -628,6 +631,7 @@
     <Folder Include=".git\objects\pack\" />
     <Folder Include=".git\refs\tags\" />
     <Folder Include="Cached\" />
+    <Folder Include="DecompTools\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>

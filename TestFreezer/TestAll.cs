@@ -21,8 +21,9 @@ namespace TestFreezer
             {
                 Console.WriteLine(Solutions[0].ToStringOrdered());
             }
+            
         }
-
+        
         static void Main(string[] args)
         {
 
