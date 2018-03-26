@@ -142,6 +142,7 @@ namespace BoltFreezer.FileIO
                 foreach(JsonObject openCondition in substepArray[1] as JsonArray)
                 {
                     var removeThis = PredicateFromJsonObject(openCondition);
+                    openConditions.Add(removeThis);
                 }
 
                 plansubstep.OpenConditions = openConditions;
@@ -265,7 +266,38 @@ namespace BoltFreezer.FileIO
                     var goal = GroundActionFactory.GroundLibrary[int.Parse(jsonObject["DummyGoal"].ToString())];
                     var subSteps = SubStepsFromJson(jsonObject["SubSteps"] as JsonArray);
                     var subOrderingTuples = SubOrderingsFromJson(jsonObject["SubOrderings"] as JsonArray);
+                    // hack : find the substep in subSteps and assign ID
+
+                   
                     var subLinks = CausalLinksFromJsonArray(jsonObject["SubLinks"] as JsonArray);
+
+                    foreach (var substep in subSteps)
+                    {
+                        foreach (var tuple in subOrderingTuples)
+                        {
+                            if (tuple.First.Action.ID == substep.Action.ID)
+                            {
+                                tuple.First.ID = substep.ID;
+                            }
+                            if (tuple.Second.Action.ID == substep.Action.ID)
+                            {
+                                tuple.Second.ID = substep.ID;
+                            }
+                        }
+                        foreach (var cl in subLinks)
+                        {
+                            if (cl.Head.Action.ID == substep.Action.ID)
+                            {
+                                cl.Head.ID = substep.ID;
+                            }
+                            if (cl.Tail.Action.ID == substep.Action.ID)
+                            {
+                                cl.Tail.ID = substep.ID;
+                                //substep.OpenConditions = cl.Tail.OpenConditions;
+                            }
+                        }
+                    }
+
                     action = new Composite(action, init, goal, subSteps, subOrderingTuples, subLinks);
 
                 }

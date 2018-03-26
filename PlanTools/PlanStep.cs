@@ -24,6 +24,7 @@ namespace BoltFreezer.PlanTools
         public int ID
         {
             get { return id; }
+            set { id = value; }
         }
 
         public int Height

@@ -12,7 +12,7 @@ namespace BoltFreezer.Interfaces
         IOperator Action { get; set; }
 
         // Identification
-        new int ID { get; }
+        new int ID { get; set;  }
 
         int Depth { get; set; }
 
