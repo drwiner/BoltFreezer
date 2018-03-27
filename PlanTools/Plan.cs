@@ -171,6 +171,7 @@ namespace BoltFreezer.PlanTools
             }
 
             //Flaws.UpdateFlaws(this, newStep);
+            // Don't update open conditions until this newStep has ordering wrt s_{need}
 
             // Don't check for threats when inserting.
         }

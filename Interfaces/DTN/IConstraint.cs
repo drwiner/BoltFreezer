@@ -11,15 +11,15 @@ namespace BoltFreezer.DecompTools
     public interface IConstraint
     {
         // name of the constraint
-        string Name { get; set; }
+        //string Name { get; set; }
 
         // The Constraint should have a constructor and a field for the items to add
 
         // Send in a plan and return modified plan. This object's fields (arguments) are already in the planToBuildOn.
-        IPlan Process(IPlan planToBuildOn);
+        List<IPlan> Process(IPlan planToBuildOn);
 
         // Checks if the field's arguments can take on the constraint described. False if it cannot.
-        bool Check();
+        //bool Check();
 
         ///
         // Example

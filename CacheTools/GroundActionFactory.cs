@@ -14,7 +14,9 @@ namespace BoltFreezer.PlanTools
         public static Dictionary<int, IOperator> GroundLibrary;
 
         public static List<IOperator> GroundActions;
-        private static Hashtable typeDict;
+
+        // TypeDict returns list of all constants given Term type
+        public static Hashtable TypeDict;
 
         // Those predicates which are not established by an effect of an action but which are a precondition. They either hold initially or not at all.
         public static List<IPredicate> Statics = new List<IPredicate>();
@@ -23,7 +25,7 @@ namespace BoltFreezer.PlanTools
         {
             GroundActions = new List<IOperator>();
             GroundLibrary = new Dictionary<int, IOperator>();
-            typeDict = _prob.TypeList;
+            TypeDict = _prob.TypeList;
             FromOperators(ops);
         }
 
@@ -33,7 +35,7 @@ namespace BoltFreezer.PlanTools
             var permList = new List<List<IObject>>();
             foreach (Term variable in op.Terms)
             {
-                permList.Add(typeDict[variable.Type] as List<IObject>);
+                permList.Add(TypeDict[variable.Type] as List<IObject>);
             }
 
             foreach (var combination in EnumerableExtension.GenerateCombinations(permList))
