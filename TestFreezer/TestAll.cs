@@ -1,4 +1,6 @@
 ﻿using System;
+using BoltFreezer.CacheTools;
+using BoltFreezer.Enums;
 using BoltFreezer.FileIO;
 using BoltFreezer.Interfaces;
 using BoltFreezer.PlanSpace;
@@ -23,10 +25,9 @@ namespace TestFreezer
             }
             
         }
-        
-        static void Main(string[] args)
-        {
 
+        public static void RunTravelExperiment()
+        {
             Console.Write("hello world\n");
             var directory = @"D:\Documents\workspace\travel_domain.travel\ICAPS\";
             var cutoff = 6000f;
@@ -62,6 +63,18 @@ namespace TestFreezer
                 RunPlanner(initPlan.Clone() as IPlan, new DFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, i);
                 RunPlanner(initPlan.Clone() as IPlan, new BFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, i);
             }
+        }
+        
+        static void Main(string[] args)
+        {
+            var testDomainName = "batman";
+            var testDomainDirectory = Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\domain.pddl";
+            var testDomain = Parser.GetDomain(Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\domain.pddl", PlanType.PlanSpace);
+            var testProblem = Parser.GetProblem(Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\prob01.pddl");
+
+            ProblemFreezer PF = new ProblemFreezer(testDomainName, testDomainDirectory, testDomain, testProblem);
+            PF.Serialize();
+
         }
     }
 }

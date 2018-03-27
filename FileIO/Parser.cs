@@ -437,6 +437,44 @@ namespace BoltFreezer.FileIO
                         }
                     }
 
+                    // Add the operator's decomposition
+                    while (!Regex.Replace(words[i++], @"\t|\n|\r", "").Equals(":effect"))
+                    {
+                        if (words[i][0] == '(')
+                        {
+                            if (!words[i].Equals("(and"))
+                            {
+                                // Create a new precondition object.
+                                Predicate pred = new Predicate();
+
+                                // Check for a negative precondition.
+                                if (words[i].Equals("(not"))
+                                {
+                                    // Iterate the counter.
+                                    i++;
+
+                                    // Set the effect's sign to false.
+                                    pred.Sign = false;
+                                }
+
+                                // Set the precondition's name.
+                                pred.Name = Regex.Replace(words[i], @"\t|\n|\r|[()]", "");
+
+                                // Add the precondition to the operator.
+                                preconditions.Add(pred);
+                            }
+                        }
+                        else
+                        {
+                            // Add the precondition's terms.
+                            if (!Regex.Replace(words[i], @"\t|\n|\r", "").Equals(":effect") && !words[i].Equals(")"))
+                                if (Regex.Replace(words[i], @"\t|\n|\r|[()]", "")[0] == '?')
+                                    preconditions.Last().Terms.Add(new Term(Regex.Replace(words[i], @"\t|\n|\r|[()]", "")));
+                                else
+                                    preconditions.Last().Terms.Add(new Term(Regex.Replace(words[i], @"\t|\n|\r|[()]", ""), true));
+                        }
+                    }
+
                     // Add the preconditions to the last created operator.
                     domain.Operators.Last().Preconditions = preconditions;
 

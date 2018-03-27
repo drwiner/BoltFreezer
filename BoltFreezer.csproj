@@ -69,6 +69,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheTools\ProblemFreezer.cs" />
+    <Compile Include="DecompTools\Constraints.cs" />
+    <Compile Include="DecompTools\Decomposition.cs" />
     <Compile Include="Interfaces\DTN\IConstraint.cs" />
     <Compile Include="Interfaces\DTN\IDecomposition.cs" />
     <Compile Include="Interfaces\DTN\ITask.cs" />
@@ -631,7 +633,6 @@
     <Folder Include=".git\objects\pack\" />
     <Folder Include=".git\refs\tags\" />
     <Folder Include="Cached\" />
-    <Folder Include="DecompTools\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
