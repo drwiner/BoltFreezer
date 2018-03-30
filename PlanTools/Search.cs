@@ -37,11 +37,6 @@ namespace BoltFreezer.PlanTools
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
-            if (Frontier.Count == 0)
-            {
-                Console.WriteLine("check");
-            }
-
             while (Frontier.Count > 0)
             {
                 var plan = Frontier.Dequeue();

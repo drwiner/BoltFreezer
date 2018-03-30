@@ -16,6 +16,7 @@ namespace BoltFreezer.PlanTools
         private string name;
         private PlanType type;
         private List<IOperator> operators;
+        private List<IComposite> decompositions;
         private Hashtable objectTypes;
         private Hashtable constantTypes;
         public string staticStart;
@@ -40,6 +41,13 @@ namespace BoltFreezer.PlanTools
         {
             get { return operators; }
             set { operators = value; }
+        }
+
+        // Access the domain's operators.
+        public List<IComposite> Decompositions
+        {
+            get { return decompositions; }
+            set { decompositions = value; }
         }
 
         // Domains have a list of object types.

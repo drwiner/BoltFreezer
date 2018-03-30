@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using BoltFreezer.CacheTools;
 using BoltFreezer.Enums;
 using BoltFreezer.FileIO;
@@ -29,7 +30,7 @@ namespace TestFreezer
         public static void RunTravelExperiment()
         {
             Console.Write("hello world\n");
-            var directory = @"D:\Documents\workspace\travel_domain.travel\ICAPS\";
+            var directory = @"D:\Documents\Frostbow\TravelExperiment\";
             var cutoff = 6000f;
             var k = 1;
             for (int i = 1; i < 9; i++)
@@ -63,6 +64,11 @@ namespace TestFreezer
                 RunPlanner(initPlan.Clone() as IPlan, new DFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, i);
                 RunPlanner(initPlan.Clone() as IPlan, new BFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, i);
             }
+        }
+
+        public static void TestBenchmarks()
+        {
+            var domainNames = new List<string>() { "arth", "batman" }; 
         }
         
         static void Main(string[] args)

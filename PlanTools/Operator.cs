@@ -163,11 +163,24 @@ namespace BoltFreezer.PlanTools
             exceptionalEffects = new List<IPredicate>();
         }
 
+
         public Operator(string name, List<IPredicate> preconditions, List<IPredicate> effects)
         {
             predicate = new Predicate(name, new List<ITerm>(), true);
             this.preconditions = preconditions;
             this.effects = effects;
+            conditionals = new List<IAxiom>();
+            bindings = new Hashtable();
+            id = System.Threading.Interlocked.Increment(ref Counter);
+            consenting = new List<ITerm>();
+            exceptionalEffects = new List<IPredicate>();
+        }
+
+        public Operator(Predicate predicate)
+        {
+            this.predicate = predicate;
+            this.preconditions = new List<IPredicate>();
+            this.effects = new List<IPredicate>();
             conditionals = new List<IAxiom>();
             bindings = new Hashtable();
             id = System.Threading.Interlocked.Increment(ref Counter);

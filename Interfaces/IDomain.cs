@@ -20,6 +20,8 @@ namespace BoltFreezer.Interfaces
         // Domains have a list of actions.
         List<IOperator> Operators { get; set; }
 
+        List<IComposite> Decompositions { get; set; }
+
         // Domains have a list of object types.
         List<string> ObjectTypes { get; }
 
