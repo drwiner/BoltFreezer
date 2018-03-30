@@ -451,6 +451,28 @@ namespace BoltFreezer.PlanTools
             return false;
         }
 
+        // self is GROUND
+        public bool IsConsistent(Operator other)
+        {
+            if (this.Equals(other))
+                return true;
+
+            // Check predicate.
+            if (Predicate.Equals(other.Predicate))
+                return true;
+            if (other.Predicate.Name != "" && other.Predicate.Name != Predicate.Name)
+                return false;
+            if (other.Arity != Arity)
+                return false;
+
+            for (int i = 0; i < Terms.Count; i++)
+            {
+                // check terms at each one.
+            }
+
+            return false;
+        }
+
         // Returns a hashcode.
         public override int GetHashCode()
         {

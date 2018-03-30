@@ -98,6 +98,13 @@ namespace BoltFreezer.DecompTools
             return compList;
         }
 
+        public static List<IOperator> ConsistentSteps(IPlanStep substep)
+        {
+            var opList = new List<IOperator>();
+
+            return opList;
+        }
+
 
         public new Object Clone()
         {
