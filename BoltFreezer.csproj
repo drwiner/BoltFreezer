@@ -615,6 +615,7 @@
     <None Include="Benchmarks\unit-test\prob01.pddl.meta" />
     <None Include="Benchmarks\unit-test\probrob.pddl" />
     <None Include="Benchmarks\unit-test\probrob.pddl.meta" />
+    <None Include="Benchmarks\MatchShotNetwork.pddl" />
     <None Include="Benchmarks\zombie\domain.pddl" />
     <None Include="Benchmarks\zombie\domain.pddl.meta" />
     <None Include="Benchmarks\zombie\domrob.pddl" />

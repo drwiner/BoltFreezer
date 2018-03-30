@@ -43,14 +43,15 @@
 		(cntg ?d1 ?d2 - step-d)
 	)
                     
-    (:action strut
-        :type step-s
-        :parameters (?c - person ?p1 ?p2 - place)
-        :precondition (and (at ?c ?p1) (not (= ?p1 ?p2)) )
-        :effect(and (not (at ?c ?p1)) (at ?c ?p2))
-    )
+  ;;  (:action strut
+ ;;       :type step-s
+  ;;      :parameters (?c - person ?p1 ?p2 - place)
+ ;;       :precondition (and (at ?c ?p1) (not (= ?p1 ?p2)) )
+ ;;       :effect(and (not (at ?c ?p1)) (at ?c ?p2))
+ ;;   )
 
 
+	;; when ground, decomposes into primitive tasks that acheive content, and 
 	(:task cam-shot
 	    :type step-c
 		:camera (?scale - scale ?orient - orient ?angle - angle)

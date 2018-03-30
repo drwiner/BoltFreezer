@@ -1,4 +1,7 @@
-﻿using BoltFreezer.DecompTools;
+﻿using BoltFreezer.CacheTools;
+using BoltFreezer.DecompTools;
+using BoltFreezer.Enums;
+using BoltFreezer.FileIO;
 using BoltFreezer.Interfaces;
 using BoltFreezer.PlanTools;
 using BoltFreezer.Utilities;
@@ -11,6 +14,17 @@ namespace TestFreezer
 {
     public static class InputDecompositions
     {
+
+        public static void TravelTest()
+        {
+            var testDomainName = "travel-test";
+            var testDomainDirectory = Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\domain.pddl";
+            var testDomain = Parser.GetDomain(Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\domain.pddl", PlanType.PlanSpace);
+            var testProblem = Parser.GetProblem(Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\travel-1.pddl");
+
+            ProblemFreezer PF = new ProblemFreezer(testDomainName, testDomainDirectory, testDomain, testProblem);
+        }
+
 
         public static Decomposition TravelByCar()
         {
@@ -129,18 +143,43 @@ namespace TestFreezer
             return decomp;
         }
 
-            public static List<Decomposition> ReadDecompositions()
+        public static Decomposition GenericSubStepExample()
+        {
+            //(: action travel
+            //    : parameters(?person - person ? to - place)
+            // :precondition()
+            // :effect(and(at ? person ? to))
+            // :decomp(
+            //     :sub -params(? travel - step - step)
+            //     :requirements(and
+            //            (effect ? travel - step(at ? person ? to)))))
+
+            var objTerms = new List<ITerm>() {
+                new Term("?person")     { Type = "person"},
+                new Term("?to")         { Type = "place"},
+            };
+
+            var litTerms = new List<IPredicate>();
+
+            var atPersonTo = new Predicate("at", new List<ITerm>() { objTerms[0], objTerms[1]}, true);
+            var travelOp = new Operator("", new List<IPredicate>(), new List<IPredicate>(){ atPersonTo});
+            
+            var root = new Operator(new Predicate("generic-travel", objTerms, true));
+            var decomp = new Decomposition(root, litTerms, new List<IPlanStep>() { new PlanStep(travelOp) }, new List<Tuple<IPlanStep, IPlanStep>>(), new List<CausalLink<IPlanStep>>());
+            return decomp;
+        }
+
+        public static List<Decomposition> ReadDecompositions()
         {
             var decomps = new List<Decomposition>();
 
             var travelByCar = TravelByCar();
             var travelByPlane = TravelByPlane();
+            var genericTravel = GenericSubStepExample();
 
             decomps.Add(travelByCar);
             decomps.Add(travelByPlane);
-
-
-
+            decomps.Add(genericTravel);
             return decomps;
         }
     }
