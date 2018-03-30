@@ -15,6 +15,7 @@ namespace BoltFreezer.PlanTools
 
         private int id;
 
+
         public IOperator Action
         {
             get { return action; }

@@ -15,14 +15,19 @@ namespace TestFreezer
     public static class InputDecompositions
     {
 
-        public static void TravelTest()
+        public static void TravelTest(bool serializeIt)
         {
-            var testDomainName = "travel-test";
-            var testDomainDirectory = Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\domain.pddl";
-            var testDomain = Parser.GetDomain(Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\domain.pddl", PlanType.PlanSpace);
-            var testProblem = Parser.GetProblem(Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\travel-1.pddl");
+            var domainName = "travel-test";
+            var domainDirectory = Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl";
+            var domain = Parser.GetDomain(Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl", PlanType.PlanSpace);
+            var problem = Parser.GetProblem(Parser.GetTopDirectory() + @"Benchmarks\" + domain + @"\travel-1.pddl");
 
-            ProblemFreezer PF = new ProblemFreezer(testDomainName, testDomainDirectory, testDomain, testProblem);
+            var PF = new ProblemFreezer(domainName, domainDirectory, domain, problem);
+            if (serializeIt)
+                PF.Serialize();
+            else
+                PF.Deserialize();
+            
         }
 
 
@@ -116,7 +121,7 @@ namespace TestFreezer
             var flyTerms = new List<ITerm>() { objTerms[0], objTerms[3], objTerms[1], objTerms[2] };
             var deplaneTerms = new List<ITerm>() { objTerms[0], objTerms[3], objTerms[2] };
 
-            
+
             var buy = new PlanStep(new Operator(new Predicate("buy", buyTerms, true)));
             var board = new PlanStep(new Operator(new Predicate("board", boardTerms, true)));
             var fly = new PlanStep(new Operator(new Predicate("fly", flyTerms, true)));
@@ -163,14 +168,19 @@ namespace TestFreezer
 
             var atPersonTo = new Predicate("at", new List<ITerm>() { objTerms[0], objTerms[1]}, true);
             var travelOp = new Operator("", new List<IPredicate>(), new List<IPredicate>(){ atPersonTo});
-            
+            var travelSubStep = new PlanStep(travelOp);
+
+
             var root = new Operator(new Predicate("generic-travel", objTerms, true));
-            var decomp = new Decomposition(root, litTerms, new List<IPlanStep>() { new PlanStep(travelOp) }, new List<Tuple<IPlanStep, IPlanStep>>(), new List<CausalLink<IPlanStep>>());
+            var decomp = new Decomposition(root, litTerms, new List<IPlanStep>() { travelSubStep }, new List<Tuple<IPlanStep, IPlanStep>>(), new List<CausalLink<IPlanStep>>());
             return decomp;
         }
 
         public static List<Decomposition> ReadDecompositions()
         {
+            TravelTest(true);
+            //TravelTest(false);
+
             var decomps = new List<Decomposition>();
 
             var travelByCar = TravelByCar();

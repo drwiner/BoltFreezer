@@ -85,6 +85,20 @@ namespace BoltFreezer.DecompTools
             goalStep = new Operator();
         }
 
+        public static List<Composite> Plannify(Decomposition decomp)
+        {
+            var compList = new List<Composite>();
+
+            // For each substep, find consistent ground step, check if it is "arg consistent". Each sub-step arg has unique ID. predicate-based args cannot be unique instances. 
+                                                                // Also check if non equality constraints are observed. But, it may be that this isn't needed. it is in cinepydpocl not in pydpocl
+            // Then, filter and add orderings. When we add orderings, we also add orderings for all sub-steps
+            // Then add links and check if links are possible. If the linked condition is null, then any link condition will do.
+            // Finally, Create a Composite step out of this by propagating preconditions and effects to the top-level. 
+
+            return compList;
+        }
+
+
         public new Object Clone()
         {
             return new Decomposition(this as IOperator, Literals, SubSteps, SubOrderings, SubLinks);
