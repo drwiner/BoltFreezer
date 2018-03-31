@@ -19,6 +19,8 @@ namespace BoltFreezer.Interfaces
         // Terms may be bound or unbound.
         bool Bound { get; }
 
+        bool IsConsistent(ITerm other);
+
         // Terms may be cloned.
         Object Clone();
     }

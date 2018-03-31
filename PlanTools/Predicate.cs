@@ -347,6 +347,25 @@ namespace BoltFreezer.PlanTools
             return false;
         }
 
+        // self must be ground
+        public bool IsConsistent(Predicate other)
+        {
+            if (!other.Name.Equals(""))
+            {
+                if (!other.Name.Equals(Name))
+                    return false;
+            }
+
+            for (int i =0; i<other.Terms.Count; i++)
+            {
+                if (!Terms[i].IsConsistent(other.Terms[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         // Returns a hashcode.
         public override int GetHashCode()
         {

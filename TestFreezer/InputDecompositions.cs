@@ -168,6 +168,7 @@ namespace TestFreezer
 
             var atPersonTo = new Predicate("at", new List<ITerm>() { objTerms[0], objTerms[1]}, true);
             var travelOp = new Operator("", new List<IPredicate>(), new List<IPredicate>(){ atPersonTo});
+            // check that travelOp.Terms are updated based on Effect? No this won't happen...
             var travelSubStep = new PlanStep(travelOp);
 
 

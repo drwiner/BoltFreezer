@@ -47,6 +47,8 @@ namespace BoltFreezer.Interfaces
 
         IPredicate GetReversed();
 
+        bool IsConsistent(IPredicate other);
+
         // Predicates can be cloned.
         Object Clone();
     }

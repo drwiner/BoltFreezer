@@ -89,8 +89,29 @@ namespace BoltFreezer.DecompTools
         {
             var compList = new List<Composite>();
 
+            // First, for each grounding of operator terms
+
+            var decompList = GroundDecompArgs(decomp);
+
+            var substepDict = new Dictionary<int, List<Operator>>();
+            var comboList = new List<List<Operator>>();
+            foreach(var substep in decomp.SubSteps)
+            {
+                var cndts = ConsistentSteps(substep.Action as Operator);
+                substepDict[substep.ID] = cndts;
+                comboList.Add(cndts);
+            }
+
+            foreach (var combination in EnumerableExtension.GenerateCombinations(comboList))
+            {
+                foreach (var step in combination)
+                {
+                    
+                }
+            }
+
             // For each substep, find consistent ground step, check if it is "arg consistent". Each sub-step arg has unique ID. predicate-based args cannot be unique instances. 
-                                                                // Also check if non equality constraints are observed. But, it may be that this isn't needed. it is in cinepydpocl not in pydpocl
+            // Also check if non equality constraints are observed. But, it may be that this isn't needed. it is in cinepydpocl not in pydpocl
             // Then, filter and add orderings. When we add orderings, we also add orderings for all sub-steps
             // Then add links and check if links are possible. If the linked condition is null, then any link condition will do.
             // Finally, Create a Composite step out of this by propagating preconditions and effects to the top-level. 
@@ -98,11 +119,76 @@ namespace BoltFreezer.DecompTools
             return compList;
         }
 
-        public static List<IOperator> ConsistentSteps(IPlanStep substep)
+        public static List<Decomposition> GroundDecompArgs(Decomposition decomp)
         {
-            var opList = new List<IOperator>();
+            var permList = new List<List<IObject>>();
+            foreach (Term variable in decomp.Terms)
+            {
+                permList.Add(GroundActionFactory.TypeDict[variable.Type] as List<IObject>);
+            }
 
-            return opList;
+            var decompList = new List<Decomposition>();
+            foreach (var combination in EnumerableExtension.GenerateCombinations(permList))
+            {
+                // Add bindings
+                var decompClone = decomp.Clone() as Decomposition;
+                var termStringList = from term in decompClone.Terms select term.Variable;
+                var constantStringList = from objConst in combination select objConst.Name;
+
+                decompClone.AddBindings(termStringList.ToList(), constantStringList.ToList());
+                decompList.Add(decompClone);
+            }
+            return decompList;
+        }
+
+        public static bool IsParamConsistent()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Finds a set of ground Operators that are consistent with this substep
+        /// </summary>
+        /// <param name="substep"></param>
+        /// <returns></returns>
+        public static List<Operator> ConsistentSteps(Operator substep)
+        {
+            
+            var Cndts = GroundActionFactory.GroundActions as IEnumerable<Operator>;
+
+            Cndts = FilterOperatorsByPredicate(substep, Cndts);
+            Cndts = FilterOperatorsByPreconditionsAndEffects(substep, Cndts);
+
+            return Cndts as List<Operator>;
+        }
+
+        public static IEnumerable<Operator> FilterOperatorsByPredicate(Operator substep, IEnumerable<Operator> Cndts)
+        {
+            return Cndts.Where(op => op.Predicate.IsConsistent(substep.Predicate));
+        }
+
+        public static IEnumerable<Operator> FilterOperatorsByPreconditionsAndEffects(Operator substep, IEnumerable<Operator> Cndts)
+        {
+
+            foreach (var eff in substep.Effects)
+            {
+                Cndts = FilterOperatorsByEffect(eff as Predicate, Cndts);
+            }
+            foreach(var pre in substep.Preconditions)
+            {
+                Cndts = FilterOperatorsByPrecondition(pre as Predicate, Cndts);
+            }
+            return Cndts;
+        }
+
+        public static IEnumerable<Operator> FilterOperatorsByPrecondition(Predicate precon, IEnumerable<Operator> Cndts)
+        {
+            return Cndts.Where(op => op.Preconditions.Any(pre => pre.IsConsistent(precon)));
+        }
+
+        public static IEnumerable<Operator> FilterOperatorsByEffect(Predicate effect, IEnumerable<Operator> Cndts)
+        {
+            return Cndts.Where(op => op.Effects.Any(pre => pre.IsConsistent(effect)));
         }
 
 

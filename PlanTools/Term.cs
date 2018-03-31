@@ -99,6 +99,31 @@ namespace BoltFreezer.PlanTools
             return false;
         }
 
+        // assumes self is ground
+        public bool IsConsistent(ITerm other)
+        {
+            // if not bound and has no type, then any variable will do.
+            if (!other.Bound && other.Type.Equals(""))
+            {
+                return true;
+            }
+
+            // if other is bound, must be equal
+            if (other.Bound)
+            {
+                return Equals(other);
+            }
+
+            // check that object of this term (Constant) is consistent with type.
+            var objs = GroundActionFactory.TypeDict[other.Type] as List<IObject>;
+            var names = from iobj in objs select iobj.Name;
+
+            if (!names.Contains(Constant))
+                return false;
+
+            return true;
+        }
+
         // Return a clone of the term.
         public object Clone ()
         {
