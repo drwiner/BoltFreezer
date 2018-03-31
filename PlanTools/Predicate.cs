@@ -348,8 +348,9 @@ namespace BoltFreezer.PlanTools
         }
 
         // self must be ground
-        public bool IsConsistent(Predicate other)
+        public bool IsConsistent(IPredicate other)
         {
+            other = other as Predicate;
             if (!other.Name.Equals(""))
             {
                 if (!other.Name.Equals(Name))

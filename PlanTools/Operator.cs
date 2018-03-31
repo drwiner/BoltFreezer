@@ -27,6 +27,7 @@ namespace BoltFreezer.PlanTools
         private List<IAxiom> conditionals;
         private List<ITerm> consenting;
         private List<IPredicate> exceptionalEffects;
+        private List<List<ITerm>> nonequalities;
 
 
         public static void SetCounterExternally(int newVal)
@@ -38,6 +39,12 @@ namespace BoltFreezer.PlanTools
         {
             get { return height; }
             set { height = value; }
+        }
+
+        public List<List<ITerm>> NonEqualities
+        {
+            get { return nonequalities; }
+            set { nonequalities = value; }
         }
 
         // Access the operator's predicate.
@@ -371,6 +378,17 @@ namespace BoltFreezer.PlanTools
             Bindings = newBindings;
         }
 
+        public bool NonEqualTermsAreNonequal()
+        {
+            
+            foreach (var nonequals in NonEqualities)
+            {
+                if (nonequals[0].Equals(nonequals[1]))
+                    return false;
+            }
+            return true;
+        }
+
         // Return the term at the nth position.
         public string TermAt(int position)
         {
@@ -520,7 +538,10 @@ namespace BoltFreezer.PlanTools
             else
                 newConditionals = new List<IAxiom>();
 
-            return new Operator(newName, newTerms, newBinds, newPreconditions, newEffects, newConditionals, ID);
+            return new Operator(newName, newTerms, newBinds, newPreconditions, newEffects, newConditionals, ID)
+            {
+                NonEqualities = nonequalities
+            };
         }
 
         // Creates the operator's template object.

@@ -11,10 +11,10 @@ D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\obj\x64\Debug\BoltFree
 D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\obj\x64\Debug\BoltFreezer.dll
 D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\obj\x64\Debug\BoltFreezer.pdb
 D:\Documents\Frostbow\Frostbow\Assets\Scripts\BoltFreezer\obj\x64\Debug\BoltFreezer.csprojResolveAssemblyReference.cache
-D:\Documents\Frostbow\boltfreezer\bin\x64\Debug\BoltFreezer.dll.config
-D:\Documents\Frostbow\boltfreezer\bin\x64\Debug\BoltFreezer.dll
-D:\Documents\Frostbow\boltfreezer\bin\x64\Debug\BoltFreezer.pdb
-D:\Documents\Frostbow\boltfreezer\obj\x64\Debug\BoltFreezer.csproj.CoreCompileInputs.cache
-D:\Documents\Frostbow\boltfreezer\obj\x64\Debug\BoltFreezer.dll
-D:\Documents\Frostbow\boltfreezer\obj\x64\Debug\BoltFreezer.pdb
 D:\Unity projects\BoltFreezer\BoltFreezer\Assets\Scripts\obj\x64\Debug\BoltFreezer.csprojResolveAssemblyReference.cache
+D:\documents\frostbow\boltfreezer\bin\x64\Debug\BoltFreezer.dll.config
+D:\documents\frostbow\boltfreezer\bin\x64\Debug\BoltFreezer.dll
+D:\documents\frostbow\boltfreezer\bin\x64\Debug\BoltFreezer.pdb
+D:\documents\frostbow\boltfreezer\obj\x64\Debug\BoltFreezer.csproj.CoreCompileInputs.cache
+D:\documents\frostbow\boltfreezer\obj\x64\Debug\BoltFreezer.dll
+D:\documents\frostbow\boltfreezer\obj\x64\Debug\BoltFreezer.pdb

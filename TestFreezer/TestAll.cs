@@ -68,18 +68,43 @@ namespace TestFreezer
 
         public static void TestBenchmarks()
         {
-            var domainNames = new List<string>() { "arth", "batman" }; 
+            var domainNames = new List<string>() { "arth", "batman" };
+            foreach (var dn in domainNames)
+            {
+                var testDomainDirectory = Parser.GetTopDirectory() + @"Benchmarks\" + dn + @"\domain.pddl";
+                var testDomain = Parser.GetDomain(Parser.GetTopDirectory() + @"Benchmarks\" + dn + @"\domain.pddl", PlanType.PlanSpace);
+                var testProblem = Parser.GetProblem(Parser.GetTopDirectory() + @"Benchmarks\" + dn + @"\prob01.pddl");
+
+                ProblemFreezer PF = new ProblemFreezer(dn, testDomainDirectory, testDomain, testProblem);
+                PF.Serialize();
+
+                var directory = @"D:\Documents\Frostbow\Benchmarks\Results\";
+                var cutoff = 6000f;
+                var k = 1;
+
+                var initPlan = PlanSpacePlanner.CreateInitialPlan(PF);
+
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new AddReuseHeuristic()), k, cutoff, directory, 0);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E1(new AddReuseHeuristic()), k, cutoff, directory, 0);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E2(new AddReuseHeuristic()), k, cutoff, directory, 0);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E3(new AddReuseHeuristic()), k, cutoff, directory, 0);
+                //RunPlanner(initPlan.Clone() as IPlan, new DFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, 0);
+                RunPlanner(initPlan.Clone() as IPlan, new BFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, 0);
+
+            }
         }
-        
+
+        public static void CacheHTNs()
+        {
+            Parser.path = @"D:\documents\frostbow\boltfreezer\";
+            // parameter is whether to serialize the domain. 
+            var decompSchemata = InputDecompositions.ReadDecompositions(true);
+            Console.WriteLine("Test");
+        }
+
         static void Main(string[] args)
         {
-            var testDomainName = "batman";
-            var testDomainDirectory = Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\domain.pddl";
-            var testDomain = Parser.GetDomain(Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\domain.pddl", PlanType.PlanSpace);
-            var testProblem = Parser.GetProblem(Parser.GetTopDirectory() + @"Benchmarks\" + testDomainName + @"\prob01.pddl");
-
-            ProblemFreezer PF = new ProblemFreezer(testDomainName, testDomainDirectory, testDomain, testProblem);
-            PF.Serialize();
+            CacheHTNs();
 
         }
     }

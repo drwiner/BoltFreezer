@@ -46,6 +46,10 @@ namespace BoltFreezer.PlanTools
                 var constantStringList = from objConst in combination select objConst.Name;
 
                 opClone.AddBindings(termStringList.ToList(), constantStringList.ToList());
+
+                if (!opClone.NonEqualTermsAreNonequal())
+                    continue;
+
                 //Debug.Log("operator: " + opClone.ToString());
                 
                 // this ensures that this ground operator has a unique ID

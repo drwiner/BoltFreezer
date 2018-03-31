@@ -20,7 +20,7 @@ namespace TestFreezer
             var domainName = "travel-test";
             var domainDirectory = Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl";
             var domain = Parser.GetDomain(Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl", PlanType.PlanSpace);
-            var problem = Parser.GetProblem(Parser.GetTopDirectory() + @"Benchmarks\" + domain + @"\travel-1.pddl");
+            var problem = Parser.GetProblem(Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\travel-1.pddl");
 
             var PF = new ProblemFreezer(domainName, domainDirectory, domain, problem);
             if (serializeIt)
@@ -177,10 +177,10 @@ namespace TestFreezer
             return decomp;
         }
 
-        public static List<Decomposition> ReadDecompositions()
+        public static List<Decomposition> ReadDecompositions(bool serializeIt)
         {
-            TravelTest(true);
-            //TravelTest(false);
+
+            TravelTest(serializeIt);
 
             var decomps = new List<Decomposition>();
 

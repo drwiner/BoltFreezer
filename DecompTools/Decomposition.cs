@@ -94,6 +94,7 @@ namespace BoltFreezer.DecompTools
             // List<Decomposition> decompList = For each grounding of operator terms with constants possessing consistent types.
             var decompList = Compose(decomp);
 
+            Console.WriteLine("test");
             // Create "Planets" (i.e. sub-plans) by aggregating legal/consistent ground steps replacing sub-steps 
            
             foreach (var newDecomp in decompList)

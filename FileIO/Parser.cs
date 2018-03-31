@@ -11,6 +11,7 @@ using BoltFreezer.Interfaces;
 using BoltFreezer.PlanTools;
 using BoltFreezer.Enums;
 using System;
+using BoltFreezer.Utilities;
 
 namespace BoltFreezer.FileIO
 {
@@ -399,47 +400,13 @@ namespace BoltFreezer.FileIO
                     // Create a list to hold the preconditions.
                     List<IPredicate> preconditions = new List<IPredicate>();
 
-                    // Add the operator's preconditions.
+                    // Create a list to hold nonequality constraints
+                    List<List<ITerm>> Nonequalities = new List<List<ITerm>>();
+                    bool lastWasNonEquality = false;
+                    // Add the operator's preconditions
                     while (!Regex.Replace(words[i++], @"\t|\n|\r", "").Equals(":effect"))
                     {
-                        if (words[i][0] == '(')
-                        {
-                            if(!words[i].Equals("(and"))
-                            {
-                                // Create a new precondition object.
-                                Predicate pred = new Predicate();
-
-                                // Check for a negative precondition.
-                                if (words[i].Equals("(not"))
-                                {
-                                    // Iterate the counter.
-                                    i++;
-
-                                    // Set the effect's sign to false.
-                                    pred.Sign = false;
-                                }
-
-                                // Set the precondition's name.
-                                pred.Name = Regex.Replace(words[i], @"\t|\n|\r|[()]", "");
-
-                                // Add the precondition to the operator.
-                                preconditions.Add(pred);
-                            }
-                        }
-                        else
-                        {
-                            // Add the precondition's terms.
-                            if (!Regex.Replace(words[i], @"\t|\n|\r", "").Equals(":effect") && !words[i].Equals(")"))
-                                if (Regex.Replace(words[i], @"\t|\n|\r|[()]", "")[0] == '?')
-                                    preconditions.Last().Terms.Add(new Term(Regex.Replace(words[i], @"\t|\n|\r|[()]", "")));
-                                else
-                                    preconditions.Last().Terms.Add(new Term(Regex.Replace(words[i], @"\t|\n|\r|[()]", ""), true));
-                        }
-                    }
-
-                    // Add the operator's decomposition
-                    while (!Regex.Replace(words[i++], @"\t|\n|\r", "").Equals(":effect"))
-                    {
+                        
                         if (words[i][0] == '(')
                         {
                             if (!words[i].Equals("(and"))
@@ -460,23 +427,52 @@ namespace BoltFreezer.FileIO
                                 // Set the precondition's name.
                                 pred.Name = Regex.Replace(words[i], @"\t|\n|\r|[()]", "");
 
-                                // Add the precondition to the operator.
-                                preconditions.Add(pred);
+                                if (pred.Name.Equals("="))
+                                {
+                                    if (pred.Sign)
+                                    {
+                                        throw new System.Exception();
+                                    }
+                                    // this is a nonequality constraint
+                                    lastWasNonEquality = true;
+                                    Nonequalities.Add(new List<ITerm>());
+                                }
+                                else
+                                {
+                                    lastWasNonEquality = false;
+                                    // Add the precondition to the operator.
+                                    preconditions.Add(pred);
+                                }
                             }
                         }
                         else
                         {
-                            // Add the precondition's terms.
-                            if (!Regex.Replace(words[i], @"\t|\n|\r", "").Equals(":effect") && !words[i].Equals(")"))
-                                if (Regex.Replace(words[i], @"\t|\n|\r|[()]", "")[0] == '?')
-                                    preconditions.Last().Terms.Add(new Term(Regex.Replace(words[i], @"\t|\n|\r|[()]", "")));
-                                else
-                                    preconditions.Last().Terms.Add(new Term(Regex.Replace(words[i], @"\t|\n|\r|[()]", ""), true));
+                            if (lastWasNonEquality)
+                            {
+                                if (!Regex.Replace(words[i], @"\t|\n|\r", "").Equals(":effect") && !words[i].Equals(")"))
+                                    if (Regex.Replace(words[i], @"\t|\n|\r|[()]", "")[0] == '?')
+                                        Nonequalities.Last().Add(new Term(Regex.Replace(words[i], @"\t|\n|\r|[()]", "")));
+                                    else
+                                        Nonequalities.Last().Add(new Term(Regex.Replace(words[i], @"\t|\n|\r|[()]", ""), true));
+                            }
+                            else
+                            {
+
+
+                                // Add the precondition's terms.
+                                if (!Regex.Replace(words[i], @"\t|\n|\r", "").Equals(":effect") && !words[i].Equals(")"))
+                                    if (Regex.Replace(words[i], @"\t|\n|\r|[()]", "")[0] == '?')
+                                        preconditions.Last().Terms.Add(new Term(Regex.Replace(words[i], @"\t|\n|\r|[()]", "")));
+                                    else
+                                        preconditions.Last().Terms.Add(new Term(Regex.Replace(words[i], @"\t|\n|\r|[()]", ""), true));
+
+                            }
                         }
                     }
 
                     // Add the preconditions to the last created operator.
                     domain.Operators.Last().Preconditions = preconditions;
+                    domain.Operators.Last().NonEqualities = Nonequalities;
 
                     // Create a list to hold the effects.
                     List<IPredicate> effects = new List<IPredicate>();

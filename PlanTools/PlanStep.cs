@@ -58,6 +58,7 @@ namespace BoltFreezer.PlanTools
         public List<IPredicate> ExceptionalEffects { get => Action.ExceptionalEffects; set => Action.ExceptionalEffects = value; }
         public string Actor => Action.Actor;
         public List<ITerm> ConsentingAgents { get => Action.ConsentingAgents; set => Action.ConsentingAgents = value; }
+        public List<List<ITerm>> NonEqualities { get => Action.NonEqualities; set => Action.NonEqualities = value; }
 
         public PlanStep()
         {
