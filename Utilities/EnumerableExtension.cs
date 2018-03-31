@@ -22,6 +22,16 @@ namespace BoltFreezer.Utilities
             return source.OrderBy(x => Guid.NewGuid());
         }
 
+        public static List<T> CloneList<T>(List<T> itemsToCopy)
+        {
+            var newList = new List<T>();
+            foreach (var item in itemsToCopy)
+            {
+                newList.Add(item);
+            }
+            return newList;
+        }
+
         // From http://community.bartdesmet.net/blogs/bart/archive/2008/11/03/c-4-0-feature-focus-part-3-intermezzo-linq-s-new-zip-operator.aspx
         public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second, Func<TFirst, TSecond, TResult> func)
         {
