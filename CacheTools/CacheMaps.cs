@@ -108,6 +108,11 @@ namespace BoltFreezer.PlanTools
                                 CausalMap.Add(tprecond, new List<int>() { hstep.ID });
                             else
                                 CausalMap[tprecond].Add(hstep.ID);
+
+                            if (hstep.Height > 0)
+                            {
+                                // for reusing a step, need to add this step's effects?
+                            }
                         }
                         if (hstep.Effects.Contains(tprecond.GetReversed()))
                         {
@@ -129,12 +134,14 @@ namespace BoltFreezer.PlanTools
             {
                 foreach(var gstep in groundSteps)
                 {
+                    
                     if (gstep.Effects.Contains(goalCondition))
                     {
                         if (!CausalMap.ContainsKey(goalCondition))
                             CausalMap.Add(goalCondition, new List<int>() { gstep.ID });
                         else
                             CausalMap[goalCondition].Add(gstep.ID);
+
                     }
                     if (gstep.Effects.Contains(goalCondition.GetReversed()))
                     {

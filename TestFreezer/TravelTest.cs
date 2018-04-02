@@ -3,6 +3,7 @@ using BoltFreezer.DecompTools;
 using BoltFreezer.Enums;
 using BoltFreezer.FileIO;
 using BoltFreezer.Interfaces;
+using BoltFreezer.PlanSpace;
 using BoltFreezer.PlanTools;
 using BoltFreezer.Utilities;
 using System;
@@ -12,10 +13,10 @@ using System.Text;
 
 namespace TestFreezer
 {
-    public static class InputDecompositions
+    public static class TravelTest
     {
 
-        public static void TravelTest(bool serializeIt)
+        public static ProblemFreezer ReadDomainAndProblem(bool serializeIt)
         {
             var domainName = "travel-test";
             var domainDirectory = Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl";
@@ -27,7 +28,7 @@ namespace TestFreezer
                 PF.Serialize();
             else
                 PF.Deserialize();
-            
+            return PF;
         }
 
 
@@ -201,11 +202,8 @@ namespace TestFreezer
             return new Composite(op);
         }
 
-        public static Tuple<Composite, List<Decomposition>> ReadDecompositions(bool serializeIt)
+        public static List<Decomposition> ReadDecompositions()
         {
-
-            TravelTest(serializeIt);
-
             var decomps = new List<Decomposition>();
 
             var travelByCar = TravelByCar();
@@ -215,9 +213,29 @@ namespace TestFreezer
             decomps.Add(travelByCar);
             decomps.Add(travelByPlane);
             decomps.Add(genericTravel);
+            return decomps;
+        }
+
+        public static IPlan ReadAndCompile(bool serializeIt)
+        {
+            Parser.path = @"D:\documents\frostbow\boltfreezer\";
+
+            var pfreeze = ReadDomainAndProblem(serializeIt);
+
+            var decomps = ReadDecompositions();
             var composite = AddCompositeOperator();
 
-            return new Tuple<Composite, List<Decomposition>>(composite, decomps);
+            var CompositeMethods = new Tuple<Composite, List<Decomposition>>(composite, decomps);
+            Composite.ComposeHTNs(2, CompositeMethods);
+
+            CacheMaps.CacheLinks(GroundActionFactory.GroundActions);
+
+            var initPlan = PlanSpacePlanner.CreateInitialPlan(pfreeze);
+
+            CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, initPlan.Goal.Predicates);
+
+            return initPlan;
         }
+
     }
 }

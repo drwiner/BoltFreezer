@@ -29,7 +29,7 @@ namespace TestFreezer
             
         }
 
-        public static void RunTravelExperiment()
+        public static void RunJsonTravelExperiment()
         {
             Console.Write("hello world\n");
             var directory = @"D:\Documents\Frostbow\TravelExperiment\";
@@ -96,68 +96,14 @@ namespace TestFreezer
             }
         }
 
-        public static void ComposeHTNs(int hMax, Tuple<Composite, List<Decomposition>> Methods)
-        {
-            for (int h = 0; h < hMax; h++)
-            {
-                var compList = new List<Composite>();
-                foreach (var decomp in Methods.Second)
-                {
-                    var groundDecomps = decomp.Compose(h);
-
-                    foreach (var gdecomp in groundDecomps)
-                    {
-                        // clone composite task
-                        var comp = Methods.First.Clone() as Composite;
-
-                        // Set height of composite step
-                        comp.Height = h + 1;
-
-                        // Assign method to composite step
-                        var numUnBound = comp.ApplyDecomposition(gdecomp);
-
-                        // If all terms are bound, then add as is.
-                        if (numUnBound == 0)
-                        {
-                            compList.Add(comp);
-                        }
-                        // Otherwise, bind the remaining unbound terms
-                        else
-                        {
-                            // There could be more than one way to bind remaining terms
-                            var boundComps = comp.GroundRemainingArgs(numUnBound);
-                            foreach (var bc in boundComps)
-                            {
-                                // Add each possible way to bind remaining terms
-                                compList.Add(bc);
-                            }
-                        }
-                    }
-                }
-                // For each newly created composite step, add to the library.
-                foreach (var comp in compList)
-                {
-                    GroundActionFactory.InsertOperator(comp as IOperator);
-                }
-
-            }
-
-        }
-
-        public static void CacheCompositeSteps()
-        {
-            Parser.path = @"D:\documents\frostbow\boltfreezer\";
-
-            // True means we also serialize the domain (false means we deserialize).
-            var CompositeMethods = InputDecompositions.ReadDecompositions(true);
-
-            ComposeHTNs(2, CompositeMethods);
-            Console.Write("check");
-        }
-
         static void Main(string[] args)
         {
-            CacheCompositeSteps();
+            var cutoff = 6000f;
+            var k = 1;
+            var initPlan = TravelTest.ReadAndCompile(true);
+            var directory = @"D:\Documents\Frostbow\Benchmarks\travel-test\Results\";
+            System.IO.Directory.CreateDirectory(directory);
+            RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new AddReuseHeuristic()), k, cutoff, directory, 0);
         }
 
     }

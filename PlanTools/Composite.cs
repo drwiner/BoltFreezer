@@ -176,6 +176,54 @@ namespace BoltFreezer.PlanTools
             return compList;
         }
 
+        public static void ComposeHTNs(int hMax, Tuple<Composite, List<Decomposition>> Methods)
+        {
+            for (int h = 0; h < hMax; h++)
+            {
+                var compList = new List<Composite>();
+                foreach (var decomp in Methods.Second)
+                {
+                    var groundDecomps = decomp.Compose(h);
+
+                    foreach (var gdecomp in groundDecomps)
+                    {
+                        // clone composite task
+                        var comp = Methods.First.Clone() as Composite;
+
+                        // Set height of composite step
+                        comp.Height = h + 1;
+
+                        // Assign method to composite step
+                        var numUnBound = comp.ApplyDecomposition(gdecomp);
+
+                        // If all terms are bound, then add as is.
+                        if (numUnBound == 0)
+                        {
+                            compList.Add(comp);
+                        }
+                        // Otherwise, bind the remaining unbound terms
+                        else
+                        {
+                            // There could be more than one way to bind remaining terms
+                            var boundComps = comp.GroundRemainingArgs(numUnBound);
+                            foreach (var bc in boundComps)
+                            {
+                                // Add each possible way to bind remaining terms
+                                compList.Add(bc);
+                            }
+                        }
+                    }
+                }
+                // For each newly created composite step, add to the library.
+                foreach (var comp in compList)
+                {
+                    GroundActionFactory.InsertOperator(comp as IOperator);
+                }
+
+            }
+
+        }
+
         public new Object Clone()
         {
             var op = base.Clone() as IOperator;
