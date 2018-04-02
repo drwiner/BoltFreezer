@@ -364,6 +364,11 @@ namespace BoltFreezer.PlanTools
                     return false;
                 }
             }
+
+            if (other.Sign != null)
+                if (other.Sign != Sign)
+                    return false;
+
             return true;
         }
 

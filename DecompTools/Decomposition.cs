@@ -86,36 +86,69 @@ namespace BoltFreezer.DecompTools
         }
 
 
-        public List<Composite> Plannify(Composite composite)
+        /// <summary>
+        /// The Decomposition is composed of a sub-plan with at least sub-step at height "height"
+        /// </summary>
+        /// <returns>A list of decompositions with ground terms and where each sub-step is ground. </returns>
+        public List<Decomposition> Compose(int height)
         {
-            // List<Composite> fully ground decomp operators, return when ready to be cached.
-            var compList = new List<Composite>();
-
-            // List<Decomposition> decompList = For each grounding of operator terms with constants possessing consistent types.
-            var decompList = Compose();
-
-            Console.WriteLine("test");
-            // Create "Planets" (i.e. sub-plans) by aggregating legal/consistent ground steps replacing sub-steps 
-           
-            foreach (var newDecomp in decompList)
+            ///////////////////////////////////////
+            // START BY ADDING BINDINGS TO TERMS //
+            ///////////////////////////////////////
+            var permList = new List<List<IObject>>();
+            foreach (Term variable in Terms)
             {
-                var composite = new Composite(newDecomp.Name, newDecomp.Terms, ;
-                composite(newDecomp.Predicate)
-                // Get legal effects, all effects that are not preconditions unless ordered
+                permList.Add(GroundActionFactory.TypeDict[variable.Type] as List<IObject>);
             }
-            
 
-            // For each substep, find consistent ground step, check if it is "arg consistent". Each sub-step arg has unique ID. predicate-based args cannot be unique instances. 
-            // Also check if non equality constraints are observed. But, it may be that this isn't needed. it is in cinepydpocl not in pydpocl
-            // Then, filter and add orderings. When we add orderings, we also add orderings for all sub-steps
-            // Then add links and check if links are possible. If the linked condition is null, then any link condition will do.
-            // Finally, Create a Composite step out of this by propagating preconditions and effects to the top-level. 
+            var decompList = new List<Decomposition>();
+            foreach (var combination in EnumerableExtension.GenerateCombinations(permList))
+            {
+                // Add bindings
+                var decompClone = Clone() as Decomposition;
+                var termStringList = from term in decompClone.Terms select term.Variable;
+                var constantStringList = from objConst in combination select objConst.Name;
 
-            return compList;
+                decompClone.AddBindings(termStringList.ToList(), constantStringList.ToList());
+
+                // zip to dict
+                var varDict = EnumerableExtension.Zip(termStringList, constantStringList).ToDictionary(x => x.Key, x => x.Value);
+
+
+                /////////////////////////////////////////////////////////
+                // BINDINGS ARE ADDED. NEED TO APPLY BINDINGS TO SUBSTEPS
+                /////////////////////////////////////////////////////////
+
+                // Need to propagate bindings to sub-steps
+                foreach (var substep in decompClone.SubSteps)
+                {
+                    var op = substep.Action as Operator;
+                    foreach (var term in substep.Terms)
+                    {
+                        op.AddBinding(term.Variable, varDict[term.Variable]);
+                    }
+                }
+
+                ////////////////////////////////////////////////////////////////
+                // FILTER CANDIDATES FOR SUBSTEPS AND PASS BACK GROUNDED DECOMPS
+                ////////////////////////////////////////////////////////////////
+                var newGroundDecomps = FilterDecompCandidates(decompClone, height);
+                foreach (var gdecomp in newGroundDecomps)
+                {
+                    decompList.Add(gdecomp);
+                }
+                //Console.WriteLine("Check");
+            }
+
+            return decompList;
         }
 
-        // Finds consistent decomp
-        public static List<Decomposition> FilterDecompCandidates(Decomposition decomp)
+        /// <summary>
+        /// Filters candidates for substeps, at least one with height "height"
+        /// </summary>
+        /// <param name="decomp"></param>
+        /// <returns> List of decompositions with ground sub-steps. </returns>
+        public static List<Decomposition> FilterDecompCandidates(Decomposition decomp, int height)
         {
             // find and replace sub-steps 
             //var substepDict = new Dictionary<int, List<Operator>>();
@@ -124,7 +157,7 @@ namespace BoltFreezer.DecompTools
             foreach (var substep in decomp.SubSteps)
             {
                 ID_List.Add(substep.ID);
-                // each substep has ground terms that are already consistent
+                // each substep has ground terms that are already consistent. Composite IS-A Operator
                 var cndts = ConsistentSteps(substep.Action as Operator);
 
                 // If there's no cndts for this substep, then abandon this decomp.
@@ -142,12 +175,24 @@ namespace BoltFreezer.DecompTools
                 var newSubsteps = new List<IPlanStep>();
                 var substepDict = new Dictionary<int, IPlanStep>();
                 var order = 0;
+                var hasPrerequisiteHeight = false;
                 foreach (var item in combination)
                 {
+                    if (item.Height >= height)
+                    {
+                        // meets height requirement
+                        hasPrerequisiteHeight = true;
+                    }
                     var originalID = ID_List[order++];
                     var newPlanStep = new PlanStep(item);
                     substepDict[originalID] = newPlanStep;
                     newSubsteps.Add(newPlanStep);
+                }
+
+                // Did not meet requirements for height.
+                if (!hasPrerequisiteHeight)
+                {
+                    continue;
                 }
 
                 var newSuborderings = new List<Tuple<IPlanStep, IPlanStep>>();
@@ -216,49 +261,6 @@ namespace BoltFreezer.DecompTools
             }
             return decompList;
 
-        }  
-
-        public List<Decomposition> Compose()
-        {
-            var permList = new List<List<IObject>>();
-            foreach (Term variable in Terms)
-            {
-                permList.Add(GroundActionFactory.TypeDict[variable.Type] as List<IObject>);
-            }
-
-            var decompList = new List<Decomposition>();
-            foreach (var combination in EnumerableExtension.GenerateCombinations(permList))
-            {
-                // Add bindings
-                var decompClone = Clone() as Decomposition;
-                var termStringList = from term in decompClone.Terms select term.Variable;
-                var constantStringList = from objConst in combination select objConst.Name;
-                
-                decompClone.AddBindings(termStringList.ToList(), constantStringList.ToList());
-
-                // zip to dict
-                var varDict = EnumerableExtension.Zip(termStringList, constantStringList).ToDictionary(x=> x.Key, x=> x.Value);
-
-                // Need to propagate bindings to sub-steps
-                foreach (var substep in decompClone.SubSteps)
-                {
-                    var op = substep.Action as Operator;
-                    foreach (var term in substep.Terms)
-                    {
-                        op.AddBinding(term.Variable, varDict[term.Variable]);
-                    }
-                }
-
-                // should add to decompList in place.
-                var newGroundDecomps = FilterDecompCandidates(decompClone);
-                foreach (var gdecomp in newGroundDecomps)
-                {
-                    decompList.Add(gdecomp);
-                }
-                Console.WriteLine("Check");
-            }
-
-            return decompList;
         }
 
         /// <summary>

@@ -542,6 +542,7 @@ namespace BoltFreezer.PlanTools
 
             return new Operator(newName, newTerms, newBinds, newPreconditions, newEffects, newConditionals, ID)
             {
+                Height = height,
                 NonEqualities = nonequalities
             };
         }

@@ -177,7 +177,7 @@ namespace TestFreezer
             return decomp;
         }
 
-        public static Operator AddCompositeOperator()
+        public static Composite AddCompositeOperator()
         {
             var objTerms = new List<ITerm>() {
                 new Term("?person")     { Type = "person"},
@@ -198,10 +198,10 @@ namespace TestFreezer
                 NonEqualities = new List<List<ITerm>>() { new List<ITerm>() { objTerms[1], objTerms[2] } }
             };
 
-            return op;
+            return new Composite(op);
         }
 
-        public static List<Decomposition> ReadDecompositions(bool serializeIt)
+        public static Tuple<Composite, List<Decomposition>> ReadDecompositions(bool serializeIt)
         {
 
             TravelTest(serializeIt);
@@ -212,10 +212,12 @@ namespace TestFreezer
             var travelByPlane = TravelByPlane();
             var genericTravel = GenericSubStepExample();
 
-            decomps.Add(travelByCar);
-            decomps.Add(travelByPlane);
+            //decomps.Add(travelByCar);
+            //decomps.Add(travelByPlane);
             decomps.Add(genericTravel);
-            return decomps;
+            var composite = AddCompositeOperator();
+
+            return new Tuple<Composite, List<Decomposition>>(composite, decomps);
         }
     }
 }

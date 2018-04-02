@@ -16,6 +16,13 @@ namespace BoltFreezer.PlanTools
         private List<Tuple<IPlanStep, IPlanStep>> subOrderings;
         private List<CausalLink<IPlanStep>> subLinks;
         private List<IPlanStep> subSteps;
+        private List<IPredicate> primaryEffects;
+
+        public List<IPredicate> PrimaryEffects
+        {
+            get { return primaryEffects; }
+            set { primaryEffects = value; }
+        }
 
         public IOperator InitialStep {
             get { return initialStep; }
@@ -55,14 +62,14 @@ namespace BoltFreezer.PlanTools
             goalStep = new Operator();
         }
 
-        public Composite(string name, List<ITerm> terms, IOperator init, IOperator dummy, List<IPredicate> Preconditions, List<IPredicate> Effects, int ID) 
+        public Composite(string name, List<ITerm> terms, IOperator init, IOperator goal, List<IPredicate> Preconditions, List<IPredicate> Effects, int ID) 
             : base(name, terms, new Hashtable(), Preconditions, Effects, ID)
         {
             subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
             subLinks = new List<CausalLink<IPlanStep>>();
             subSteps = new List<IPlanStep>();
-            initialStep = new Operator();
-            goalStep = new Operator();
+            initialStep = init;
+            goalStep = goal;
         }
 
         public Composite(IOperator core, IOperator init, IOperator goal, List<IPlanStep> substeps, List<Tuple<IPlanStep, IPlanStep>> suborderings, List<CausalLink<IPlanStep>> sublinks)
@@ -76,12 +83,97 @@ namespace BoltFreezer.PlanTools
             Height = core.Height;
         }
 
-        public void ApplyDecomposition(Decomposition decomp)
+        public Composite(IOperator core) : base(core.Name, core.Terms, new Hashtable(), core.Preconditions, core.Effects, core.ID)
         {
+            subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
+            subLinks = new List<CausalLink<IPlanStep>>();
+            subSteps = new List<IPlanStep>();
+            initialStep = new Operator("dummyInit", new List<IPredicate>(), core.Preconditions);
+            goalStep = new Operator("dummyGoal", core.Effects, new List<IPredicate>());
+            Height = core.Height;
+            NonEqualities = core.NonEqualities;
+        }
+
+        public int ApplyDecomposition(Decomposition decomp)
+        {
+            var numUnBoundArgs = 0;
             subSteps = decomp.SubSteps;
             subOrderings = decomp.SubOrderings;
             subLinks = decomp.SubLinks;
-            // Match terms (by constants) before this... but how?
+
+            // For each variable term, find and substitute decomp term
+            foreach (var term in Terms)
+            {
+                var decompTerm = decomp.Terms.FirstOrDefault(dterm => term.Variable.Equals(dterm.Variable));
+                if (decompTerm == null)
+                {
+                    numUnBoundArgs++;
+                    // need to pick some object to substitute. Any will do.
+                    continue;
+
+                }
+                AddBinding(term.Variable, decompTerm.Constant);
+            }
+
+            //var unlistedDecompTerms = decomp.Terms.Where(dt => !Terms.Any(t => dt.Equals(t)));
+            //foreach (var udt in unlistedDecompTerms)
+            //{
+            //    Terms.Add(udt);
+            //}
+
+            return numUnBoundArgs;
+        }
+
+        public List<Composite> GroundRemainingArgs(int numUnBound)
+        {
+            var compList = new List<Composite>();
+
+            foreach (var term in Terms)
+            {
+                if (term.Bound)
+                {
+                    continue;
+                }
+
+                if (numUnBound == 1)
+                {
+
+                    var legalSubstitutions = GroundActionFactory.TypeDict[term.Type] as List<IObject>;
+                    foreach (var legalSub in legalSubstitutions)
+                    {
+                        var compClone = Clone() as Composite;
+                        compClone.AddBinding(term.Variable, legalSub.Name);
+                        if (!compClone.NonEqualTermsAreNonequal())
+                            continue;
+                        compList.Add(compClone);
+                    }
+                }
+                else
+                {
+                    if (compList.Count == 0)
+                    {
+                        compList.Add(this);
+                    }
+                    var legalSubstitutions = GroundActionFactory.TypeDict[term.Type] as List<IObject>;
+                    var newComps = new List<Composite>();
+                    foreach (var existingUnBoundComp in compList)
+                    {
+                        foreach (var legalSub in legalSubstitutions)
+                        {
+                            var compClone = existingUnBoundComp.Clone() as Composite;
+                            compClone.AddBinding(term.Variable, legalSub.Name);
+                            if (!compClone.NonEqualTermsAreNonequal())
+                                continue;
+                            newComps.Add(compClone);
+                        }
+                    }
+                    // overwrite with members that have one more bound item
+                    compList = newComps;
+
+                }
+            }
+
+            return compList;
         }
 
         public new Object Clone()
@@ -89,7 +181,8 @@ namespace BoltFreezer.PlanTools
             var op = base.Clone() as IOperator;
             return new Composite(op, InitialStep, GoalStep, SubSteps, SubOrderings, SubLinks)
             {
-                Height = this.Height
+                Height = this.Height,
+                NonEqualities = this.NonEqualities
             };
         }
     }
