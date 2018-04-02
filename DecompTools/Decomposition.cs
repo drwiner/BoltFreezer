@@ -127,6 +127,30 @@ namespace BoltFreezer.DecompTools
                     {
                         op.AddBinding(term.Variable, varDict[term.Variable]);
                     }
+                    foreach (var precon in substep.Preconditions)
+                    {
+                        foreach (var term in precon.Terms)
+                        {
+                            if (!term.Bound)
+                            {
+                                var decompTerm = decompClone.Terms.First(dterm => dterm.Variable.Equals(term.Variable));
+                                op.Terms.Add(term);
+                                op.AddBinding(term.Variable, decompTerm.Constant);
+                            }
+                        }
+                    }
+                    foreach (var eff in substep.Effects)
+                    {
+                        foreach (var term in eff.Terms)
+                        {
+                            if (!term.Bound)
+                            {
+                                var decompTerm = decompClone.Terms.First(dterm => dterm.Variable.Equals(term.Variable));
+                                op.Terms.Add(term);
+                                op.AddBinding(term.Variable, decompTerm.Constant);
+                            }
+                        }
+                    }
                 }
 
                 ////////////////////////////////////////////////////////////////
@@ -273,7 +297,8 @@ namespace BoltFreezer.DecompTools
             
             var Cndts = GroundActionFactory.GroundActions as IEnumerable<IOperator>;
 
-            Cndts = FilterOperatorsByPredicate(substep, Cndts);
+            if (!substep.Name.Equals(""))
+                Cndts = FilterOperatorsByPredicate(substep, Cndts);
             Cndts = FilterOperatorsByPreconditionsAndEffects(substep, Cndts);
 
             return Cndts.ToList();

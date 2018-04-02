@@ -357,6 +357,11 @@ namespace BoltFreezer.PlanTools
                     return false;
             }
 
+            if (other.Arity != Arity)
+            {
+                return false;
+            }
+
             for (int i =0; i<other.Terms.Count; i++)
             {
                 if (!Terms[i].IsConsistent(other.Terms[i]))

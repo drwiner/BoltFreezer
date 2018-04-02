@@ -212,8 +212,8 @@ namespace TestFreezer
             var travelByPlane = TravelByPlane();
             var genericTravel = GenericSubStepExample();
 
-            //decomps.Add(travelByCar);
-            //decomps.Add(travelByPlane);
+            decomps.Add(travelByCar);
+            decomps.Add(travelByPlane);
             decomps.Add(genericTravel);
             var composite = AddCompositeOperator();
 

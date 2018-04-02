@@ -107,6 +107,7 @@ namespace TestFreezer
 
                     foreach (var gdecomp in groundDecomps)
                     {
+                        // clone composite task
                         var comp = Methods.First.Clone() as Composite;
 
                         // Set height of composite step
