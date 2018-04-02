@@ -1,4 +1,5 @@
-﻿using BoltFreezer.Interfaces;
+﻿using BoltFreezer.DecompTools;
+using BoltFreezer.Interfaces;
 using BoltFreezer.Utilities;
 using System;
 using System.Collections;
@@ -75,9 +76,18 @@ namespace BoltFreezer.PlanTools
             Height = core.Height;
         }
 
+        public void ApplyDecomposition(Decomposition decomp)
+        {
+            subSteps = decomp.SubSteps;
+            subOrderings = decomp.SubOrderings;
+            subLinks = decomp.SubLinks;
+            // Match terms (by constants) before this... but how?
+        }
+
         public new Object Clone()
         {
-            return new Composite(this as IOperator, InitialStep, GoalStep, SubSteps, SubOrderings, SubLinks)
+            var op = base.Clone() as IOperator;
+            return new Composite(op, InitialStep, GoalStep, SubSteps, SubOrderings, SubLinks)
             {
                 Height = this.Height
             };

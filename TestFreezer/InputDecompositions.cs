@@ -63,20 +63,20 @@ namespace TestFreezer
             var s2terms = new List<ITerm>() { objTerms[0], objTerms[3], objTerms[1], objTerms[2] };
             var s3terms = new List<ITerm>() { objTerms[0], objTerms[3], objTerms[2] };
 
-            var s1 = new PlanStep(new Operator(new Predicate("s1", s1terms, true)));
-            var s2 = new PlanStep(new Operator(new Predicate("s2", s2terms, true)));
-            var s3 = new PlanStep(new Operator(new Predicate("s3", s3terms, true)));
+            var getInCar = new PlanStep(new Operator(new Predicate("get-in-car", s1terms, true)));
+            var drive = new PlanStep(new Operator(new Predicate("drive", s2terms, true)));
+            var getOutOfCar = new PlanStep(new Operator(new Predicate("get-out-of-car", s3terms, true)));
 
             var inPersonCar = new Predicate("in", new List<ITerm>() { objTerms[0], objTerms[3] }, true);
             var atCarTo = new Predicate("at", new List<ITerm>() { objTerms[3], objTerms[2] }, true);
 
             //new Operator()
-            var substeps = new List<IPlanStep>() { s1, s2, s3 };
+            var substeps = new List<IPlanStep>() { getInCar, drive, getOutOfCar };
             var sublinks = new List<CausalLink<IPlanStep>>()
             {
-                new CausalLink<IPlanStep>(inPersonCar, s1, s2),
-                new CausalLink<IPlanStep>(inPersonCar, s1, s3),
-                new CausalLink<IPlanStep>(atCarTo, s2, s3)
+                new CausalLink<IPlanStep>(inPersonCar, getInCar, drive),
+                new CausalLink<IPlanStep>(inPersonCar, getInCar, getOutOfCar),
+                new CausalLink<IPlanStep>(atCarTo, drive, getOutOfCar)
             };
             var suborderings = new List<Tuple<IPlanStep, IPlanStep>>();
 
@@ -175,6 +175,30 @@ namespace TestFreezer
             var root = new Operator(new Predicate("generic-travel", objTerms, true));
             var decomp = new Decomposition(root, litTerms, new List<IPlanStep>() { travelSubStep }, new List<Tuple<IPlanStep, IPlanStep>>(), new List<CausalLink<IPlanStep>>());
             return decomp;
+        }
+
+        public static Operator AddCompositeOperator()
+        {
+            var objTerms = new List<ITerm>() {
+                new Term("?person")     { Type = "person"},
+                new Term("?from")         { Type = "place"},
+                new Term("?to")         { Type = "place"},
+            };
+
+            var atPersonFrom = new Predicate("at", new List<ITerm>() { objTerms[0], objTerms[1] }, true);
+            var notAtPersonFrom = new Predicate("at", new List<ITerm>() { objTerms[0], objTerms[1] }, false);
+            var atPersonTo = new Predicate("at", new List<ITerm>() { objTerms[0], objTerms[2] }, true);
+
+            var op = 
+                new Operator(new Predicate("Travel", objTerms, true),
+                    new List<IPredicate>() { atPersonFrom },
+                    new List<IPredicate>() { notAtPersonFrom, atPersonTo }
+                )
+            {
+                NonEqualities = new List<List<ITerm>>() { new List<ITerm>() { objTerms[1], objTerms[2] } }
+            };
+
+            return op;
         }
 
         public static List<Decomposition> ReadDecompositions(bool serializeIt)

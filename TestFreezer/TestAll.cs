@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using BoltFreezer.CacheTools;
+using BoltFreezer.DecompTools;
 using BoltFreezer.Enums;
 using BoltFreezer.FileIO;
 using BoltFreezer.Interfaces;
@@ -99,7 +100,11 @@ namespace TestFreezer
             Parser.path = @"D:\documents\frostbow\boltfreezer\";
             // parameter is whether to serialize the domain. 
             var decompSchemata = InputDecompositions.ReadDecompositions(true);
-            Console.WriteLine("Test");
+            
+            foreach (var decomp in decompSchemata)
+            {
+                var composites = Decomposition.Plannify(decomp);
+            }
         }
 
         static void Main(string[] args)

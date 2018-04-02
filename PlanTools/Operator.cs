@@ -383,7 +383,9 @@ namespace BoltFreezer.PlanTools
             
             foreach (var nonequals in NonEqualities)
             {
-                if (nonequals[0].Equals(nonequals[1]))
+                var first = Terms.First(term => term.Variable.Equals(nonequals[0].Variable));
+                var second = Terms.First(term => term.Variable.Equals(nonequals[1].Variable));
+                if (first.Constant.Equals(second.Constant))
                     return false;
             }
             return true;

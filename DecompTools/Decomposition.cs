@@ -86,20 +86,22 @@ namespace BoltFreezer.DecompTools
         }
 
 
-        public static List<Composite> Plannify(Decomposition decomp)
+        public List<Composite> Plannify(Composite composite)
         {
             // List<Composite> fully ground decomp operators, return when ready to be cached.
             var compList = new List<Composite>();
 
             // List<Decomposition> decompList = For each grounding of operator terms with constants possessing consistent types.
-            var decompList = Compose(decomp);
+            var decompList = Compose();
 
             Console.WriteLine("test");
             // Create "Planets" (i.e. sub-plans) by aggregating legal/consistent ground steps replacing sub-steps 
            
             foreach (var newDecomp in decompList)
             {
-                // get legal effects
+                var composite = new Composite(newDecomp.Name, newDecomp.Terms, ;
+                composite(newDecomp.Predicate)
+                // Get legal effects, all effects that are not preconditions unless ordered
             }
             
 
@@ -113,21 +115,27 @@ namespace BoltFreezer.DecompTools
         }
 
         // Finds consistent decomp
-        public static void FilterDecompCandidates(List<Decomposition> decompList, Decomposition decomp)
+        public static List<Decomposition> FilterDecompCandidates(Decomposition decomp)
         {
             // find and replace sub-steps 
             //var substepDict = new Dictionary<int, List<Operator>>();
-            var comboList = new List<List<Operator>>();
+            var comboList = new List<List<IOperator>>();
             var ID_List = new List<int>();
             foreach (var substep in decomp.SubSteps)
             {
                 ID_List.Add(substep.ID);
                 // each substep has ground terms that are already consistent
                 var cndts = ConsistentSteps(substep.Action as Operator);
+
+                // If there's no cndts for this substep, then abandon this decomp.
+                if (cndts.Count == 0)
+                    return new List<Decomposition>();
+
                 //substepDict[substep.ID] = cndts;
                 comboList.Add(cndts);
             }
-            
+
+            List<Decomposition> decompList = new List<Decomposition>();
             foreach (var combination in EnumerableExtension.GenerateCombinations(comboList))
             {
                 var decompClone = decomp.Clone() as Decomposition;
@@ -151,25 +159,47 @@ namespace BoltFreezer.DecompTools
                 }
 
                 var linkWorlds = new List<List<CausalLink<IPlanStep>>>();
+                linkWorlds.Add(new List<CausalLink<IPlanStep>>());
                 var newSublinks = new List<CausalLink<IPlanStep>>();
                 foreach (var sublink in decomp.SubLinks)
                 {
+                    var head = substepDict[sublink.Head.ID];
+                    var tail = substepDict[sublink.Tail.ID];
+                    var cndts = head.Effects.Where(eff => eff.IsConsistent(sublink.Predicate) && tail.Preconditions.Any(pre=> pre.Equals(eff)));
 
-                    var cndts = sublink.Head.Effects.Where(eff => eff.IsConsistent(sublink.Predicate) && sublink.Tail.Preconditions.Any(pre=> pre.Equals(eff)));
-                    foreach (var cndt in cndts)
+                    if (cndts.Count() == 0)
                     {
+                        // forfeit this entire subplan
+                        linkWorlds = new List<List<CausalLink<IPlanStep>>>();
+                        continue;
+                    }
+                    if (cndts.Count() == 1)
+                    {
+                        var cndt = cndts.First();
                         var dependency = cndt.Clone() as Predicate;
-                        var head = substepDict[sublink.Head.ID].Clone() as IPlanStep;
-                        var tail = substepDict[sublink.Tail.ID].Clone() as IPlanStep;
                         var newLink = new CausalLink<IPlanStep>(dependency, head, tail);
                         newLink.Tail.Fulfill(cndt);
-
-                        var clonedLinks = EnumerableExtension.CloneList(newSublinks);
-                        linkWorlds.Add(clonedLinks);
-                        foreach(var linkworld in linkWorlds)
+                        foreach( var linkworld in linkWorlds)
                         {
                             linkworld.Add(newLink);
-                        }   
+                        }
+                    }
+                    else
+                    {
+                        foreach (var cndt in cndts)
+                        {
+                            var dependency = cndt.Clone() as Predicate;
+                            var newLink = new CausalLink<IPlanStep>(dependency, head, tail);
+                            newLink.Tail.Fulfill(cndt);
+
+                            var clonedLinks = EnumerableExtension.CloneList(newSublinks);
+
+                            linkWorlds.Add(clonedLinks);
+                            foreach (var linkworld in linkWorlds)
+                            {
+                                linkworld.Add(newLink);
+                            }
+                        }
                     }
                 }
 
@@ -184,13 +214,14 @@ namespace BoltFreezer.DecompTools
                 }
 
             }
+            return decompList;
 
         }  
 
-        public static List<Decomposition> Compose(Decomposition decomp)
+        public List<Decomposition> Compose()
         {
             var permList = new List<List<IObject>>();
-            foreach (Term variable in decomp.Terms)
+            foreach (Term variable in Terms)
             {
                 permList.Add(GroundActionFactory.TypeDict[variable.Type] as List<IObject>);
             }
@@ -199,7 +230,7 @@ namespace BoltFreezer.DecompTools
             foreach (var combination in EnumerableExtension.GenerateCombinations(permList))
             {
                 // Add bindings
-                var decompClone = decomp.Clone() as Decomposition;
+                var decompClone = Clone() as Decomposition;
                 var termStringList = from term in decompClone.Terms select term.Variable;
                 var constantStringList = from objConst in combination select objConst.Name;
                 
@@ -219,15 +250,15 @@ namespace BoltFreezer.DecompTools
                 }
 
                 // should add to decompList in place.
-                FilterDecompCandidates(decompList, decompClone);
+                var newGroundDecomps = FilterDecompCandidates(decompClone);
+                foreach (var gdecomp in newGroundDecomps)
+                {
+                    decompList.Add(gdecomp);
+                }
+                Console.WriteLine("Check");
             }
 
             return decompList;
-        }
-
-        public static bool IsParamConsistent()
-        {
-            return true;
         }
 
         /// <summary>
@@ -235,23 +266,23 @@ namespace BoltFreezer.DecompTools
         /// </summary>
         /// <param name="substep"></param>
         /// <returns></returns>
-        public static List<Operator> ConsistentSteps(Operator substep)
+        public static List<IOperator> ConsistentSteps(Operator substep)
         {
             
-            var Cndts = GroundActionFactory.GroundActions as IEnumerable<Operator>;
+            var Cndts = GroundActionFactory.GroundActions as IEnumerable<IOperator>;
 
             Cndts = FilterOperatorsByPredicate(substep, Cndts);
             Cndts = FilterOperatorsByPreconditionsAndEffects(substep, Cndts);
 
-            return Cndts as List<Operator>;
+            return Cndts.ToList();
         }
 
-        public static IEnumerable<Operator> FilterOperatorsByPredicate(Operator substep, IEnumerable<Operator> Cndts)
+        public static IEnumerable<IOperator> FilterOperatorsByPredicate(Operator substep, IEnumerable<IOperator> Cndts)
         {
             return Cndts.Where(op => op.Predicate.IsConsistent(substep.Predicate));
         }
 
-        public static IEnumerable<Operator> FilterOperatorsByPreconditionsAndEffects(Operator substep, IEnumerable<Operator> Cndts)
+        public static IEnumerable<IOperator> FilterOperatorsByPreconditionsAndEffects(Operator substep, IEnumerable<IOperator> Cndts)
         {
 
             foreach (var eff in substep.Effects)
@@ -265,25 +296,28 @@ namespace BoltFreezer.DecompTools
             return Cndts;
         }
 
-        public static IEnumerable<Operator> FilterOperatorsByPrecondition(Predicate precon, IEnumerable<Operator> Cndts)
+        public static IEnumerable<IOperator> FilterOperatorsByPrecondition(Predicate precon, IEnumerable<IOperator> Cndts)
         {
             return Cndts.Where(op => op.Preconditions.Any(pre => pre.IsConsistent(precon)));
         }
 
-        public static IEnumerable<Operator> FilterOperatorsByEffect(Predicate effect, IEnumerable<Operator> Cndts)
+        public static IEnumerable<IOperator> FilterOperatorsByEffect(Predicate effect, IEnumerable<IOperator> Cndts)
         {
             return Cndts.Where(op => op.Effects.Any(pre => pre.IsConsistent(effect)));
         }
 
         public new Object Clone()
         {
+            var op = base.Clone() as IOperator;
             var newSubsteps = new List<IPlanStep>();
             foreach (var substep in SubSteps)
             {
-                newSubsteps.Add(substep.Clone() as IPlanStep);
+                var newsubstep = substep.Clone() as IPlanStep;
+                newsubstep.Action = newsubstep.Action.Clone() as Operator;
+                newSubsteps.Add(newsubstep);
             }
             // do same for literals
-            return new Decomposition(this as IOperator, Literals, newSubsteps, SubOrderings, SubLinks);
+            return new Decomposition(op, Literals, newSubsteps, SubOrderings, SubLinks);
         }
 
     }
