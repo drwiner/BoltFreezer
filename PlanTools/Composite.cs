@@ -170,6 +170,27 @@ namespace BoltFreezer.PlanTools
                         compClone.AddBinding(term.Variable, legalSub.Name);
                         if (!compClone.NonEqualTermsAreNonequal())
                             continue;
+
+                        // find this unbound arg in Initial and Goal steps
+                        foreach (var effect in compClone.InitialStep.Effects)
+                        {
+                            var unboundTerms = effect.Terms.Where(t => !t.Bound);
+                            foreach (var unboundTerm in unboundTerms)
+                            {
+                                var compTerm = compClone.Terms.FirstOrDefault(cterm => unboundTerm.Variable.Equals(cterm.Variable));
+                                unboundTerm.Constant = compTerm.Constant;
+                            }
+                        }
+                        foreach (var precon in compClone.GoalStep.Preconditions)
+                        {
+                            var unboundTerms = precon.Terms.Where(t => !t.Bound);
+                            foreach (var unboundTerm in unboundTerms)
+                            {
+                                var compTerm = compClone.Terms.FirstOrDefault(cterm => unboundTerm.Variable.Equals(cterm.Variable));
+                                unboundTerm.Constant = compTerm.Constant;
+                            }
+                        }
+
                         compList.Add(compClone);
                     }
                 }
@@ -189,6 +210,27 @@ namespace BoltFreezer.PlanTools
                             compClone.AddBinding(term.Variable, legalSub.Name);
                             if (!compClone.NonEqualTermsAreNonequal())
                                 continue;
+
+                            // find this unbound arg in Initial and Goal steps
+                            foreach (var effect in compClone.InitialStep.Effects)
+                            {
+                                var unboundTerms = effect.Terms.Where(t => !t.Bound);
+                                foreach (var unboundTerm in unboundTerms)
+                                {
+                                    var compTerm = compClone.Terms.FirstOrDefault(cterm => unboundTerm.Variable.Equals(cterm.Variable));
+                                    unboundTerm.Constant = compTerm.Constant;
+                                }
+                            }
+                            foreach (var precon in compClone.GoalStep.Preconditions)
+                            {
+                                var unboundTerms = precon.Terms.Where(t => !t.Bound);
+                                foreach (var unboundTerm in unboundTerms)
+                                {
+                                    var compTerm = compClone.Terms.FirstOrDefault(cterm => unboundTerm.Variable.Equals(cterm.Variable));
+                                    unboundTerm.Constant = compTerm.Constant;
+                                }
+                            }
+
                             newComps.Add(compClone);
                         }
                     }

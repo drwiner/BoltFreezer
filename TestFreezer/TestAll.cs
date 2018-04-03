@@ -70,7 +70,7 @@ namespace TestFreezer
 
         public static void RunTravelTestInternal()
         {
-            var cutoff = 6000f;
+            var cutoff = 600000f;
             var k = 1;
             
             var directory = @"D:\Documents\Frostbow\Benchmarks\travel-test\Results\";
@@ -102,6 +102,9 @@ namespace TestFreezer
                 RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E4(new ZeroHeuristic()), k, cutoff, directory, i);
                 RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E5(new ZeroHeuristic()), k, cutoff, directory, i);
                 RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E6(new ZeroHeuristic()), k, cutoff, directory, i);
+
+                RunPlanner(initPlan.Clone() as IPlan, new DFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new BFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, i);
             }
         }
 
