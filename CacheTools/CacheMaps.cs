@@ -88,6 +88,37 @@ namespace BoltFreezer.PlanTools
                         }
                     }
                 }
+
+                // also need to load composite effects because these are dummy goal step open conditions.
+                if (tstep.Height > 0)
+                {
+                    foreach (var teff in tstep.Effects)
+                    {
+                        if (CausalMap.ContainsKey(teff) || ThreatMap.ContainsKey(teff))
+                        {
+                            // Then this precondition has already been evaluated.
+                            continue;
+                        }
+
+                        foreach (var hstep in groundSteps)
+                        {
+                            if (hstep.Effects.Contains(teff))
+                            {
+                                if (!CausalMap.ContainsKey(teff))
+                                    CausalMap.Add(teff, new List<int>() { hstep.ID });
+                                else
+                                    CausalMap[teff].Add(hstep.ID);
+                            }
+                            if (hstep.Effects.Contains(teff.GetReversed()))
+                            {
+                                if (!ThreatMap.ContainsKey(teff))
+                                    ThreatMap.Add(teff, new List<int>() { hstep.ID });
+                                else
+                                    ThreatMap[teff].Add(hstep.ID);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -123,7 +154,36 @@ namespace BoltFreezer.PlanTools
                         }
                     }
                 }
+                // also need to load composite effects because these are dummy goal step open conditions.
+                if (tstep.Height > 0)
+                {
+                    foreach (var teff in tstep.Effects)
+                    {
+                        if (CausalMap.ContainsKey(teff) || ThreatMap.ContainsKey(teff))
+                        {
+                            // Then this precondition has already been evaluated.
+                            continue;
+                        }
 
+                        foreach (var hstep in heads)
+                        {
+                            if (hstep.Effects.Contains(teff))
+                            {
+                                if (!CausalMap.ContainsKey(teff))
+                                    CausalMap.Add(teff, new List<int>() { hstep.ID });
+                                else
+                                    CausalMap[teff].Add(hstep.ID);
+                            }
+                            if (hstep.Effects.Contains(teff.GetReversed()))
+                            {
+                                if (!ThreatMap.ContainsKey(teff))
+                                    ThreatMap.Add(teff, new List<int>() { hstep.ID });
+                                else
+                                    ThreatMap[teff].Add(hstep.ID);
+                            }
+                        }
+                    }
+                }
             }
         }
 

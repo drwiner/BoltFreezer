@@ -145,6 +145,11 @@ namespace BoltFreezer.PlanSpace
                     continue;
                 }
 
+                //if (step.Effects.Contains(oc.precondition))
+                //{
+                //    Console.Write("here");
+                //}
+
                 if (CacheMaps.IsCndt(oc.precondition, step)){
                     // before adding a repair, check if there is a path.
                     if (plan.Orderings.IsPath(oc.step, step))
