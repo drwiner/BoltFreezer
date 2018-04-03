@@ -33,7 +33,7 @@ namespace BoltFreezer.PlanTools
             //        Where(intID => x.First.Equals(elm)).Select(x => x.Second);
             //return from intID in ThreatMap[pred] select GroundActionFactory.GroundLibrary[intID];
             return new List<IOperator>();
-        }
+        }        
 
         public static bool IsCndt(IPredicate pred, IPlanStep ps)
         {
@@ -79,6 +79,23 @@ namespace BoltFreezer.PlanTools
                                 ThreatMap.Add(tprecond, new List<int>() { hstep.ID });
                             else
                                 ThreatMap[tprecond].Add(hstep.ID);
+                        }
+                        if (hstep.Height > 0)
+                        {
+                            var hstepComposite = hstep as Composite;
+
+                            // Add 
+                            if (!GroundActionFactory.GroundLibrary.ContainsKey(hstepComposite.GoalStep.ID))
+                            {
+                                GroundActionFactory.GroundLibrary[hstepComposite.GoalStep.ID] = hstepComposite.GoalStep;
+                            }
+                            if (!GroundActionFactory.GroundLibrary.ContainsKey(hstepComposite.InitialStep.ID))
+                            {
+                                GroundActionFactory.GroundLibrary[hstepComposite.InitialStep.ID] = hstepComposite.InitialStep;
+                            }
+
+                            // The only items that can use the dummy initialStep are substeps.
+                            hstep
                         }
                     }
 

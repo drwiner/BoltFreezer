@@ -14,6 +14,8 @@ namespace BoltFreezer.Interfaces
         // Identification
         new int ID { get; set;  }
 
+        IPlanStep InitCndt { get; set; }
+
         int Depth { get; set; }
 
         // Actions keep track of open preconditions

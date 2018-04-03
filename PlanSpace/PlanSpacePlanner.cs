@@ -97,12 +97,6 @@ namespace BoltFreezer.PlanSpace
             {
                 if (cndt == null)
                     continue;
-                // only possible for reading in python json
-                if (cndt.ID == plan.InitialStep.Action.ID)
-                    continue;
-                // same with above: cannot insert a dummy step. These will get inserted when composite step is inserted.
-                if (cndt.Name.Split(':')[0].Equals("begin") || cndt.Name.Split(':')[0].Equals("finish"))
-                    continue;
 
                 var planClone = plan.Clone() as IPlan;
                 IPlanStep newStep;
@@ -142,6 +136,15 @@ namespace BoltFreezer.PlanSpace
                 {
                     continue;
                 }
+
+                if (step == oc.step.InitCndt && step.Effects.Contains(oc.precondition))
+                {
+                    var planClone = plan.Clone() as IPlan;
+                    planClone.Repair(oc, step);
+                    Insert(planClone);
+                    continue;
+                }
+
                 if (CacheMaps.IsCndt(oc.precondition, step)){
                     // before adding a repair, check if there is a path.
                     if (plan.Orderings.IsPath(oc.step, step))

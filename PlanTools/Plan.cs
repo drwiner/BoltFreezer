@@ -191,6 +191,12 @@ namespace BoltFreezer.PlanTools
             //var dummyGoal = new PlanStep(newStep.GoalStep.Clone() as IOperator);
             var dummyGoal = newStep.GoalStep.Clone() as IPlanStep;
             Insert(dummyGoal);
+            //if (!GroundActionFactory.GroundLibrary.ContainsKey(dummyGoal.Action.ID))
+            //{
+            //    GroundActionFactory.GroundLibrary[dummyGoal.Action.ID] = dummyGoal.Action;
+            //}
+            //CacheMaps.CausalMap[]
+
             IDMap[newStep.GoalStep.ID] = dummyGoal;
             Orderings.Insert(dummyInit, dummyGoal);
 
@@ -211,6 +217,7 @@ namespace BoltFreezer.PlanTools
                     Orderings.Insert(compositeSubStep.GoalStep, dummyGoal);
                     Orderings.Insert(dummyInit, compositeSubStep.InitialStep);
                     IDMap[substep.ID] = compositeSubStep;
+                    compositeSubStep.InitialStep.InitCndt = dummyInit;
                     newSubSteps.Add(compositeSubStep);
                     Insert(compositeSubStep);
                     if (compositeSubStep.Depth + 1 > Hdepth)
@@ -229,6 +236,7 @@ namespace BoltFreezer.PlanTools
                     IDMap[substep.ID] = newsubstep;
                     newSubSteps.Add(newsubstep);
                     Insert(newsubstep);
+                    newsubstep.InitCndt = dummyInit;
                     if (newStep.Depth + 1 > Hdepth)
                     {
                         Hdepth = newStep.Depth + 1;

@@ -12,9 +12,14 @@ namespace BoltFreezer.PlanTools
         private IOperator action;
         private List<IPredicate> openConditions;
         private int depth = 0;
-
+        private IPlanStep initCndt;
         private int id;
 
+        public IPlanStep InitCndt
+        {
+            get { return initCndt; }
+            set { InitCndt = value; }
+        }
 
         public IOperator Action
         {
@@ -182,7 +187,8 @@ namespace BoltFreezer.PlanTools
         {
             return new PlanStep(Action, OpenConditions, ID)
             {
-                Depth = depth
+                Depth = depth,
+                InitCndt = initCndt
             };
         }
 
