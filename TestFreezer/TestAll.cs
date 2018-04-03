@@ -70,7 +70,7 @@ namespace TestFreezer
 
         public static void RunTravelTestInternal()
         {
-            var cutoff = 600000f;
+            var cutoff = 6000f;
             var k = 1;
             
             var directory = @"D:\Documents\Frostbow\Benchmarks\travel-test\Results\";
