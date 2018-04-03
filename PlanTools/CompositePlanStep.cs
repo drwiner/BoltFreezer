@@ -99,6 +99,21 @@ namespace BoltFreezer.PlanTools
             subLinks = comp.SubLinks;
         }
 
+        // Declaring new Composite Plan Step from sub-step, base(ps) will assign new ID to plan step.
+        public CompositePlanStep(IPlanStep ps) : base(ps)
+        {
+            compositeAction = ps.Action as Composite;
+
+            // This is the moment the initial step and goal step are instantiated. They will be cloned before inserted
+            initialStep = new PlanStep(compositeAction.InitialStep);
+            goalStep = new PlanStep(compositeAction.GoalStep);
+
+            // Sub-steps are to be newly instantiated later during inset decomp. 
+            subSteps = compositeAction.SubSteps;
+            subOrderings = compositeAction.SubOrderings;
+            subLinks = compositeAction.SubLinks;
+        }
+
         public new Object Clone()
         {
             return new CompositePlanStep(CompositeAction, OpenConditions, InitialStep, GoalStep, SubSteps, SubOrderings, SubLinks, ID)

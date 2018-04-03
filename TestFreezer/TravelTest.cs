@@ -16,12 +16,12 @@ namespace TestFreezer
     public static class TravelTest
     {
 
-        public static ProblemFreezer ReadDomainAndProblem(bool serializeIt)
+        public static ProblemFreezer ReadDomainAndProblem(bool serializeIt, int whichProblem)
         {
             var domainName = "travel-test";
             var domainDirectory = Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl";
             var domain = Parser.GetDomain(Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl", PlanType.PlanSpace);
-            var problem = Parser.GetProblem(Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\travel-1.pddl");
+            var problem = Parser.GetProblem(Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\travel-" + whichProblem.ToString() + @".pddl");
 
             var PF = new ProblemFreezer(domainName, domainDirectory, domain, problem);
             if (serializeIt)
@@ -79,7 +79,11 @@ namespace TestFreezer
                 new CausalLink<IPlanStep>(inPersonCar, getInCar, getOutOfCar),
                 new CausalLink<IPlanStep>(atCarTo, drive, getOutOfCar)
             };
-            var suborderings = new List<Tuple<IPlanStep, IPlanStep>>();
+            var suborderings = new List<Tuple<IPlanStep, IPlanStep>>()
+            {
+                new Tuple<IPlanStep,IPlanStep>(getInCar, drive),
+                new Tuple<IPlanStep,IPlanStep>(drive, getOutOfCar)
+            };
 
             var root = new Operator(new Predicate("travel-by-car", objTerms, true));
             var decomp = new Decomposition(root, litTerms, substeps, suborderings, sublinks);
@@ -142,7 +146,12 @@ namespace TestFreezer
                 new CausalLink<IPlanStep>(atPlaneTo, fly, deplane)
             };
 
-            var suborderings = new List<Tuple<IPlanStep, IPlanStep>>();
+            var suborderings = new List<Tuple<IPlanStep, IPlanStep>>()
+            {
+                new Tuple<IPlanStep,IPlanStep>(buy, board),
+                new Tuple<IPlanStep,IPlanStep>(board, fly),
+                new Tuple<IPlanStep,IPlanStep>(fly, deplane)
+            };
 
             var root = new Operator(new Predicate("travel-by-plane", objTerms, true));
             var decomp = new Decomposition(root, litTerms, substeps, suborderings, sublinks);
@@ -216,11 +225,14 @@ namespace TestFreezer
             return decomps;
         }
 
-        public static IPlan ReadAndCompile(bool serializeIt)
+        public static IPlan ReadAndCompile(bool serializeIt, int whichProblem)
         {
             Parser.path = @"D:\documents\frostbow\boltfreezer\";
 
-            var pfreeze = ReadDomainAndProblem(serializeIt);
+            GroundActionFactory.Reset();
+            CacheMaps.Reset();
+
+            var pfreeze = ReadDomainAndProblem(serializeIt, whichProblem);
 
             var decomps = ReadDecompositions();
             var composite = AddCompositeOperator();
@@ -233,6 +245,8 @@ namespace TestFreezer
             var initPlan = PlanSpacePlanner.CreateInitialPlan(pfreeze);
 
             CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, initPlan.Goal.Predicates);
+
+            GroundActionFactory.DetectStatics(CacheMaps.CausalMap, CacheMaps.ThreatMap);
 
             return initPlan;
         }

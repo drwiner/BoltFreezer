@@ -68,6 +68,43 @@ namespace TestFreezer
             }
         }
 
+        public static void RunTravelTestInternal()
+        {
+            var cutoff = 6000f;
+            var k = 1;
+            
+            var directory = @"D:\Documents\Frostbow\Benchmarks\travel-test\Results\";
+            System.IO.Directory.CreateDirectory(directory);
+
+            for (int i = 1; i < 9; i++)
+            {
+                var initPlan = TravelTest.ReadAndCompile(true, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new AddReuseHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E1(new AddReuseHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E2(new AddReuseHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E3(new AddReuseHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E4(new AddReuseHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E5(new AddReuseHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E6(new AddReuseHeuristic()), k, cutoff, directory, i);
+
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new NumOpenConditionsHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E1(new NumOpenConditionsHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E2(new NumOpenConditionsHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E3(new NumOpenConditionsHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E4(new NumOpenConditionsHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E5(new NumOpenConditionsHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E6(new NumOpenConditionsHeuristic()), k, cutoff, directory, i);
+
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new ZeroHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E1(new ZeroHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E2(new ZeroHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E3(new ZeroHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E4(new ZeroHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E5(new ZeroHeuristic()), k, cutoff, directory, i);
+                RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E6(new ZeroHeuristic()), k, cutoff, directory, i);
+            }
+        }
+
         public static void TestBenchmarks()
         {
             var domainNames = new List<string>() { "arth", "batman" };
@@ -98,12 +135,7 @@ namespace TestFreezer
 
         static void Main(string[] args)
         {
-            var cutoff = 6000f;
-            var k = 1;
-            var initPlan = TravelTest.ReadAndCompile(true);
-            var directory = @"D:\Documents\Frostbow\Benchmarks\travel-test\Results\";
-            System.IO.Directory.CreateDirectory(directory);
-            RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new AddReuseHeuristic()), k, cutoff, directory, 0);
+            RunTravelTestInternal();
         }
 
     }

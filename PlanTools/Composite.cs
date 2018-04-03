@@ -88,8 +88,8 @@ namespace BoltFreezer.PlanTools
             subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
             subLinks = new List<CausalLink<IPlanStep>>();
             subSteps = new List<IPlanStep>();
-            initialStep = new Operator("dummyInit", new List<IPredicate>(), core.Preconditions);
-            goalStep = new Operator("dummyGoal", core.Effects, new List<IPredicate>());
+            initialStep = new Operator("DummyInit", new List<IPredicate>(), core.Preconditions);
+            goalStep = new Operator("DummyGoal", core.Effects, new List<IPredicate>());
             Height = core.Height;
             NonEqualities = core.NonEqualities;
         }
@@ -115,6 +115,31 @@ namespace BoltFreezer.PlanTools
                 AddBinding(term.Variable, decompTerm.Constant);
             }
 
+            // Also add bindings to Initial and Goal step.
+            foreach (var effect in InitialStep.Effects)
+            {
+                foreach (var term in effect.Terms)
+                {
+                    var compTerm = Terms.FirstOrDefault(cterm => term.Variable.Equals(cterm.Variable));
+                    if (compTerm == null)
+                    {
+                        throw new System.Exception();
+                    }
+                    term.Constant = compTerm.Constant;
+                }
+            }
+            foreach (var precon in GoalStep.Preconditions)
+            {
+                foreach (var term in precon.Terms)
+                {
+                    var compTerm = Terms.FirstOrDefault(cterm => term.Variable.Equals(cterm.Variable));
+                    if (compTerm == null)
+                    {
+                        throw new System.Exception();
+                    }
+                    term.Constant = compTerm.Constant;
+                }
+            }
             //var unlistedDecompTerms = decomp.Terms.Where(dt => !Terms.Any(t => dt.Equals(t)));
             //foreach (var udt in unlistedDecompTerms)
             //{
@@ -227,7 +252,10 @@ namespace BoltFreezer.PlanTools
         public new Object Clone()
         {
             var op = base.Clone() as IOperator;
-            return new Composite(op, InitialStep, GoalStep, SubSteps, SubOrderings, SubLinks)
+            var init = InitialStep.Clone() as IOperator;
+            var goal = GoalStep.Clone() as IOperator;
+
+            return new Composite(op, init, goal, SubSteps, SubOrderings, SubLinks)
             {
                 Height = this.Height,
                 NonEqualities = this.NonEqualities

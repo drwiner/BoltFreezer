@@ -85,7 +85,6 @@ namespace BoltFreezer.DecompTools
             goalStep = new Operator();
         }
 
-
         /// <summary>
         /// The Decomposition is composed of a sub-plan with at least sub-step at height "height"
         /// </summary>
@@ -175,7 +174,6 @@ namespace BoltFreezer.DecompTools
         public static List<Decomposition> FilterDecompCandidates(Decomposition decomp, int height)
         {
             // find and replace sub-steps 
-            //var substepDict = new Dictionary<int, List<Operator>>();
             var comboList = new List<List<IOperator>>();
             var ID_List = new List<int>();
             foreach (var substep in decomp.SubSteps)
@@ -188,7 +186,6 @@ namespace BoltFreezer.DecompTools
                 if (cndts.Count == 0)
                     return new List<Decomposition>();
 
-                //substepDict[substep.ID] = cndts;
                 comboList.Add(cndts);
             }
 
@@ -208,9 +205,18 @@ namespace BoltFreezer.DecompTools
                         hasPrerequisiteHeight = true;
                     }
                     var originalID = ID_List[order++];
-                    var newPlanStep = new PlanStep(item);
-                    substepDict[originalID] = newPlanStep;
-                    newSubsteps.Add(newPlanStep);
+                    if (item.Height > 0)
+                    {
+                        var newPlanStep = new CompositePlanStep(item as Composite);
+                        substepDict[originalID] = newPlanStep;
+                        newSubsteps.Add(newPlanStep);
+                    }
+                    else
+                    {
+                        var newPlanStep = new PlanStep(item);
+                        substepDict[originalID] = newPlanStep;
+                        newSubsteps.Add(newPlanStep);
+                    }
                 }
 
                 // Did not meet requirements for height.

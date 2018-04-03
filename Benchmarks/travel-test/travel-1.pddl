@@ -15,5 +15,4 @@
         (at delta slc)
         )
         
-    (:goal (and  (at sara raleigh) (at david raleigh) (at bea raleigh)
-                )))
+    (:goal (and  (at sara raleigh) (at david raleigh) (at bea raleigh))))

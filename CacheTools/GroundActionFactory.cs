@@ -21,6 +21,13 @@ namespace BoltFreezer.PlanTools
         // Those predicates which are not established by an effect of an action but which are a precondition. They either hold initially or not at all.
         public static List<IPredicate> Statics = new List<IPredicate>();
 
+        public static void Reset()
+        {
+            GroundLibrary = new Dictionary<int, IOperator>();
+            GroundActions = new List<IOperator>();
+            Statics = new List<IPredicate>();
+        }
+
         public static void InsertOperator(IOperator newOperator)
         {
             GroundLibrary[newOperator.ID] = newOperator;

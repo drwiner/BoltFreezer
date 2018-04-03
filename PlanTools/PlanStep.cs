@@ -18,7 +18,7 @@ namespace BoltFreezer.PlanTools
         public IPlanStep InitCndt
         {
             get { return initCndt; }
-            set { InitCndt = value; }
+            set { initCndt = value; }
         }
 
         public IOperator Action

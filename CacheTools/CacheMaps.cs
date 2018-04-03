@@ -18,6 +18,12 @@ namespace BoltFreezer.PlanTools
         /// </summary>
         public static Dictionary<IPredicate, List<int>> ThreatMap = new Dictionary<IPredicate, List<int>>();
 
+        public static void Reset()
+        {
+            CausalMap = new Dictionary<IPredicate, List<int>>();
+            ThreatMap = new Dictionary<IPredicate, List<int>>();
+        }
+
         public static IEnumerable<IOperator> GetCndts(IPredicate pred)
         {
             if (CausalMap.ContainsKey(pred))
@@ -80,25 +86,7 @@ namespace BoltFreezer.PlanTools
                             else
                                 ThreatMap[tprecond].Add(hstep.ID);
                         }
-                        if (hstep.Height > 0)
-                        {
-                            var hstepComposite = hstep as Composite;
-
-                            // Add 
-                            if (!GroundActionFactory.GroundLibrary.ContainsKey(hstepComposite.GoalStep.ID))
-                            {
-                                GroundActionFactory.GroundLibrary[hstepComposite.GoalStep.ID] = hstepComposite.GoalStep;
-                            }
-                            if (!GroundActionFactory.GroundLibrary.ContainsKey(hstepComposite.InitialStep.ID))
-                            {
-                                GroundActionFactory.GroundLibrary[hstepComposite.InitialStep.ID] = hstepComposite.InitialStep;
-                            }
-
-                            // The only items that can use the dummy initialStep are substeps.
-                            hstep
-                        }
                     }
-
                 }
             }
         }
@@ -125,11 +113,6 @@ namespace BoltFreezer.PlanTools
                                 CausalMap.Add(tprecond, new List<int>() { hstep.ID });
                             else
                                 CausalMap[tprecond].Add(hstep.ID);
-
-                            if (hstep.Height > 0)
-                            {
-                                // for reusing a step, need to add this step's effects?
-                            }
                         }
                         if (hstep.Effects.Contains(tprecond.GetReversed()))
                         {
