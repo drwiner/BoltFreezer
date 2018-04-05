@@ -183,6 +183,7 @@ namespace BoltFreezer.PlanTools
 
             // Clone, Add, and Order Initial step
             var dummyInit = newStep.InitialStep.Clone() as IPlanStep;
+            dummyInit.Depth = newStep.Depth;
             IDMap[newStep.InitialStep.ID] = dummyInit;
             steps.Add(dummyInit);
             orderings.Insert(InitialStep, dummyInit);
@@ -190,6 +191,7 @@ namespace BoltFreezer.PlanTools
 
             // Clone, Add, and order Goal step
             var dummyGoal = newStep.GoalStep.Clone() as IPlanStep;
+            dummyGoal.Depth = newStep.Depth;
             Insert(dummyGoal);
             IDMap[newStep.GoalStep.ID] = dummyGoal;
             Orderings.Insert(dummyInit, dummyGoal);
@@ -208,7 +210,10 @@ namespace BoltFreezer.PlanTools
                 // substep is either a IPlanStep or ICompositePlanStep
                 if (substep.Height > 0)
                 {
-                    var compositeSubStep = new CompositePlanStep(substep.Clone() as IPlanStep);
+                    var compositeSubStep = new CompositePlanStep(substep.Clone() as IPlanStep)
+                    {
+                        Depth = newStep.Depth + 1
+                    };
 
                     Orderings.Insert(compositeSubStep.GoalStep, dummyGoal);
                     Orderings.Insert(dummyInit, compositeSubStep.InitialStep);
@@ -216,10 +221,7 @@ namespace BoltFreezer.PlanTools
                     compositeSubStep.InitialStep.InitCndt = dummyInit;
                     newSubSteps.Add(compositeSubStep);
                     Insert(compositeSubStep);
-                    if (compositeSubStep.Depth + 1 > Hdepth)
-                    {
-                        Hdepth = compositeSubStep.Depth + 1;
-                    }
+                    // Don't bother updating hdepth yet because we will check on recursion
                 }
                 else
                 {
@@ -233,9 +235,9 @@ namespace BoltFreezer.PlanTools
                     newSubSteps.Add(newsubstep);
                     Insert(newsubstep);
                     newsubstep.InitCndt = dummyInit;
-                    if (newStep.Depth + 1 > Hdepth)
+                    if (newsubstep.Depth > Hdepth)
                     {
-                        Hdepth = newStep.Depth + 1;
+                        Hdepth = newsubstep.Depth;
                     }
                 }
             }

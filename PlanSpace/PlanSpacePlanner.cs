@@ -103,11 +103,17 @@ namespace BoltFreezer.PlanSpace
                 if (cndt.Height > 0)
                 {
                     var compCndt = cndt as IComposite;
-                    newStep = new CompositePlanStep(compCndt.Clone() as IComposite);
+                    newStep = new CompositePlanStep(compCndt.Clone() as IComposite)
+                    {
+                        Depth = oc.step.Depth
+                    };
                 }
                 else
                 {
-                    newStep = new PlanStep(cndt.Clone() as IOperator);
+                    newStep = new PlanStep(cndt.Clone() as IOperator)
+                    {
+                        Depth = oc.step.Depth
+                    };
                 }
                 //newStep.Height = cndt.Height;
                 planClone.Insert(newStep);

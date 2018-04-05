@@ -170,7 +170,7 @@ namespace BoltFreezer.PlanTools
 
         public List<T> TopoSort(T start)
         {
-            var edgeList = edges.ToList();
+            List<Tuple<T,T>> edgeList = edges.ToList();
             var L = new List<T>();
             var S = new Stack<T>();
             S.Push(start);
@@ -179,12 +179,12 @@ namespace BoltFreezer.PlanTools
             {
                 var n = S.Pop();
                 L.Add(n);
-                var markedForRemoval = edgeList.ToList();
+                List<Tuple<T, T>> markedForRemoval = edgeList.ToList();
                 var edgesFromN = edgeList.Where(e => e.First.Equals(n));
                 foreach (var nmEdge in edgesFromN)
                 {
                     markedForRemoval.Remove(nmEdge);
-                    if (!markedForRemoval.Any(e => e.Second.Equals(nmEdge.Second)))
+                    if (!markedForRemoval.Any(e => e.Second.Equals(nmEdge.Second) && !e.First.Equals(n)))
                         S.Push(nmEdge.Second);
                 }
                 edgeList = markedForRemoval;
