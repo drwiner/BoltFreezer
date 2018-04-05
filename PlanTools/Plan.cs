@@ -218,7 +218,7 @@ namespace BoltFreezer.PlanTools
                     Insert(compositeSubStep);
                     if (compositeSubStep.Depth + 1 > Hdepth)
                     {
-                        Hdepth = newStep.Depth + 1;
+                        Hdepth = compositeSubStep.Depth + 1;
                     }
                 }
                 else
