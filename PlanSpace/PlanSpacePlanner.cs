@@ -102,6 +102,7 @@ namespace BoltFreezer.PlanSpace
                 IPlanStep newStep;
                 if (cndt.Height > 0)
                 {
+                    continue;
                     var compCndt = cndt as IComposite;
                     newStep = new CompositePlanStep(compCndt.Clone() as IComposite)
                     {
