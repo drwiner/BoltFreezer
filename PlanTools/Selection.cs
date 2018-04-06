@@ -107,7 +107,7 @@ namespace BoltFreezer.PlanTools
                 return -10000f - plan.Steps.Count;
             }
 
-            return plan.Steps.Count - (2 * plan.Decomps) + HMethod.Heuristic(plan) - plan.Hdepth - (float)System.Math.Log((double)plan.Hdepth + 1f, 2);
+            return plan.Steps.Count - (2 * plan.Decomps) + HMethod.Heuristic(plan) - (float)System.Math.Log((double)plan.Hdepth + 1f, 2);
         }
     }
 

@@ -208,7 +208,10 @@ namespace BoltFreezer.PlanTools
                 // substep is either a IPlanStep or ICompositePlanStep
                 if (substep.Height > 0)
                 {
-                    var compositeSubStep = new CompositePlanStep(substep.Clone() as IPlanStep);
+                    var compositeSubStep = new CompositePlanStep(substep.Clone() as IPlanStep)
+                    {
+                        Depth = newStep.Depth + 1
+                    };
 
                     Orderings.Insert(compositeSubStep.GoalStep, dummyGoal);
                     Orderings.Insert(dummyInit, compositeSubStep.InitialStep);
