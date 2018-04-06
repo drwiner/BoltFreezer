@@ -188,20 +188,28 @@ namespace BoltFreezer.PlanTools
             steps.Add(dummyInit);
             orderings.Insert(InitialStep, dummyInit);
             orderings.Insert(dummyInit, GoalStep);
+            foreach (var oc in newStep.OpenConditions)
+            {
+                Flaws.Add(this, new OpenCondition(oc, dummyInit));
+            }
 
             // Clone, Add, and order Goal step
             var dummyGoal = newStep.GoalStep.Clone() as IPlanStep;
             dummyGoal.Depth = newStep.Depth;
             Insert(dummyGoal);
             IDMap[newStep.GoalStep.ID] = dummyGoal;
-            Orderings.Insert(dummyInit, dummyGoal);
-            orderings.Insert(InitialStep, dummyGoal);
-            orderings.Insert(dummyGoal, GoalStep);
+            orderings.Insert(dummyInit, dummyGoal);
+            // Dont need these here because its added when inserted as primitive
+            //orderings.Insert(InitialStep, dummyGoal);
+            //orderings.Insert(dummyGoal, GoalStep);
 
-            // is this needed?
-            //var newStepCopy = newStep.Clone();
-            //newStepCopy.InitialStep = dummyInit;
-            //newStepCopy.GoalStep = dummyGoal;
+            // This code block is used for debugging and may possibly be ommitted. 
+            // guarantee that newStepCopy cannot be used for re-use by changing ID (by casting as new step)
+           
+            var newStepCopy = new PlanStep(new Operator(newStep.Action.Predicate as Predicate, new List<IPredicate>(), new List<IPredicate>()));
+            steps.Add(newStepCopy);
+            orderings.Insert(dummyInit, newStepCopy);
+            orderings.Insert(newStepCopy, dummyGoal);
 
             var newSubSteps = new List<IPlanStep>();
             
@@ -410,8 +418,7 @@ namespace BoltFreezer.PlanTools
             // oc = <needStep, needPrecond>. Need to find needStep in plan, because open conditions have been mutated before arrival.
             var needStep = Find(oc.step);
 
-            //// we are fulfilling open conditions because open conditions can be used to add flaws. Right now, this step is unnecessary.
-            //if (!needStep.Name.Split(':')[0].Equals("begin") && !needStep.Name.Split(':')[0].Equals("finish"))
+            //// we are fulfilling open conditions because open conditions can be used to add flaws.
             if (!needStep.Name.Equals("DummyGoal") && !needStep.Name.Equals("DummyInit"))
                 needStep.Fulfill(oc.precondition);
 
