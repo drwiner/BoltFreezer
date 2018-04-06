@@ -327,7 +327,7 @@ namespace BoltFreezer.PlanTools
             {
                 throw new System.Exception();
             }
-            return Steps.Single(s => s.ID == stepClonedFromOpenCondition.ID);
+            return Steps.Single(s => s.Equals(stepClonedFromOpenCondition));
         }
 
         // This method is used when a composite step may threaten a causal link.

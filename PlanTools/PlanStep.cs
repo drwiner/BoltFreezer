@@ -146,17 +146,17 @@ namespace BoltFreezer.PlanTools
         // Checks if two operators are equal.
         public override bool Equals(Object obj)
         {
-            // Store the object as a state space action.
+            // Store the object as a Plan Step
             PlanStep step = obj as PlanStep;
 
             if (step.ID == ID)
             {
                 return true;
             }
-            if (step.Action.ID == Action.ID)
-            {
-                return true;
-            }
+            //if (step.Action.ID == Action.ID)
+            //{
+            //    return true;
+            //}
 
             return false;
         }
