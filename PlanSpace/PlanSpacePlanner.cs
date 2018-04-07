@@ -102,7 +102,7 @@ namespace BoltFreezer.PlanSpace
                 IPlanStep newStep;
                 if (cndt.Height > 0)
                 {
-                    continue;
+                    //continue;
                     var compCndt = cndt as IComposite;
                     newStep = new CompositePlanStep(compCndt.Clone() as IComposite)
                     {
@@ -218,6 +218,8 @@ namespace BoltFreezer.PlanSpace
                 {
                     writer.WriteLine(dataItem.First + "\t" + dataItem.Second);
                 }
+                writer.WriteLine("\n");
+                writer.WriteLine(plan.ToStringOrdered());
             }
         }
 

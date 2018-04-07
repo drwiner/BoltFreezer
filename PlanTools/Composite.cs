@@ -149,8 +149,20 @@ namespace BoltFreezer.PlanTools
             return numUnBoundArgs;
         }
 
+        public void RemoveRemainingArgs()
+        {
+            var newTerms = Terms.Where(term => term.Bound);
+            var newPrecons = Preconditions.Where(precon => !precon.Terms.Any(preconTerm => !preconTerm.Bound));
+            var newEffects = Effects.Where(eff => !eff.Terms.Any(effTerm => !effTerm.Bound));
+            Terms = newTerms.ToList();
+            Preconditions = newPrecons.ToList();
+            Effects = newEffects.ToList();
+
+        }
+
         public List<Composite> GroundRemainingArgs(int numUnBound)
         {
+            
             var compList = new List<Composite>();
 
             foreach (var term in Terms)
@@ -160,13 +172,17 @@ namespace BoltFreezer.PlanTools
                     continue;
                 }
 
+
+                // This strategy is to assign to arbitrary but consistent object
                 if (numUnBound == 1)
                 {
 
                     var legalSubstitutions = GroundActionFactory.TypeDict[term.Type] as List<IObject>;
                     foreach (var legalSub in legalSubstitutions)
                     {
-                        var compClone = Clone() as Composite;
+                        // Clone() as Composite;
+                        //var compClone = new Composite(this.Name, this.Terms, this.InitialStep, this.GoalStep, this.Preconditions, this.Effects); 
+                        var compClone = PseudoClone();
                         compClone.AddBinding(term.Variable, legalSub.Name);
                         if (!compClone.NonEqualTermsAreNonequal())
                             continue;
@@ -206,7 +222,7 @@ namespace BoltFreezer.PlanTools
                     {
                         foreach (var legalSub in legalSubstitutions)
                         {
-                            var compClone = existingUnBoundComp.Clone() as Composite;
+                            var compClone = existingUnBoundComp.PseudoClone();
                             compClone.AddBinding(term.Variable, legalSub.Name);
                             if (!compClone.NonEqualTermsAreNonequal())
                                 continue;
@@ -255,7 +271,7 @@ namespace BoltFreezer.PlanTools
                     foreach (var gdecomp in groundDecomps)
                     {
                         // clone composite task
-                        var comp = Methods.First.Clone() as Composite;
+                        var comp = Methods.First.PseudoClone();
 
                         // Set height of composite step
                         comp.Height = h + 1;
@@ -271,13 +287,17 @@ namespace BoltFreezer.PlanTools
                         // Otherwise, bind the remaining unbound terms
                         else
                         {
-                            // There could be more than one way to bind remaining terms
-                            var boundComps = comp.GroundRemainingArgs(numUnBound);
-                            foreach (var bc in boundComps)
-                            {
-                                // Add each possible way to bind remaining terms
-                                compList.Add(bc);
-                            }
+                            // NEW METHOD: Remove unbound args
+                            comp.RemoveRemainingArgs();
+                            compList.Add(comp);
+
+                            // OLD METHOD: There could be more than one way to bind remaining terms
+                            //var boundComps = comp.GroundRemainingArgs(numUnBound);
+                            //foreach (var bc in boundComps)
+                            //{
+                            //    // Add each possible way to bind remaining terms
+                            //    compList.Add(bc);
+                            //}
                         }
                     }
                 }
@@ -289,6 +309,27 @@ namespace BoltFreezer.PlanTools
 
             }
 
+        }
+
+        public Composite PseudoClone()
+        {
+            var newPreconds = new List<IPredicate>();
+            foreach(var precon in base.Preconditions)
+            {
+                newPreconds.Add(precon.Clone() as IPredicate);
+            }
+            var newEffects = new List<IPredicate>();
+            foreach(var eff in base.Effects)
+            {
+                newEffects.Add(eff.Clone() as IPredicate);
+            }
+
+            var newBase = new Operator(base.Predicate.Clone() as Predicate, newPreconds, newEffects);
+            return new Composite(newBase, InitialStep.Clone() as IOperator, GoalStep.Clone() as IOperator, SubSteps, SubOrderings, SubLinks)
+            {
+                Height = this.Height,
+                NonEqualities = this.NonEqualities
+            };
         }
 
         public new Object Clone()

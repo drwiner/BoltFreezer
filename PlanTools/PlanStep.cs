@@ -140,7 +140,7 @@ namespace BoltFreezer.PlanTools
         // A special method for displaying fully ground steps.
         public override string ToString()
         {
-            return Action.ToString();
+            return String.Format("{0}-{1}", Action.ToString(), ID);
         }
 
         // Checks if two operators are equal.
