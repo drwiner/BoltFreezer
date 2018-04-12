@@ -115,10 +115,9 @@ namespace BoltFreezer.PlanTools
             }
 
             // check that object of this term (Constant) is consistent with type.
-            var objs = GroundActionFactory.TypeDict[other.Type] as List<IObject>;
-            var names = from iobj in objs select iobj.Name;
+            var objs = GroundActionFactory.TypeDict[other.Type] as List<string>;
 
-            if (!names.Contains(Constant))
+            if (!objs.Contains(Constant))
                 return false;
 
             return true;

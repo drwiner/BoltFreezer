@@ -163,11 +163,11 @@ namespace BoltFreezer.PlanTools
                 if (numUnBound == 1)
                 {
 
-                    var legalSubstitutions = GroundActionFactory.TypeDict[term.Type] as List<IObject>;
+                    var legalSubstitutions = GroundActionFactory.TypeDict[term.Type] as List<string>;
                     foreach (var legalSub in legalSubstitutions)
                     {
                         var compClone = Clone() as Composite;
-                        compClone.AddBinding(term.Variable, legalSub.Name);
+                        compClone.AddBinding(term.Variable, legalSub);
                         if (!compClone.NonEqualTermsAreNonequal())
                             continue;
 
@@ -200,14 +200,14 @@ namespace BoltFreezer.PlanTools
                     {
                         compList.Add(this);
                     }
-                    var legalSubstitutions = GroundActionFactory.TypeDict[term.Type] as List<IObject>;
+                    var legalSubstitutions = GroundActionFactory.TypeDict[term.Type] as List<string>;
                     var newComps = new List<Composite>();
                     foreach (var existingUnBoundComp in compList)
                     {
                         foreach (var legalSub in legalSubstitutions)
                         {
                             var compClone = existingUnBoundComp.Clone() as Composite;
-                            compClone.AddBinding(term.Variable, legalSub.Name);
+                            compClone.AddBinding(term.Variable, legalSub);
                             if (!compClone.NonEqualTermsAreNonequal())
                                 continue;
 

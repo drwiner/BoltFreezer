@@ -94,10 +94,10 @@ namespace BoltFreezer.DecompTools
             ///////////////////////////////////////
             // START BY ADDING BINDINGS TO TERMS //
             ///////////////////////////////////////
-            var permList = new List<List<IObject>>();
+            var permList = new List<List<string>>();
             foreach (Term variable in Terms)
             {
-                permList.Add(GroundActionFactory.TypeDict[variable.Type] as List<IObject>);
+                permList.Add(GroundActionFactory.TypeDict[variable.Type] as List<string>);
             }
 
             var decompList = new List<Decomposition>();
@@ -106,7 +106,7 @@ namespace BoltFreezer.DecompTools
                 // Add bindings
                 var decompClone = Clone() as Decomposition;
                 var termStringList = from term in decompClone.Terms select term.Variable;
-                var constantStringList = from objConst in combination select objConst.Name;
+                var constantStringList = combination;
 
                 decompClone.AddBindings(termStringList.ToList(), constantStringList.ToList());
 

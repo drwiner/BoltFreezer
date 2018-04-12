@@ -601,7 +601,6 @@
     <None Include="Benchmarks\cedel-test\prob01.pddl.meta" />
     <None Include="Benchmarks\cedel-test\probrob.pddl" />
     <None Include="Benchmarks\cedel-test\probrob.pddl.meta" />
-    <None Include="Benchmarks\Results\.placeholder" />
     <None Include="Benchmarks\spy-types\domain.pddl" />
     <None Include="Benchmarks\spy-types\domain.pddl.meta" />
     <None Include="Benchmarks\spy-types\domrob.pddl" />

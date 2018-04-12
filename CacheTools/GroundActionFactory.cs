@@ -38,17 +38,17 @@ namespace BoltFreezer.PlanTools
         {
             GroundActions = new List<IOperator>();
             GroundLibrary = new Dictionary<int, IOperator>();
-            TypeDict = _prob.TypeList;
+            TypeDict = _prob.ObjectsByType;
             FromOperators(ops);
         }
 
         public static void FromOperator(IOperator op)
         {
 
-            var permList = new List<List<IObject>>();
+            var permList = new List<List<string>>();
             foreach (Term variable in op.Terms)
             {
-                permList.Add(TypeDict[variable.Type] as List<IObject>);
+                permList.Add(TypeDict[variable.Type] as List<string>);
             }
 
             foreach (var combination in EnumerableExtension.GenerateCombinations(permList))
@@ -56,7 +56,7 @@ namespace BoltFreezer.PlanTools
                 // Add bindings
                 var opClone = op.Clone() as Operator;
                 var termStringList = from term in opClone.Terms select term.Variable;
-                var constantStringList = from objConst in combination select objConst.Name;
+                var constantStringList = combination;
 
                 opClone.AddBindings(termStringList.ToList(), constantStringList.ToList());
 
