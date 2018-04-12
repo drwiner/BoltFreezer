@@ -194,7 +194,10 @@ namespace BoltFreezer.PlanTools
             {
                 foreach(var gstep in groundSteps)
                 {
-                    
+                    if (gstep.Height > 0)
+                    {
+                        Console.WriteLine("debug");
+                    }
                     if (gstep.Effects.Contains(goalCondition))
                     {
                         if (!CausalMap.ContainsKey(goalCondition))

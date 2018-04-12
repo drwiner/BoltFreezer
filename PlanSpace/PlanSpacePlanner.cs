@@ -217,6 +217,8 @@ namespace BoltFreezer.PlanSpace
                 {
                     writer.WriteLine(dataItem.First + "\t" + dataItem.Second);
                 }
+                writer.WriteLine("\n");
+                writer.WriteLine(plan.ToStringOrdered());
             }
         }
 
