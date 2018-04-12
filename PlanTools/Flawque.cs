@@ -40,6 +40,7 @@ namespace BoltFreezer.PlanTools
             if (GroundActionFactory.Statics.Contains(oc.precondition))
             {
                 oc.isStatic = true;
+                OpenConditions.Add(oc);
                 return;
             }
 
