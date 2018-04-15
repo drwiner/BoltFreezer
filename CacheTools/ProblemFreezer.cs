@@ -49,7 +49,8 @@ namespace BoltFreezer.CacheTools
         public void Serialize()
         {
             Console.Write("Creating Ground Operators");
-            GroundActionFactory.PopulateGroundActions(testDomain.Operators, testProblem);
+            GroundActionFactory.PopulateGroundActions(testDomain, testProblem);
+            //.Operators, testDomain.ObjectTypes, testProblem.ObjectsByType);
             //BinarySerializer.SerializeObject(FileName, GroundActionFactory.GroundActions);
             foreach (var op in GroundActionFactory.GroundActions)
             {

@@ -136,9 +136,25 @@ namespace TestFreezer
             }
         }
 
+        public static void RunBlockTestInternal()
+        {
+            var directory = @"D:\Documents\Frostbow\Benchmarks\blocks\";
+            System.IO.Directory.CreateDirectory(directory);
+            var cutoff = 600000f;
+            var k = 1;
+
+            var initPlan = BlockTest.ReadAndCompile(true, 1);
+
+            RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E3(new AddReuseHeuristic()), k, cutoff, directory, 0);
+            RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new AddReuseHeuristic()), k, cutoff, directory, 0);
+            RunPlanner(initPlan.Clone() as IPlan, new BFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, 0);
+        }
+
         static void Main(string[] args)
         {
-            RunTravelTestInternal();
+
+            // RunTravelTestInternal();
+            RunBlockTestInternal();
         }
 
     }

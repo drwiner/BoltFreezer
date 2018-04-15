@@ -573,6 +573,7 @@
     <None Include="Benchmarks\arth\domain.pddl.meta" />
     <None Include="Benchmarks\arth\domrob.pddl" />
     <None Include="Benchmarks\arth\domrob.pddl.meta" />
+    <None Include="Benchmarks\blocks\prob01.pddl" />
     <None Include="Benchmarks\arth\prob01.pddl" />
     <None Include="Benchmarks\arth\prob01.pddl.meta" />
     <None Include="Benchmarks\arth\probrob.pddl" />
@@ -593,6 +594,7 @@
     <None Include="Benchmarks\batman\prob01.pddl.meta" />
     <None Include="Benchmarks\batman\probrob.pddl" />
     <None Include="Benchmarks\batman\probrob.pddl.meta" />
+    <None Include="Benchmarks\blocks\domain.pddl" />
     <None Include="Benchmarks\cedel-test\domain.pddl" />
     <None Include="Benchmarks\cedel-test\domain.pddl.meta" />
     <None Include="Benchmarks\cedel-test\domrob.pddl" />

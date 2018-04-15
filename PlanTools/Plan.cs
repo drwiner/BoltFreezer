@@ -6,11 +6,12 @@ using System.Threading;
 using System.Collections;
 
 using BoltFreezer.Interfaces;
+using BoltFreezer.Utilities;
 
 namespace BoltFreezer.PlanTools
 {
     [Serializable]
-    public class Plan : IPlan
+    public class Plan : IEquatable<Plan>, IPlan
     {
         private List<IPlanStep> steps;
         private IState initial;
@@ -447,6 +448,74 @@ namespace BoltFreezer.PlanTools
                 }
                 Flaws.Add(new ThreatenedLinkFlaw(clink, step));
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null) return false;
+            Plan objAsPart = obj as Plan;
+            if (objAsPart == null) return false;
+            else return Equals(objAsPart);
+        }
+
+        public override int GetHashCode()
+        {
+            int sumo = 0;
+            foreach(var step in Steps)
+            {
+                sumo += 23 * step.GetHashCode();
+            }
+            foreach(var ordering in Orderings.edges)
+            {
+                sumo += 23 * ordering.GetHashCode();
+            }
+            foreach(var clink in CausalLinks)
+            {
+                sumo += 23 * clink.GetHashCode();
+            }
+            return sumo;
+        }
+
+        public bool Equals(Plan otherPlan)
+        {
+            // two plans are equal if they have the same steps, orderings, and causal links
+            if (otherPlan.Steps.Count != this.Steps.Count)
+            {
+                return false;
+            }
+            if (otherPlan.Orderings.edges.Count != this.Orderings.edges.Count)
+            {
+                return false;
+            }
+            if (otherPlan.CausalLinks.Count != this.CausalLinks.Count)
+            {
+                return false;
+            }
+
+            // we need to check the step operator, not the planstep
+            var stepActions = this.Steps.Select(step => step.Action);
+            var otherStepActions = otherPlan.Steps.Select(step => step.Action);
+            if (stepActions.Any(clink => !otherStepActions.Contains(clink)))
+            {
+                return false;
+            }
+
+            var orderingActions = this.Orderings.edges.Select(tup => new Tuple<IOperator, IOperator>(tup.First.Action, tup.Second.Action));
+            var otherOrderingActions = otherPlan.Orderings.edges.Select(tup => new Tuple<IOperator, IOperator>(tup.First.Action, tup.Second.Action));
+            if (orderingActions.Any(clink => !otherOrderingActions.Contains(clink)))
+            {
+                return false;
+            }
+            
+            var clinkActions = this.CausalLinks.Select(clink => new CausalLink<IOperator>(clink.Predicate, clink.Head.Action, clink.Tail.Action));
+            var otherClinkActions = otherPlan.CausalLinks.Select(clink => new CausalLink<IOperator>(clink.Predicate, clink.Head.Action, clink.Tail.Action));
+            if (clinkActions.Any(clink=> !otherClinkActions.Contains(clink)))
+            {
+                return false;
+            }
+
+
+            return true;
         }
 
         public void RepairWithComposite(OpenCondition oc, CompositePlanStep repairStep)

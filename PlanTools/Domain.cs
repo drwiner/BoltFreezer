@@ -17,8 +17,8 @@ namespace BoltFreezer.PlanTools
         private PlanType type;
         private List<IOperator> operators;
         private List<IComposite> decompositions;
-        private Hashtable objectTypes;
-        private Hashtable constantTypes;
+        public Hashtable objectTypes;
+        public Hashtable constantTypes;
         public string staticStart;
         private List<IPredicate> predicates;
 
@@ -142,6 +142,27 @@ namespace BoltFreezer.PlanTools
 
                 // Push the updated entry back to the hashtable.
                 objectTypes[type] = typeList;
+            }
+
+            var keyList = new List<string>();
+            foreach (DictionaryEntry keypair in objectTypes)
+            {
+                var existingKey = keypair.Key as string;
+                if (existingKey.Equals(type))
+                {
+                    continue;
+                }
+                keyList.Add(keypair.Key as string);
+            }
+
+            foreach (var existingKey in keyList)
+            {
+                var valueList = objectTypes[existingKey] as List<string>;
+                if (valueList.Contains(type))
+                {
+                    valueList.AddRange(subTypes);
+                    objectTypes[existingKey] = valueList;
+                }
             }
         }
 

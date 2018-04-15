@@ -16,7 +16,7 @@ namespace BoltFreezer.PlanTools
         public static List<IOperator> GroundActions;
 
         // TypeDict returns list of all constants given Term type
-        public static Hashtable TypeDict;
+        public static Dictionary<string, List<string>> TypeDict;
 
         // Those predicates which are not established by an effect of an action but which are a precondition. They either hold initially or not at all.
         public static List<IPredicate> Statics = new List<IPredicate>();
@@ -34,11 +34,28 @@ namespace BoltFreezer.PlanTools
             GroundActions.Add(newOperator);
         }
 
-        public static void PopulateGroundActions(List<IOperator> ops, Problem _prob)
+        public static void PopulateGroundActions(Domain domain, Problem problem)
         {
             GroundActions = new List<IOperator>();
             GroundLibrary = new Dictionary<int, IOperator>();
-            TypeDict = _prob.ObjectsByType;
+            TypeDict = new Dictionary<string, List<string>>();
+            var ops = domain.Operators;
+            var objectHierarchy = EnumerableExtension.HashtableToDictionary<string, List<string>>(domain.objectTypes);
+            var typeToObjectDict = EnumerableExtension.HashtableToDictionary<string, List<string>>(problem.ObjectsByType);
+
+            foreach(var keyvalue in typeToObjectDict)
+            {
+                TypeDict[keyvalue.Key] = keyvalue.Value;
+            }
+            // Foreach object key that isn't a typedict key
+            var excludedObjectKeys = objectHierarchy.Keys.Where(okey => !typeToObjectDict.ContainsKey(okey));
+            foreach (var okey in excludedObjectKeys)
+            {
+                var newValues = typeToObjectDict.Keys.Where(tkey => objectHierarchy[okey].Contains(tkey)).Select(tkey => typeToObjectDict[tkey]);
+                TypeDict[okey] = newValues.SelectMany(x => x).ToList();
+            }
+
+
             FromOperators(ops);
         }
 

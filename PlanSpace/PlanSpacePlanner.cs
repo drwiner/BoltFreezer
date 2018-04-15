@@ -15,6 +15,8 @@ namespace BoltFreezer.PlanSpace
         private ISelection selection;
         private ISearch search;
 
+        private List<Plan> Visited = new List<Plan>();
+
         private bool console_log;
         private int opened, expanded = 0;
         public int problemNumber;
@@ -75,6 +77,12 @@ namespace BoltFreezer.PlanSpace
         {
             if (!plan.Orderings.HasCycle())
             {
+               // if (Visited.Contains(plan as Plan))
+              //  {
+               //     return;
+               // }
+
+               // Visited.Add(plan as Plan);
                 Search.Frontier.Enqueue(plan, Score(plan));
                 opened++;
             }

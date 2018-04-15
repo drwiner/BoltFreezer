@@ -196,7 +196,7 @@ namespace BoltFreezer.PlanTools
                 {
                     if (gstep.Height > 0)
                     {
-                        Console.WriteLine("debug");
+                        //Console.WriteLine("debug");
                     }
                     if (gstep.Effects.Contains(goalCondition))
                     {

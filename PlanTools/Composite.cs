@@ -97,6 +97,7 @@ namespace BoltFreezer.PlanTools
         public int ApplyDecomposition(Decomposition decomp)
         {
             var numUnBoundArgs = 0;
+
             subSteps = decomp.SubSteps;
             subOrderings = decomp.SubOrderings;
             subLinks = decomp.SubLinks;
@@ -113,6 +114,11 @@ namespace BoltFreezer.PlanTools
 
                 }
                 AddBinding(term.Variable, decompTerm.Constant);
+            }
+
+            // Check Equality Constraints
+            if (!NonEqualTermsAreNonequal()){
+                return -1;
             }
 
             // Also add bindings to Initial and Goal step.
@@ -140,11 +146,11 @@ namespace BoltFreezer.PlanTools
                     term.Constant = compTerm.Constant;
                 }
             }
-            //var unlistedDecompTerms = decomp.Terms.Where(dt => !Terms.Any(t => dt.Equals(t)));
-            //foreach (var udt in unlistedDecompTerms)
-            //{
-            //    Terms.Add(udt);
-            //}
+            var unlistedDecompTerms = decomp.Terms.Where(dt => !Terms.Any(t => dt.Equals(t)));
+            foreach (var udt in unlistedDecompTerms)
+            {
+                Terms.Add(udt);
+            }
 
             return numUnBoundArgs;
         }
@@ -285,7 +291,7 @@ namespace BoltFreezer.PlanTools
                             compList.Add(comp);
                         }
                         // Otherwise, bind the remaining unbound terms
-                        else
+                        else if (numUnBound > 0)
                         {
                             // NEW METHOD: Remove unbound args
                             comp.RemoveRemainingArgs();
@@ -304,6 +310,8 @@ namespace BoltFreezer.PlanTools
                 // For each newly created composite step, add to the library.
                 foreach (var comp in compList)
                 {
+                    // check if nonequality constraints are violated
+
                     GroundActionFactory.InsertOperator(comp as IOperator);
                 }
 

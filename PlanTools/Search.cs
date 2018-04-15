@@ -45,8 +45,8 @@ namespace BoltFreezer.PlanTools
                 Console.WriteLine(plan.Decomps);
                 if (IP.Console_log)
                 {
-
                     Console.WriteLine(plan.ToStringOrdered());
+                    //Console.WriteLine(plan.ToStringOrdered());
                     Console.WriteLine(flaw);
                 }
 

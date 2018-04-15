@@ -12,7 +12,7 @@ namespace BoltFreezer.PlanTools
     public class Graph<T>
     {
         private HashSet<T> nodes;
-        private HashSet<Tuple<T, T>> edges;
+        public HashSet<Tuple<T, T>> edges;
 
         public Graph()
         {
