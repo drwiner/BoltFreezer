@@ -250,18 +250,6 @@ namespace BoltFreezer.DecompTools
                 {
                     var first = substepDict[subordering.First.ID];
                     var second = substepDict[subordering.Second.ID];
-
-                    if (first.Height > 0)
-                    {
-                        var Cfirst = first as CompositePlanStep;
-                        first = Cfirst.GoalStep;
-                    }
-                    if (second.Height > 0)
-                    {
-                        var CSecond = second as CompositePlanStep;
-                        second = CSecond.InitialStep;
-                    }
-
                     newSuborderings.Add(new Tuple<IPlanStep, IPlanStep>(first, second));
                 }
 
@@ -274,17 +262,17 @@ namespace BoltFreezer.DecompTools
                     var tail = substepDict[sublink.Tail.ID];
                     var cndts = head.Effects.Where(eff => eff.IsConsistent(sublink.Predicate) && tail.Preconditions.Any(pre=> pre.Equals(eff)));
 
-                    // swap tall members
-                    if (head.Height > 0)
-                    {
-                        var Chead = head as CompositePlanStep;
-                        head = Chead.GoalStep;
-                    }
-                    if (tail.Height > 0)
-                    {
-                        var Ctail = tail as CompositePlanStep;
-                        tail = Ctail.InitialStep;
-                    }
+                    //// swap tall members
+                    //if (head.Height > 0)
+                    //{
+                    //    var Chead = head as CompositePlanStep;
+                    //    head = Chead.GoalStep;
+                    //}
+                    //if (tail.Height > 0)
+                    //{
+                    //    var Ctail = tail as CompositePlanStep;
+                    //    tail = Ctail.InitialStep;
+                    //}
 
                     if (cndts.Count() == 0)
                     {

@@ -48,10 +48,22 @@ namespace BoltFreezer.CacheTools
 
         public void Serialize()
         {
-            Console.Write("Creating Ground Operators");
+            Console.WriteLine("Creating Ground Operators");
             GroundActionFactory.PopulateGroundActions(testDomain, testProblem);
             //.Operators, testDomain.ObjectTypes, testProblem.ObjectsByType);
             //BinarySerializer.SerializeObject(FileName, GroundActionFactory.GroundActions);
+
+            // Remove existing cached operators in this domain
+            //var di = new DirectoryInfo(Parser.GetTopDirectory() + @"Cached\CachedOperators\");
+            //foreach(var file in di.GetFiles())
+            //{
+            //    var isRightDomain = file.ToString().StartsWith(testDomainName);
+            //    if (file.Extension.Equals(".CachedOperator") && isRightDomain)
+            //    {
+            //        file.Delete();
+            //    }
+            //}
+
             foreach (var op in GroundActionFactory.GroundActions)
             {
                 BinarySerializer.SerializeObject(FileName + op.GetHashCode().ToString() + ".CachedOperator", op);
@@ -59,6 +71,7 @@ namespace BoltFreezer.CacheTools
 
             CacheMaps.CacheLinks(GroundActionFactory.GroundActions);
             CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, testProblem.Goal);
+
             BinarySerializer.SerializeObject(CausalMapFileName + ".CachedCausalMap", CacheMaps.CausalMap);
             BinarySerializer.SerializeObject(ThreatMapFileName + ".CachedThreatMap", CacheMaps.ThreatMap);
         }

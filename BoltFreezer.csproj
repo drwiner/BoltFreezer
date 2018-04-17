@@ -573,7 +573,11 @@
     <None Include="Benchmarks\arth\domain.pddl.meta" />
     <None Include="Benchmarks\arth\domrob.pddl" />
     <None Include="Benchmarks\arth\domrob.pddl.meta" />
+    <None Include="Benchmarks\blocks\domain-multihands.pddl" />
+    <None Include="Benchmarks\blocks\prob04.pddl" />
+    <None Include="Benchmarks\blocks\prob03.pddl" />
     <None Include="Benchmarks\blocks\prob01.pddl" />
+    <None Include="Benchmarks\blocks\prob02.pddl" />
     <None Include="Benchmarks\arth\prob01.pddl" />
     <None Include="Benchmarks\arth\prob01.pddl.meta" />
     <None Include="Benchmarks\arth\probrob.pddl" />

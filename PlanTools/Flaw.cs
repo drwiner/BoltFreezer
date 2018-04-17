@@ -19,6 +19,8 @@ namespace BoltFreezer.PlanTools
         public IPlanStep step;
         public bool isStatic = false;
         public bool isInit = false;
+        public bool hasDummyInit = false;
+        public bool isDummyGoal = false;
         public int risks = 0;
         public int cndts = 0;
         
@@ -70,6 +72,26 @@ namespace BoltFreezer.PlanTools
                 return -1;
             else if (other.isInit && !isInit)
                 return 1;
+
+            // take care of open conditions arising from substeps that are found in initial step.
+            if (hasDummyInit && !other.hasDummyInit)
+            {
+                return -1;
+            }
+            else if(other.hasDummyInit && !hasDummyInit)
+            {
+                return 1;
+            }
+
+            // take care of open conditions arising from substeps that are found in initial step.
+            if (isDummyGoal && !other.isDummyGoal)
+            {
+                return -1;
+            }
+            else if (other.isDummyGoal && !isDummyGoal)
+            {
+                return 1;
+            }
 
             // check risks
             if (risks > 0 || other.risks > 0)

@@ -79,15 +79,6 @@ namespace BoltFreezer.PlanTools
             foreach (var oc in plan.Flaws.OpenConditions)
             {
                 
-                // Refresh to new list
-                currentlyEvaluatedPreds = new List<IPredicate>();
-
-                if (visitedPreds.ContainsKey(oc.precondition))
-                {
-                    sumo += visitedPreds[oc.precondition];
-                    continue;
-                }
-
                 // Does there exist a step in the plan that can establish this needed precondition?
                 var existsA = false;
                 foreach (var existingStep in plan.Steps)
@@ -105,24 +96,33 @@ namespace BoltFreezer.PlanTools
                 // append heuristic for open condition
                 if (!existsA)
                 {
-                    currentlyEvaluatedPreds.Add(oc.precondition);
-                    sumo += AddHeuristic(plan.Initial, oc.precondition);
+
+                    if (visitedPreds.ContainsKey(oc.precondition))
+                    {
+                        sumo += visitedPreds[oc.precondition];
+                        continue;
+                    }
+
+                    //currentlyEvaluatedPreds.Add(oc.precondition);
+                    var amountToAdd = AddHeuristic(plan.Initial, oc.precondition, new HashSet<IPredicate>() { oc.precondition });
+                    sumo += amountToAdd;
+                    visitedPreds[oc.precondition] = amountToAdd;
                 }
             }
             return sumo;
         }
 
         // h_add(q) = 0 if holds initially, min a in GA, and infinite otherwise
-        public static int AddHeuristic(IState initial, IPredicate condition)
+        public static int AddHeuristic(IState initial, IPredicate condition, HashSet<IPredicate> ignorableConditions)
         {
             if (initial.InState(condition))
                 return 0;
 
             // if we have a value for this, return it.
-            if (visitedPreds.ContainsKey(condition))
-            {
-                return visitedPreds[condition];
-            }
+          //  if (visitedPreds.ContainsKey(condition))
+          //  {
+        //        return visitedPreds[condition];
+       //     }
 
             int minSoFar = 1000;
             // Then this is a static condition that can never be true... we should avoid this plan.
@@ -134,16 +134,19 @@ namespace BoltFreezer.PlanTools
             // find the gorund action that minimizes the heuristic estimate
             foreach (var groundAction in CacheMaps.GetCndts(condition))
             {
-
+                if (groundAction.Height > 0)
+                {
+                    continue;
+                }
                 int thisVal;
-                if (visitedOps.ContainsKey(groundAction))
-                {
-                    thisVal = visitedOps[groundAction];
-                }
-                else
-                {
-                    thisVal = AddHeuristic(initial, groundAction);
-                }
+              //  if (visitedOps.ContainsKey(groundAction))
+           //     {
+            // //       thisVal = visitedOps[groundAction];
+            //    }
+            //    else
+            //    {
+                thisVal = AddHeuristic(initial, groundAction, ignorableConditions);
+            //    }
 
 
                 if (thisVal < minSoFar)
@@ -152,30 +155,43 @@ namespace BoltFreezer.PlanTools
                 }
             }
 
-            visitedPreds[condition] = minSoFar;
+            //visitedPreds[condition] = minSoFar;
             return minSoFar;
         }
 
         // h_add(a) = 1 + h_add (Prec(a))
-        public static int AddHeuristic(IState initial, IOperator op)
+        public static int AddHeuristic(IState initial, IOperator op, HashSet<IPredicate> ignorableConditions)
         {
-            if (visitedOps.ContainsKey(op))
+            //if (visitedOps.ContainsKey(op))
+          //  {
+         //       return visitedOps[op];
+        //    }
+            
+            // Clone list and add new open conditions to ignorable conditions
+            var newIgnorableConditions = new HashSet<IPredicate>();
+            foreach( var item in ignorableConditions)
             {
-                return visitedOps[op];
+                newIgnorableConditions.Add(item);
             }
+            foreach(var precon in op.Preconditions)
+            {
+                newIgnorableConditions.Add(precon);
+            }
+           // newIgnorableConditions.AddRange(op.Preconditions);
 
             int sumo = 1;
             foreach (var precond in op.Preconditions)
             {
-                if (currentlyEvaluatedPreds.Contains(precond))
+                // if its precondition is one that was already ignorable coming in...
+                if (ignorableConditions.Contains(precond))
                 {
                     continue;
                 }
-
-                currentlyEvaluatedPreds.Add(precond);
-                sumo += AddHeuristic(initial, precond);
+                
+               // currentlyEvaluatedPreds.Add(precond);
+                sumo += AddHeuristic(initial, precond, newIgnorableConditions);
             }
-            visitedOps[op] = sumo;
+         //   visitedOps[op] = sumo;
             return sumo;
         }
 

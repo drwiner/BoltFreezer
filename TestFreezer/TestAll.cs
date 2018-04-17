@@ -140,14 +140,14 @@ namespace TestFreezer
         {
             var directory = @"D:\Documents\Frostbow\Benchmarks\blocks\";
             System.IO.Directory.CreateDirectory(directory);
-            var cutoff = 600000f;
+            var cutoff = 6000000f;
             var k = 1;
+            var problem = 3;
+            var initPlan = BlockTest.ReadAndCompile(true, problem);
 
-            var initPlan = BlockTest.ReadAndCompile(true, 1);
-
-            RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E3(new AddReuseHeuristic()), k, cutoff, directory, 0);
-            RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new AddReuseHeuristic()), k, cutoff, directory, 0);
-            RunPlanner(initPlan.Clone() as IPlan, new BFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, 0);
+            RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E3(new AddReuseHeuristic()), k, cutoff, directory, problem);
+            //RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new AddReuseHeuristic()), k, cutoff, directory, problem);
+            //RunPlanner(initPlan.Clone() as IPlan, new BFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, 0);
         }
 
         static void Main(string[] args)

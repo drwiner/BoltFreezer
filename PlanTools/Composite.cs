@@ -265,54 +265,54 @@ namespace BoltFreezer.PlanTools
             return compList;
         }
 
-        public static void ComposeHTNs(int hMax, Tuple<Composite, List<Decomposition>> Methods)
+        public static void ComposeHTNs(int hMax, Dictionary<Composite, List<Decomposition>> Methods)
         {
+            // for each height to ground a composite operator
             for (int h = 0; h < hMax; h++)
             {
-                var compList = new List<Composite>();
-                foreach (var decomp in Methods.Second)
+                // For each (composite operator, method) pair
+                foreach (var compositepair in Methods)
                 {
-                    var groundDecomps = decomp.Compose(h);
+                    // Create a new list of composites that will be assembled in this iteration
+                    var compList = new List<Composite>();
 
-                    foreach (var gdecomp in groundDecomps)
+                    // for each legal decomposition of this composite operator
+                    foreach (var decomp in compositepair.Value)
                     {
-                        // clone composite task
-                        var comp = Methods.First.PseudoClone();
+                        // Create a list of ground decompositions
+                        var groundDecomps = decomp.Compose(h);
 
-                        // Set height of composite step
-                        comp.Height = h + 1;
-
-                        // Assign method to composite step
-                        var numUnBound = comp.ApplyDecomposition(gdecomp);
-
-                        // If all terms are bound, then add as is.
-                        if (numUnBound == 0)
+                        // for each ground decomposition
+                        foreach (var gdecomp in groundDecomps)
                         {
-                            compList.Add(comp);
-                        }
-                        // Otherwise, bind the remaining unbound terms
-                        else if (numUnBound > 0)
-                        {
-                            // NEW METHOD: Remove unbound args
-                            comp.RemoveRemainingArgs();
-                            compList.Add(comp);
+                            // clone composite task
+                            var comp = compositepair.Key.PseudoClone();
 
-                            // OLD METHOD: There could be more than one way to bind remaining terms
-                            //var boundComps = comp.GroundRemainingArgs(numUnBound);
-                            //foreach (var bc in boundComps)
-                            //{
-                            //    // Add each possible way to bind remaining terms
-                            //    compList.Add(bc);
-                            //}
+                            // Set height of composite step
+                            comp.Height = h + 1;
+
+                            // Assign method to composite step
+                            var numUnBound = comp.ApplyDecomposition(gdecomp);
+
+                            // If all terms are bound, then add as is.
+                            if (numUnBound == 0)
+                            {
+                                compList.Add(comp);
+                            }
+                            // Otherwise, bind the remaining unbound terms
+                            else if (numUnBound > 0)
+                            {
+                                // Remove unbound args
+                                comp.RemoveRemainingArgs();
+                                compList.Add(comp);
+                            }
                         }
                     }
-                }
-                // For each newly created composite step, add to the library.
-                foreach (var comp in compList)
-                {
-                    // check if nonequality constraints are violated
-
-                    GroundActionFactory.InsertOperator(comp as IOperator);
+                    // For each newly created composite step, add to the library.
+                    foreach (var comp in compList)
+                    {
+                        GroundActionFactory.InsertOperator(comp as IOperator);
+                    }
                 }
 
             }

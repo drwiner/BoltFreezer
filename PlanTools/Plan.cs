@@ -177,6 +177,30 @@ namespace BoltFreezer.PlanTools
             // Don't check for threats when inserting.
         }
 
+        public void InsertPrimitiveSubstep(IPlanStep newStep, List<IPredicate> init, bool isGoal)
+        {
+            //    public bool hasDummyInit = false;
+            //public bool isDummyGoal = false;
+            steps.Add(newStep);
+            orderings.Insert(InitialStep, newStep);
+            orderings.Insert(newStep, GoalStep);
+
+            // Add new flaws
+            foreach (var pre in newStep.OpenConditions)
+            {
+                var newOC = new OpenCondition(pre, newStep);
+                if (init.Contains(pre))
+                {
+                    newOC.hasDummyInit = true;
+                }
+                if (isGoal)
+                {
+                    newOC.isDummyGoal = true;
+                }
+                Flaws.Add(this, newOC);
+            }
+        }
+
         public void InsertDecomp(ICompositePlanStep newStep)
         {
             decomps += 1;
@@ -197,7 +221,7 @@ namespace BoltFreezer.PlanTools
             // Clone, Add, and order Goal step
             var dummyGoal = newStep.GoalStep.Clone() as IPlanStep;
             dummyGoal.Depth = newStep.Depth;
-            Insert(dummyGoal);
+            InsertPrimitiveSubstep(dummyGoal, dummyInit.Effects, true);
             IDMap[newStep.GoalStep.ID] = dummyGoal;
             orderings.Insert(dummyInit, dummyGoal);
             // Dont need these here because its added when inserted as primitive
@@ -242,7 +266,7 @@ namespace BoltFreezer.PlanTools
                     Orderings.Insert(dummyInit, newsubstep);
                     IDMap[substep.ID] = newsubstep;
                     newSubSteps.Add(newsubstep);
-                    Insert(newsubstep);
+                    InsertPrimitiveSubstep(newsubstep, dummyInit.Effects, false);
                     newsubstep.InitCndt = dummyInit;
                     if (newsubstep.Depth > Hdepth)
                     {
@@ -293,28 +317,63 @@ namespace BoltFreezer.PlanTools
 
                 var newclink = new CausalLink<IPlanStep>(clink.Predicate, head, tail);
                 CausalLinks.Add(newclink);
+
+                // check if this causal links is threatened by a step in subplan
                 foreach (var step in newSubSteps)
                 {
+                    // Prerequisite criteria 1
                     if (step.ID == head.ID || step.ID == tail.ID)
                     {
                         continue;
                     }
+
+                    // Prerequisite criteria 2
                     if (!CacheMaps.IsThreat(clink.Predicate, step))
                     {
                         continue;
                     }
-                    // step is a threat to need precondition
-                    if (Orderings.IsPath(head, step))
+
+                    // If the step has height, need to evaluate differently
+                    if (step.Height > 0)
                     {
-                        continue;
+                        var temp = step as ICompositePlanStep;
+                        if (Orderings.IsPath(head, temp.InitialStep))
+                        {
+                            continue;
+                        }
+                        if (Orderings.IsPath(temp.GoalStep, tail))
+                        {
+                            continue;
+                        }
                     }
-                    if (Orderings.IsPath(step, tail))
+                    else
                     {
-                        continue;
+                        if (Orderings.IsPath(head, step))
+                        {
+                            continue;
+                        }
+                        if (Orderings.IsPath(step, tail))
+                        {
+                            continue;
+                        }
                     }
-                    Flaws.Add(new ThreatenedLinkFlaw(newclink, step));
+
+                    if (step.Height > 0)
+                    {
+                        // Then we need to dig deeper to find the step that threatens
+                        DecomposeThreat(clink, step as ICompositePlanStep);
+                    }
+                    else
+                    {
+                        Flaws.Add(new ThreatenedLinkFlaw(newclink, step));
+                    }
                 }
             }
+
+            // This is needed because we'll check if these substeps are threatening links
+            newStep.SubSteps = newSubSteps;
+           // newStep.InitialStep = dummyInit;
+            //newStep.GoalStep = dummyGoal;
 
             foreach (var pre in newStep.OpenConditions)
             {
@@ -429,6 +488,10 @@ namespace BoltFreezer.PlanTools
 
             foreach (var step in Steps)
             {
+                if (step.Height > 0)
+                {
+                    continue;
+                }
                 if (step.ID == repairStep.ID || step.ID == needStep.ID)
                 {
                     continue;
@@ -446,6 +509,7 @@ namespace BoltFreezer.PlanTools
                 {
                     continue;
                 }
+                
                 Flaws.Add(new ThreatenedLinkFlaw(clink, step));
             }
         }
@@ -531,6 +595,10 @@ namespace BoltFreezer.PlanTools
 
             foreach (var step in Steps)
             {
+                if (step.Height > 0)
+                {
+                    continue;
+                }
                 if (step.ID == repairStep.ID || step.ID == needStep.ID)
                 {
                     continue;
@@ -548,6 +616,7 @@ namespace BoltFreezer.PlanTools
                 {
                     continue;
                 }
+
                 Flaws.Add(new ThreatenedLinkFlaw(clink, step));
             }
         }

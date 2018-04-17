@@ -77,12 +77,12 @@ namespace BoltFreezer.PlanSpace
         {
             if (!plan.Orderings.HasCycle())
             {
-               // if (Visited.Contains(plan as Plan))
-              //  {
-               //     return;
-               // }
+                //if (Visited.Contains(plan as Plan))
+                //{
+                //    return;
+                //}
 
-               // Visited.Add(plan as Plan);
+                //Visited.Add(plan as Plan);
                 Search.Frontier.Enqueue(plan, Score(plan));
                 opened++;
             }

@@ -19,7 +19,7 @@ namespace BoltFreezer.Interfaces
         IPlanStep GoalStep { get; set; }
 
         // Sub-plan <S, O, L>
-        List<IPlanStep> SubSteps { get; }
+        List<IPlanStep> SubSteps { get; set; }
 
         List<Tuple<IPlanStep, IPlanStep>> SubOrderings { get; }
 

@@ -10,9 +10,10 @@
 	(:constants )
 	(:predicates
 		(at ?thing - thing ?location - location)
-		(has ?agent - character ?item - item)
+		(has ?agent - agent ?item - item)
 		(occupied ?location - location)
 		(adjacent ?location - location ?newlocation - location)
+		(freehands ?agent - agent)
 	)
 
 	(:action move
@@ -39,11 +40,13 @@
 				(at ?taker ?takerLocation)
 				(at ?block ?location)
 				(adjacent ?location ?takerLocation)
+				(freehands ?taker)
 			)
 		:effect
 			(and
 				(not (at ?block ?location))
 				(not (occupied ?location))
+				(not (freehands ?taker))
 				(has ?taker ?block)
 			)
 	)
@@ -62,6 +65,7 @@
 				(not (has ?putter ?thing))
 				(at ?thing ?newlocation)
 				(occupied ?newlocation)
+				(freehands ?putter)
 			)
 	)
 )

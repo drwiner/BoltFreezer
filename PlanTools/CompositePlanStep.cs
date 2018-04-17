@@ -24,6 +24,7 @@ namespace BoltFreezer.PlanTools
         public List<IPlanStep> SubSteps
         {
             get { return subSteps; }
+            set { subSteps = value; }
         }
 
         public List<Tuple<IPlanStep, IPlanStep>> SubOrderings

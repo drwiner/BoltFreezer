@@ -14,16 +14,20 @@ namespace BoltFreezer.PlanTools
         private HashSet<T> nodes;
         public HashSet<Tuple<T, T>> edges;
 
+        private Dictionary<T, HashSet<T>> DescendantMap;
+
         public Graph()
         {
             nodes = new HashSet<T>();
             edges = new HashSet<Tuple<T, T>>();
+            DescendantMap = new Dictionary<T, HashSet<T>>();
         }
 
-        public Graph(HashSet<T> _nodes, HashSet<Tuple<T,T>> _edges)
+        public Graph(HashSet<T> _nodes, HashSet<Tuple<T,T>> _edges,  Dictionary<T, HashSet<T>> _descMap)
         {
             nodes = _nodes;
             edges = _edges;
+            DescendantMap = _descMap;
         }
 
         //public void AddEdge(Tuple<T,T> edge)
@@ -39,10 +43,17 @@ namespace BoltFreezer.PlanTools
         {
             
             if (!nodes.Contains(elm1))
+            {
+                DescendantMap[elm1] = new HashSet<T>();
                 nodes.Add(elm1);
-            if (!nodes.Contains(elm2))
-                nodes.Add(elm2);
+            }
 
+            if (!nodes.Contains(elm2))
+            {
+                nodes.Add(elm2);
+                DescendantMap[elm2] = new HashSet<T>();
+            }
+            DescendantMap[elm1].Add(elm2);
             var newEdge = new Tuple<T,T>(elm1, elm2);
             if (!edges.Contains(newEdge))
                 edges.Add(newEdge);
@@ -79,6 +90,11 @@ namespace BoltFreezer.PlanTools
 
         private bool InDescendants(T start, T goal)
         {
+            if (DescendantMap[start].Contains(goal))
+            {
+                return true;
+            }
+
             var descendants = new List<T>();
             var unexplored = new Stack<T>();
             unexplored.Push(start);
@@ -90,8 +106,11 @@ namespace BoltFreezer.PlanTools
                 //var tails = edges.FindAll(edge => edge.First.Equals(elm)).Select(edge => edge.Second);
                 foreach (var tail in tails)
                 {
+                    DescendantMap[start].Add(tail);
                     if (tail.Equals(goal))
+                    {
                         return true;
+                    }
                     if (!descendants.Contains(tail))
                     {
                         unexplored.Push(tail);
@@ -106,6 +125,7 @@ namespace BoltFreezer.PlanTools
 
         private bool AnyInDescendants(T start, List<T> goals)
         {
+
             var descendants = new List<T>();
             var unexplored = new Stack<T>();
             unexplored.Push(start);
@@ -141,7 +161,6 @@ namespace BoltFreezer.PlanTools
             }
 
             return InDescendants(elm1, elm2);
-            //return false/*;*/
         }
 
         public bool HasCycle()
@@ -155,15 +174,6 @@ namespace BoltFreezer.PlanTools
 
                 if (AnyInDescendants(elm, predecessors))
                     return true;
-                //if (descendants.Intersect(predecessors).Any()){
-                //    return true;
-                //}
-                ////var predecessors = edges.FindAll(edge => edge.Second.Equals(elm)).Select(edge => edge.First);
-                //foreach (var desc in descendants)
-                //{
-                //    if (predecessors.Contains(desc))
-                //        return true;
-                //}
             }
             return false;
         }
@@ -202,7 +212,12 @@ namespace BoltFreezer.PlanTools
         {
             var newNodes = new HashSet<T>(nodes);
             var newEdges = new HashSet<Tuple<T, T>>(edges);
-            return new Graph<T>(newNodes, newEdges);
+            var newDescendantMap = new Dictionary<T, HashSet<T>>();
+            foreach (var keyvalue in DescendantMap)
+            {
+                newDescendantMap[keyvalue.Key] = new HashSet<T>(keyvalue.Value);
+            }
+            return new Graph<T>(newNodes, newEdges, newDescendantMap);
         }
 
     }

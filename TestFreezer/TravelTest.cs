@@ -237,7 +237,8 @@ namespace TestFreezer
             var decomps = ReadDecompositions();
             var composite = AddCompositeOperator();
 
-            var CompositeMethods = new Tuple<Composite, List<Decomposition>>(composite, decomps);
+            var CompositeMethods = new Dictionary<Composite, List<Decomposition>>();
+            CompositeMethods[composite] = decomps;
             Composite.ComposeHTNs(2, CompositeMethods);
 
             CacheMaps.CacheLinks(GroundActionFactory.GroundActions);

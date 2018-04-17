@@ -17,4 +17,3 @@ D:\Documents\Frostbow\boltfreezer\bin\x64\Release\BoltFreezer.pdb
 D:\Documents\Frostbow\boltfreezer\obj\x64\Release\BoltFreezer.csproj.CoreCompileInputs.cache
 D:\Documents\Frostbow\boltfreezer\obj\x64\Release\BoltFreezer.dll
 D:\Documents\Frostbow\boltfreezer\obj\x64\Release\BoltFreezer.pdb
-D:\documents\frostbow\boltfreezer\obj\x64\Release\BoltFreezer.csprojResolveAssemblyReference.cache
