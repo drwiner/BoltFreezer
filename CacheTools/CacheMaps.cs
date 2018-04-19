@@ -216,5 +216,82 @@ namespace BoltFreezer.PlanTools
                 }
             }
         }
+
+        private static Dictionary<IPredicate, int> RecursiveHeuristicCache(Dictionary<IPredicate, int> currentMap, List<IPredicate> InitialConditions, List<IPredicate> goalConditions, int currentValue)
+        {
+
+            var initiallyRelevant = GroundActionFactory.GroundActions.Where(action => action.Height == 0 && action.Preconditions.All(pre => InitialConditions.Contains(pre)));
+            
+            var relaxedList = initiallyRelevant.SelectMany(action => action.Effects);
+            bool toContinue = false;
+            foreach(var item in relaxedList)
+            {
+                if (currentMap.ContainsKey(item))
+                {
+                    continue;
+                }
+                toContinue = true;
+                currentMap[item] = currentValue;
+                InitialConditions.Add(item);
+            }
+            if (toContinue)
+            {
+                return RecursiveHeuristicCache(currentMap, InitialConditions, goalConditions, currentValue + 1);
+            }
+            else
+            {
+                return currentMap;
+            }
+        }
+
+        public static void CacheAddReuseHeuristic(IState InitialState, List<IPredicate> goalConditions)
+        {
+            // Use dynamic programming
+            var initialMap = new Dictionary<IPredicate, int>();
+            foreach(var item in InitialState.Predicates)
+            {
+                initialMap[item]= 0;
+            }
+            List<IPredicate> newInitialList = InitialState.Predicates;
+            foreach(var pre in CacheMaps.CausalMap.Keys)
+            {
+                if (pre.Sign)
+                {
+                    continue;
+                }
+                if (!newInitialList.Contains(pre.GetReversed()))
+                {
+                    newInitialList.Add(pre);
+                    initialMap[pre] = 0;
+                }
+            }
+
+            HeuristicMethods.visitedPreds = RecursiveHeuristicCache(initialMap, newInitialList, goalConditions, 1);
+
+            //var visitedPreds = new List<IPredicate>();
+            //var allPrecons = GroundActionFactory.GroundActions.SelectMany(action => action.Preconditions);
+            //foreach(precon in Preconditions)
+
+            //foreach(var gstep in GroundActionFactory.GroundActions)
+            //{
+            //    var newPreconds = gstep.Preconditions.Where(pre => !visitedPreds.Contains(pre));
+            //    foreach(var precon in newPreconds)
+            //    {
+            //        Console.WriteLine(string.Format("Working on {0}", precon.ToString()));
+            //        visitedPreds.Add(precon);
+            //        var heuristicEstimate = HeuristicMethods.AddHeuristic(InitialState, precon, new HashSet<IPredicate>());
+            //        Console.WriteLine(string.Format("AddResuse for {0}: {1}", precon.ToString(), heuristicEstimate));
+            //        HeuristicMethods.visitedPreds[precon] = heuristicEstimate;
+            //    }
+            //}
+
+            //var unattendedGoalConditions = goalConditions.Where(goal => !visitedPreds.Contains(goal));
+            //foreach(var goal in unattendedGoalConditions)
+            //{
+            //    visitedPreds.Add(goal);
+            //    var heuristicEstimate = HeuristicMethods.AddHeuristic(InitialState, goal, new HashSet<IPredicate>());
+            //    HeuristicMethods.visitedPreds[goal] = heuristicEstimate;
+            //}
+        }
     }
 }

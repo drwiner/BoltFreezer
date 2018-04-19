@@ -213,10 +213,12 @@ namespace BoltFreezer.PlanTools
             steps.Add(dummyInit);
             orderings.Insert(InitialStep, dummyInit);
             orderings.Insert(dummyInit, GoalStep);
-            foreach (var oc in newStep.OpenConditions)
-            {
-                Flaws.Add(this, new OpenCondition(oc, dummyInit));
-            }
+            
+            //foreach (var oc in newStep.OpenConditions)
+            //{
+            //    Flaws.Add(this, new OpenCondition(oc, dummyInit));
+            //}
+
 
             // Clone, Add, and order Goal step
             var dummyGoal = newStep.GoalStep.Clone() as IPlanStep;
@@ -372,8 +374,8 @@ namespace BoltFreezer.PlanTools
 
             // This is needed because we'll check if these substeps are threatening links
             newStep.SubSteps = newSubSteps;
-           // newStep.InitialStep = dummyInit;
-            //newStep.GoalStep = dummyGoal;
+            newStep.InitialStep = dummyInit;
+            newStep.GoalStep = dummyGoal;
 
             foreach (var pre in newStep.OpenConditions)
             {
@@ -401,18 +403,27 @@ namespace BoltFreezer.PlanTools
         // This method is used when a composite step may threaten a causal link.
         private void DecomposeThreat(CausalLink<IPlanStep> causalLink, ICompositePlanStep ThisIsAThreat)
         {
+            //if (CacheMaps.IsThreat(causalLink.Predicate, ThisIsAThreat))
+            //{
+            //    Flaws.Add(new ThreatenedLinkFlaw(causalLink, ThisIsAThreat.GoalStep));
+            //    return;
+            //}
+
             foreach (var substep in ThisIsAThreat.SubSteps)
             {
-                if (!CacheMaps.IsThreat(causalLink.Predicate, substep))
-                {
-                    continue;
-                }
+                
                 if (substep.Height > 0)
                 {
+                    //var compositeSubStep = substep as ICompositePlanStep;
                     DecomposeThreat(causalLink, substep as ICompositePlanStep);
                 }
                 else
                 {
+                    if (!CacheMaps.IsThreat(causalLink.Predicate, substep))
+                    {
+                        continue;
+                    }
+
                     Flaws.Add(new ThreatenedLinkFlaw(causalLink, substep));
                 }
             }
@@ -422,17 +433,15 @@ namespace BoltFreezer.PlanTools
         {
             foreach (var clink in causalLinks)
             {
-                // Let it be for now that a newly inserted step cannot already be in a causal link in the plan (a head or tail). If not true, then check first.
-                if (!CacheMaps.IsThreat(clink.Predicate, possibleThreat))
-                {
-                    continue;
-                }
-                // new step can possibly threaten 
+
                 if (possibleThreat.Height > 0)
                 {
                     var possibleThreatComposite = possibleThreat as ICompositePlanStep;
-                    var threatInit = possibleThreatComposite.InitialStep;
+
                     var threatGoal = possibleThreatComposite.GoalStep;
+
+                    var threatInit = possibleThreatComposite.InitialStep;
+                    
                     if (Orderings.IsPath(clink.Tail as IPlanStep, threatInit))
                     {
                         continue;
@@ -441,11 +450,24 @@ namespace BoltFreezer.PlanTools
                     {
                         continue;
                     }
+
+                    //if (CacheMaps.IsThreat(clink.Predicate, possibleThreat))
+                    //{
+                    //    // no need to decompose if this composite step is the explicit threat.
+                    //    Flaws.Add(new ThreatenedLinkFlaw(clink, threatGoal));
+                    //    return;
+                    //}
+
                     // Now we need to consider all sub-steps since any one of them could interfere.
                     DecomposeThreat(clink, possibleThreatComposite);
                 }
                 else
                 {
+                    if (!CacheMaps.IsThreat(clink.Predicate, possibleThreat))
+                    {
+                        continue;
+                    }
+
                     if (Orderings.IsPath(clink.Tail as IPlanStep, possibleThreat))
                     {
                         continue;

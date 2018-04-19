@@ -240,8 +240,8 @@ namespace TestFreezer
             var compositeDecompList = new Dictionary<Composite, List<Decomposition>>();
             var transport = TransportComposites();
             compositeDecompList[transport.First] = transport.Second;//.Add(transport);
-           // var multimove = MultimoveComposites();
-            //compositeDecompList[multimove.First] = multimove.Second;
+            var multimove = MultimoveComposites();
+            compositeDecompList[multimove.First] = multimove.Second;
             return compositeDecompList;
 
         }
@@ -283,7 +283,9 @@ namespace TestFreezer
             CacheMaps.Reset();
             CacheMaps.CacheLinks(GroundActionFactory.GroundActions);
             CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, initPlan.Goal.Predicates);
-         
+            CacheMaps.CacheAddReuseHeuristic(initPlan.Initial, initPlan.Goal.Predicates);
+
+
             return initPlan;
         }
 

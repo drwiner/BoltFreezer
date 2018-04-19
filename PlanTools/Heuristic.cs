@@ -2,6 +2,7 @@
 using BoltFreezer.Enums;
 using BoltFreezer.Interfaces;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BoltFreezer.PlanTools
 {
@@ -66,10 +67,9 @@ namespace BoltFreezer.PlanTools
     public static class HeuristicMethods
     {
 
-        private static Dictionary<IOperator, int> visitedOps = new Dictionary<IOperator, int>();
-        private static Dictionary<IPredicate, int> visitedPreds = new Dictionary<IPredicate, int>();
-
-        private static List<IPredicate> currentlyEvaluatedPreds;
+       // private static Dictionary<IOperator, int> visitedOps = new Dictionary<IOperator, int>();
+        public static Dictionary<IPredicate, int> visitedPreds = new Dictionary<IPredicate, int>();
+        public static Dictionary<IPredicate, int> visitedOpenConditions = new Dictionary<IPredicate, int>();
 
         // h^r_add(pi) = sum_(oc in plan) 0 if exists a step possibly preceding oc.step and h_add(oc.precondition) otherwise.
         public static int AddReuseHeuristic(IPlan plan)
@@ -97,19 +97,43 @@ namespace BoltFreezer.PlanTools
                 if (!existsA)
                 {
 
-                    if (visitedPreds.ContainsKey(oc.precondition))
+                    if (visitedOpenConditions.ContainsKey(oc.precondition))
                     {
                         sumo += visitedPreds[oc.precondition];
                         continue;
                     }
 
                     //currentlyEvaluatedPreds.Add(oc.precondition);
-                    var amountToAdd = AddHeuristic(plan.Initial, oc.precondition, new HashSet<IPredicate>() { oc.precondition });
+                    //var amountToAdd = AddHeuristic(plan.Initial, oc.precondition, new HashSet<IPredicate>() { oc.precondition });
+                    var amountToAdd = AddHeuristic(oc.precondition);
                     sumo += amountToAdd;
-                    visitedPreds[oc.precondition] = amountToAdd;
+                    visitedOpenConditions[oc.precondition] = amountToAdd;
                 }
             }
             return sumo;
+        }
+
+        public static int AddHeuristic(IPredicate precondition)
+        {
+            if (visitedPreds[precondition] == 0)
+            {
+                return 0;
+            }
+
+            var bestSoFar = 1000;
+            foreach(var cndt in CacheMaps.GetCndts(precondition))
+            {
+                if (cndt.Height > 0)
+                {
+                    continue;
+                }
+                var sumo = cndt.Preconditions.Sum(pre => visitedPreds[pre]);
+                if (sumo < bestSoFar)
+                {
+                    bestSoFar = sumo;
+                }
+            }
+            return bestSoFar;
         }
 
         // h_add(q) = 0 if holds initially, min a in GA, and infinite otherwise

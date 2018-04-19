@@ -142,7 +142,7 @@ namespace TestFreezer
             System.IO.Directory.CreateDirectory(directory);
             var cutoff = 6000000f;
             var k = 1;
-            var problem = 3;
+            var problem = 1;
             var initPlan = BlockTest.ReadAndCompile(true, problem);
 
             RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E3(new AddReuseHeuristic()), k, cutoff, directory, problem);

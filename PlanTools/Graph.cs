@@ -73,10 +73,13 @@ namespace BoltFreezer.PlanTools
             while(unexplored.Count > 0)
             {
                 var elm = unexplored.Pop();
+                
                 var tails = edges.Where(x => x.First.Equals(elm)).Select(x => x.Second);
                 //var tails = edges.FindAll(edge => edge.First.Equals(elm)).Select(edge => edge.Second);
                 foreach (var tail in tails)
                 {
+                    if (!DescendantMap[element].Contains(elm))
+                        DescendantMap[element].Add(elm);
                     if (!descendants.Contains(tail))
                     {
                         unexplored.Push(tail);
@@ -106,7 +109,9 @@ namespace BoltFreezer.PlanTools
                 //var tails = edges.FindAll(edge => edge.First.Equals(elm)).Select(edge => edge.Second);
                 foreach (var tail in tails)
                 {
-                    DescendantMap[start].Add(tail);
+                    if (!DescendantMap[start].Contains(tail))
+                        DescendantMap[start].Add(tail);
+
                     if (tail.Equals(goal))
                     {
                         return true;
@@ -125,6 +130,8 @@ namespace BoltFreezer.PlanTools
 
         private bool AnyInDescendants(T start, List<T> goals)
         {
+            if (DescendantMap[start].Any(desc => goals.Contains(desc)))
+                return true;
 
             var descendants = new List<T>();
             var unexplored = new Stack<T>();
@@ -137,6 +144,9 @@ namespace BoltFreezer.PlanTools
                 //var tails = edges.FindAll(edge => edge.First.Equals(elm)).Select(edge => edge.Second);
                 foreach (var tail in tails)
                 {
+                    if (!DescendantMap[start].Contains(tail))
+                        DescendantMap[start].Add(tail);
+
                     if (goals.Contains(tail))
                         return true;
                     //if (tail.Equals(goal))
@@ -196,6 +206,10 @@ namespace BoltFreezer.PlanTools
                     markedForRemoval.Remove(nmEdge);
                     if (!markedForRemoval.Any(e => e.Second.Equals(nmEdge.Second) && !e.First.Equals(n)))
                         S.Push(nmEdge.Second);
+                    //else
+                    //{
+                    //    markedForRemoval.Add(nmEdge);
+                    //}
                 }
                 edgeList = markedForRemoval;
             }
