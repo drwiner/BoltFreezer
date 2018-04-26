@@ -156,7 +156,7 @@ namespace BoltFreezer.PlanSpace
                     continue;
                 }
 
-                if (step == oc.step.InitCndt && step.Effects.Contains(oc.precondition))
+                if (step == oc.step.InitCndt && oc.hasDummyInit)
                 {
                     var planClone = plan.Clone() as IPlan;
                     planClone.Repair(oc, step);

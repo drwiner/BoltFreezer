@@ -217,31 +217,44 @@ namespace BoltFreezer.PlanTools
             }
         }
 
-        private static Dictionary<IPredicate, int> RecursiveHeuristicCache(Dictionary<IPredicate, int> currentMap, List<IPredicate> InitialConditions, List<IPredicate> goalConditions, int currentValue)
+        private static Dictionary<IPredicate, int> RecursiveHeuristicCache(Dictionary<IPredicate, int> currentMap, List<IPredicate> InitialConditions)
         {
-
+            // Steps that are executable given the initial conditions. These conditions can represent a state that is logically inconsistent (and (at bob store) (not (at bob store)))
             var initiallyRelevant = GroundActionFactory.GroundActions.Where(action => action.Height == 0 && action.Preconditions.All(pre => InitialConditions.Contains(pre)));
-            
-            var relaxedList = initiallyRelevant.SelectMany(action => action.Effects);
+
+            // a boolean tag to decide whether to continue recursively. If checked, then there is some new effect that isn't in initial conditions.
             bool toContinue = false;
-            foreach(var item in relaxedList)
+
+            // for each step whose preconditions are executable given the initial conditions
+            foreach (var newStep in initiallyRelevant)
             {
-                if (currentMap.ContainsKey(item))
+                // sum_{pre in newstep.preconditions} currentMap[pre]
+                var thisStepsValue = newStep.Preconditions.Sum(pre => currentMap[pre]);
+
+                foreach(var eff in newStep.Effects)
                 {
-                    continue;
+                    // ignore effects we've already seen; these occur "earlier" in planning graph
+                    if (currentMap.ContainsKey(eff))
+                        continue;
+
+                    // If we make it this far, then we've reached an unexplored literal effect
+                    toContinue = true;
+
+                    // The current value of this effect is 1 (this new step) + the sum of the preconditions of this step in the map.
+                    currentMap[eff] = 1 + thisStepsValue;
+
+                    // Add this effect to the new initial Condition for subsequent round
+                    InitialConditions.Add(eff);
                 }
-                toContinue = true;
-                currentMap[item] = currentValue;
-                InitialConditions.Add(item);
             }
+
+            // Only continue recursively if we've explored a new literal effect. Pass the map along to maintain a global item.
             if (toContinue)
-            {
-                return RecursiveHeuristicCache(currentMap, InitialConditions, goalConditions, currentValue + 1);
-            }
-            else
-            {
-                return currentMap;
-            }
+                return RecursiveHeuristicCache(currentMap, InitialConditions);
+
+            // Otherwise, return our current map
+            return currentMap;
+            
         }
 
         public static void CacheAddReuseHeuristic(IState InitialState, List<IPredicate> goalConditions)
@@ -266,32 +279,8 @@ namespace BoltFreezer.PlanTools
                 }
             }
 
-            HeuristicMethods.visitedPreds = RecursiveHeuristicCache(initialMap, newInitialList, goalConditions, 1);
-
-            //var visitedPreds = new List<IPredicate>();
-            //var allPrecons = GroundActionFactory.GroundActions.SelectMany(action => action.Preconditions);
-            //foreach(precon in Preconditions)
-
-            //foreach(var gstep in GroundActionFactory.GroundActions)
-            //{
-            //    var newPreconds = gstep.Preconditions.Where(pre => !visitedPreds.Contains(pre));
-            //    foreach(var precon in newPreconds)
-            //    {
-            //        Console.WriteLine(string.Format("Working on {0}", precon.ToString()));
-            //        visitedPreds.Add(precon);
-            //        var heuristicEstimate = HeuristicMethods.AddHeuristic(InitialState, precon, new HashSet<IPredicate>());
-            //        Console.WriteLine(string.Format("AddResuse for {0}: {1}", precon.ToString(), heuristicEstimate));
-            //        HeuristicMethods.visitedPreds[precon] = heuristicEstimate;
-            //    }
-            //}
-
-            //var unattendedGoalConditions = goalConditions.Where(goal => !visitedPreds.Contains(goal));
-            //foreach(var goal in unattendedGoalConditions)
-            //{
-            //    visitedPreds.Add(goal);
-            //    var heuristicEstimate = HeuristicMethods.AddHeuristic(InitialState, goal, new HashSet<IPredicate>());
-            //    HeuristicMethods.visitedPreds[goal] = heuristicEstimate;
-            //}
+            HeuristicMethods.visitedPreds = RecursiveHeuristicCache(initialMap, newInitialList);
+         
         }
     }
 }

@@ -41,6 +41,11 @@ namespace BoltFreezer.PlanTools
 
         public void Insert(T elm1, T elm2)
         {
+            if (elm1.Equals(elm2))
+            {
+                Console.WriteLine("mistake in ordering");
+                throw new System.Exception();
+            }
             
             if (!nodes.Contains(elm1))
             {
@@ -204,7 +209,7 @@ namespace BoltFreezer.PlanTools
                 foreach (var nmEdge in edgesFromN)
                 {
                     markedForRemoval.Remove(nmEdge);
-                    if (!markedForRemoval.Any(e => e.Second.Equals(nmEdge.Second) && !e.First.Equals(n)))
+                    if (!markedForRemoval.Any(e => e.Second.Equals(nmEdge.Second))) // && !e.First.Equals(n)))
                         S.Push(nmEdge.Second);
                     //else
                     //{

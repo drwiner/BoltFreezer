@@ -284,6 +284,7 @@ namespace TestFreezer
             CacheMaps.CacheLinks(GroundActionFactory.GroundActions);
             CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, initPlan.Goal.Predicates);
             CacheMaps.CacheAddReuseHeuristic(initPlan.Initial, initPlan.Goal.Predicates);
+            initPlan = PlanSpacePlanner.CreateInitialPlan(pfreeze);
 
 
             return initPlan;

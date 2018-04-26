@@ -235,9 +235,9 @@ namespace BoltFreezer.PlanTools
            
             var newStepCopy = new PlanStep(new Operator(newStep.Action.Predicate as Predicate, new List<IPredicate>(), new List<IPredicate>()));
             steps.Add(newStepCopy);
-            orderings.Insert(dummyInit, newStepCopy);
-            orderings.Insert(newStepCopy, dummyGoal);
-
+            //  orderings.Insert(dummyInit, newStepCopy);
+            //  orderings.Insert(newStepCopy, dummyGoal);
+            newStepCopy.Height = newStep.Height;
             var newSubSteps = new List<IPlanStep>();
             
             foreach (var substep in newStep.SubSteps)
@@ -319,6 +319,7 @@ namespace BoltFreezer.PlanTools
 
                 var newclink = new CausalLink<IPlanStep>(clink.Predicate, head, tail);
                 CausalLinks.Add(newclink);
+                Orderings.Insert(head, tail);
 
                 // check if this causal links is threatened by a step in subplan
                 foreach (var step in newSubSteps)
@@ -419,6 +420,10 @@ namespace BoltFreezer.PlanTools
                 }
                 else
                 {
+                    if (substep.Equals(causalLink.Head) || substep.Equals(causalLink.Tail))
+                    {
+                        continue;
+                    }
                     if (!CacheMaps.IsThreat(causalLink.Predicate, substep))
                     {
                         continue;
@@ -437,6 +442,11 @@ namespace BoltFreezer.PlanTools
                 if (possibleThreat.Height > 0)
                 {
                     var possibleThreatComposite = possibleThreat as ICompositePlanStep;
+
+                    if (possibleThreatComposite.SubSteps.Contains(clink.Head) || possibleThreatComposite.SubSteps.Contains(clink.Tail))
+                    {
+                        continue;
+                    }
 
                     var threatGoal = possibleThreatComposite.GoalStep;
 

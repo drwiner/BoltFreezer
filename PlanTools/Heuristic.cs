@@ -66,15 +66,13 @@ namespace BoltFreezer.PlanTools
 
     public static class HeuristicMethods
     {
-
-       // private static Dictionary<IOperator, int> visitedOps = new Dictionary<IOperator, int>();
+        // These may be stored in preprocessing step
         public static Dictionary<IPredicate, int> visitedPreds = new Dictionary<IPredicate, int>();
-        public static Dictionary<IPredicate, int> visitedOpenConditions = new Dictionary<IPredicate, int>();
 
         // h^r_add(pi) = sum_(oc in plan) 0 if exists a step possibly preceding oc.step and h_add(oc.precondition) otherwise.
         public static int AddReuseHeuristic(IPlan plan)
         {
-
+            // we are just taking the sum of the visitedPreds values of the open conditions, unless there is a step that establishes the condition already in plan (reuse).
             int sumo = 0;
             foreach (var oc in plan.Flaws.OpenConditions)
             {
@@ -83,6 +81,10 @@ namespace BoltFreezer.PlanTools
                 var existsA = false;
                 foreach (var existingStep in plan.Steps)
                 {
+
+                    if (existingStep.Height > 0)
+                        continue;
+
                     if (plan.Orderings.IsPath(oc.step, existingStep))
                         continue;
 
@@ -96,8 +98,8 @@ namespace BoltFreezer.PlanTools
                 // append heuristic for open condition
                 if (!existsA)
                 {
-
-                    if (visitedOpenConditions.ContainsKey(oc.precondition))
+                    // we should always have the conditions in the visitedPreds dictionary if we processed correctly
+                    if (visitedPreds.ContainsKey(oc.precondition))
                     {
                         sumo += visitedPreds[oc.precondition];
                         continue;
@@ -107,7 +109,7 @@ namespace BoltFreezer.PlanTools
                     //var amountToAdd = AddHeuristic(plan.Initial, oc.precondition, new HashSet<IPredicate>() { oc.precondition });
                     var amountToAdd = AddHeuristic(oc.precondition);
                     sumo += amountToAdd;
-                    visitedOpenConditions[oc.precondition] = amountToAdd;
+                    visitedPreds[oc.precondition] = amountToAdd;
                 }
             }
             return sumo;

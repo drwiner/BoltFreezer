@@ -139,13 +139,13 @@ namespace BoltFreezer.PlanTools
                 return -10000f - plan.Steps.Count;
             }
 
-            if (plan.Flaws.Count == 0)
-            {
-                return -100f - plan.Steps.Count;
-            }
+            //if (plan.Flaws.Count == 0)
+            //{
+            //    return -100f - plan.Steps.Count;
+            //}
 
             return HMethod.Heuristic(plan) +
-                ((plan.Steps.Count - (2 * plan.Decomps)) /
+                ((plan.Steps.Count - (plan.Decomps)) /
                 (float)(1 + System.Math.Log((double)plan.Hdepth + 1f, 2)));
         }
     }

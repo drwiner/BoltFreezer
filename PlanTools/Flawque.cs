@@ -42,8 +42,15 @@ namespace BoltFreezer.PlanTools
             if (GroundActionFactory.Statics.Contains(oc.precondition))
             {
                 oc.isStatic = true;
+                oc.addReuseHeuristic = 0;
                 OpenConditions.Add(oc);
                 return;
+            }
+
+            // Use this value to keep track of amount of work.
+            if (HeuristicMethods.visitedPreds.ContainsKey(oc.precondition))
+            {
+                oc.addReuseHeuristic = HeuristicMethods.visitedPreds[oc.precondition];
             }
 
             // Calculate risks and cndts
@@ -53,20 +60,31 @@ namespace BoltFreezer.PlanTools
                 if (step.ID == oc.step.ID)
                     continue;
 
+                if (step.Height > 0)
+                {
+                    continue;
+                }
+
                 if (plan.Orderings.IsPath(oc.step, step))
                     continue;
 
-                if (CacheMaps.IsCndt(oc.precondition, step))
-                    oc.cndts += 1;
+                //    if (CacheMaps.IsCndt(oc.precondition, step))
+                //        oc.cndts += 1;
 
                 if (CacheMaps.IsThreat(oc.precondition, step))
+                {
+                    // just need 1 risk to be unsafe
                     oc.risks += 1;
+                    break;
+                }
 
             }
 
             if (oc.risks == 0 && plan.Initial.InState(oc.precondition))
             {
                 oc.isInit = true;
+                // Using "Work" or Estimated Effort, vs "Cost" or Add Reuse Heuristic Cost
+                oc.addReuseHeuristic = 1;
             }
 
             OpenConditions.Add(oc);
@@ -116,7 +134,7 @@ namespace BoltFreezer.PlanTools
             return best_flaw;
         }
 
-        // When we add a new step, update cndts and risks
+        // When we add a new step, update cndts and risks (Current never called)
         public void UpdateFlaws(IPlan plan, IPlanStep action)
         {
             if (action.Height > 0)
