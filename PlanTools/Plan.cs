@@ -223,9 +223,11 @@ namespace BoltFreezer.PlanTools
             // Clone, Add, and order Goal step
             var dummyGoal = newStep.GoalStep.Clone() as IPlanStep;
             dummyGoal.Depth = newStep.Depth;
+            dummyGoal.InitCndt = dummyInit;
             InsertPrimitiveSubstep(dummyGoal, dummyInit.Effects, true);
             IDMap[newStep.GoalStep.ID] = dummyGoal;
             orderings.Insert(dummyInit, dummyGoal);
+            
             // Dont need these here because its added when inserted as primitive
             //orderings.Insert(InitialStep, dummyGoal);
             //orderings.Insert(dummyGoal, GoalStep);

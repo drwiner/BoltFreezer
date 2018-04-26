@@ -129,6 +129,19 @@ namespace BoltFreezer.PlanSpace
 
                 // check if inserting new Step (with orderings given by Repair) add cndts/risks to existing open conditions, affecting their status in the heap
                 //planClone.Flaws.UpdateFlaws(planClone, newStep);
+
+                if (oc.isDummyGoal)
+                {
+                    if (newStep.Height > 0)
+                    {
+                        var compNewStep = newStep as ICompositePlanStep;
+                        planClone.Orderings.Insert(oc.step.InitCndt, compNewStep.InitialStep);
+                    }
+                    else
+                    {
+                        planClone.Orderings.Insert(oc.step.InitCndt, newStep);
+                    }
+                }
                 planClone.DetectThreats(newStep);
                 Insert(planClone);
             }
