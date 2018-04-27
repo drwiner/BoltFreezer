@@ -53,6 +53,9 @@ namespace BoltFreezer.PlanTools
                 // Termination criteria
                 if (flaw == null)
                 {
+                    if (plan.Hdepth == 0)
+                        continue;
+
                     watch.Stop();
                     var elapsedMs = watch.ElapsedMilliseconds;
                     

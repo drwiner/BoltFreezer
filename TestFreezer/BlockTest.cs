@@ -171,11 +171,11 @@ namespace TestFreezer
         public static Composite ReadTransportCompositeOperator()
         {
             var objTerms = new List<ITerm>() {
-                new Term("?agent")     { Type = "steeringagent"},
-                new Term("?item")         { Type = "block"},
-                new Term("?adjacentfrom") {Type="location"},
-                new Term("?from")         { Type = "location"},
-                new Term("?to")         { Type = "location"}
+                new Term("?agent")     { Type = "steeringagent"}, //0
+                new Term("?item")         { Type = "block"}, //1
+                new Term("?adjacentfrom") {Type="location"}, //2
+                new Term("?from")         { Type = "location"}, //3
+                new Term("?to")         { Type = "location"} //4
             };
 
             var atItemFrom = new Predicate("at", new List<ITerm>() { objTerms[1], objTerms[3] }, true);

@@ -85,7 +85,7 @@ namespace BoltFreezer.PlanTools
                 return -10000f - plan.Steps.Count;
             }
 
-            return plan.Steps.Count - (2 * plan.Decomps) + HMethod.Heuristic(plan) - plan.Hdepth;
+            return plan.Steps.Count - (3 * plan.Decomps) + HMethod.Heuristic(plan) - plan.Hdepth;
         }
     }
 
@@ -112,7 +112,7 @@ namespace BoltFreezer.PlanTools
                 return -10000f - plan.Steps.Count;
             }
 
-            return plan.Steps.Count - (2 * plan.Decomps) + HMethod.Heuristic(plan) - (float)System.Math.Log((double)plan.Hdepth + 1f, 2);
+            return plan.Steps.Count - (3 * plan.Decomps) + HMethod.Heuristic(plan) - (float)System.Math.Log((double)plan.Hdepth + 1f, 2);
         }
     }
 
@@ -145,7 +145,7 @@ namespace BoltFreezer.PlanTools
             //}
 
             return HMethod.Heuristic(plan) +
-                ((plan.Steps.Count - (plan.Decomps)) /
+                ((plan.Steps.Count - (3*plan.Decomps)) /
                 (float)(1 + System.Math.Log((double)plan.Hdepth + 1f, 2)));
         }
     }
