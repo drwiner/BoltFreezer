@@ -140,7 +140,7 @@ namespace TestFreezer
         {
             var directory = @"D:\Documents\Frostbow\Benchmarks\blocks\";
             System.IO.Directory.CreateDirectory(directory);
-            var cutoff = 100000f;
+            var cutoff = 600000f;
             var k = 1;
             var problem = 1;
             var initPlan = BlockTest.ReadAndCompile(true, problem);

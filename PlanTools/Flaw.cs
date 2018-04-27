@@ -70,7 +70,7 @@ namespace BoltFreezer.PlanTools
 
             // {dummyGoal} LIFO
 
-            //// take care of open conditions arising from substeps that are found in initial step.
+            // take care of open conditions arising from substeps that are found in initial step.
             //if (isDummyGoal && !other.isDummyGoal)
             //{
             //    return -1;
@@ -91,26 +91,26 @@ namespace BoltFreezer.PlanTools
             //    }
             //}
 
-            //take care of open conditions arising from substeps that are found in initial step.
-            if (hasDummyInit && !other.hasDummyInit)
-            {
-                return -1;
-            }
-            else if (other.hasDummyInit && !hasDummyInit)
-            {
-                return 1;
-            }
-            else if (other.hasDummyInit && hasDummyInit)
-            {
-                if (addReuseHeuristic > other.addReuseHeuristic)
-                {
-                    return -1;
-                }
-                else
-                {
-                    return 1;
-                }
-            }
+            ////take care of open conditions arising from substeps that are found in initial step.
+            //if (hasDummyInit && !other.hasDummyInit)
+            //{
+            //    return -1;
+            //}
+            //else if (other.hasDummyInit && !hasDummyInit)
+            //{
+            //    return 1;
+            //}
+            //else if (other.hasDummyInit && hasDummyInit)
+            //{
+            //    if (addReuseHeuristic > other.addReuseHeuristic)
+            //    {
+            //        return -1;
+            //    }
+            //    else
+            //    {
+            //        return 1;
+            //    }
+            //}
 
             // MW-Loc-Conf = {threats} LIFO / {unsafe} MW_add / {local} MW_add
 

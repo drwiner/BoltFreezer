@@ -31,6 +31,108 @@ namespace TestFreezer
             return PF;
         }
 
+        public static List<Problem> RandomProblemGenerator(int numProblems, Tuple<int,int> blockRange, int locMin, int agentMax, int maxGoals)
+        {
+            List<Problem> generatedProblems = new List<Problem>();
+
+            Random r = new Random();
+
+            for (int i =0; i < numProblems; i++)
+            {
+
+                var blocks = r.Next(blockRange.First, blockRange.Second+1);
+                var agents = r.Next(1, agentMax + 1);
+                var locs = r.Next(blocks + agents, blocks+agents + blockRange.Second+1);
+                var goals = r.Next(1, maxGoals + 1);
+
+                // Create a problem with this specification. 
+                
+                List<IObject> problemObjects = new List<IObject>();
+                List<IPredicate> initialPreds = new List<IPredicate>();
+                List<IPredicate> goalPreds = new List<IPredicate>();
+
+                // First, create locations. Each new location is randomly adjacent to between 1 and 4
+                var assignableLocations = new List<Obj>();
+                for (int j = 0; j < locs; j++)
+                {
+                    var newLoc = new Obj(string.Format("location_{0}", j), "location");
+                    assignableLocations.Add(newLoc);
+                    if (j > 0)
+                    {
+                        // pick a value that's between 1 and 3 (or however many locations have been created
+                        var numAdjacentsToCreate = Math.Min(r.Next(1, 4), initialPreds.Count());
+                        var result = initialPreds.PickRandom(numAdjacentsToCreate);
+                        foreach (var loc in result)
+                        {
+                            var newAdjacent = new Predicate("adjacent", new List<ITerm>() { new Term(loc.Name, true) as ITerm, new Term(newLoc.Name, true) as ITerm }, true) as IPredicate;
+                            initialPreds.Add(newAdjacent);
+                            var newAdjacent2 = new Predicate("adjacent", new List<ITerm>() { new Term(newLoc.Name, true) as ITerm, new Term(loc.Name, true) as ITerm }, true) as IPredicate;
+                            initialPreds.Add(newAdjacent2);
+                        }
+                    }
+
+                    problemObjects.Add(newLoc as IObject);
+
+                }
+
+                // pick location of blocks and agents
+                var blockLocations = initialPreds.PickRandom(blocks).ToList();
+                var agentLocations = initialPreds.Where(loc => !blockLocations.Contains(loc)).PickRandom(agents).ToList();
+
+                // Create Blocks
+                var assignableBlocks = new List<Obj>();
+                for (int j =0; j< blocks; j++)
+                {
+                    // blockLocation
+                    var bl = blockLocations[j];
+
+                    // create a new block
+                    var newBlock = new Obj(string.Format("block_{0}", j), "block");
+
+                    initialPreds.Add(new Predicate("at", new List<ITerm>() { new Term(newBlock.Name, true) as ITerm, new Term(bl.Name, true) as ITerm }, true) as IPredicate);
+                    initialPreds.Add(new Predicate("occupied", new List<ITerm>() { new Term(bl.Name, true) }, true) as IPredicate);
+
+                    problemObjects.Add(newBlock as IObject);
+                    assignableBlocks.Add(newBlock);
+                }
+
+                // Create Agents
+                for(int j = 0; j < agents; j++)
+                {
+                    // agentLocation
+                    var al = agentLocations[j];
+
+                    // create new agent
+                    var newAgent = new Obj(string.Format("agent_{0}", j), "steeringagent");
+
+                    initialPreds.Add(new Predicate("at", new List<ITerm>() { new Term(newAgent.Name, true) as ITerm, new Term(al.Name, true) as ITerm }, true) as IPredicate);
+                    initialPreds.Add(new Predicate("freehands", new List<ITerm>() { new Term(newAgent.Name, true) }, true) as IPredicate);
+                    initialPreds.Add(new Predicate("occupied", new List<ITerm>() { new Term(al.Name, true) }, true) as IPredicate);
+
+                    problemObjects.Add(newAgent as IObject);
+                }
+
+                // Assign Goals
+                var alreadyAssignedLocations = new List<Obj>();
+                for (int j = 0; j < goals; j++)
+                {
+                    // pick a block, just pick the j-th block
+                    var blockToAssign = assignableBlocks[j];
+                    var goalBlockPosition = assignableLocations.First(loc => !loc.Name.Equals(blockLocations[j].Name) && !alreadyAssignedLocations.Contains(loc));
+                    goalPreds.Add(new Predicate("at", new List<ITerm>() { new Term(blockToAssign.Name, true) as ITerm, new Term(goalBlockPosition.Name, true) as ITerm }, true) as IPredicate);
+                    alreadyAssignedLocations.Add(goalBlockPosition);
+                }
+
+                // instantiate problem
+                var generatedProblem = new Problem(i.ToString(), i.ToString(), "BlockWorld", "", problemObjects, initialPreds, goalPreds);
+                generatedProblems.Add(generatedProblem);
+
+            }
+
+            return generatedProblems;
+        }
+
+
         public static Decomposition MultiMove()
         {
             // Params
@@ -276,14 +378,14 @@ namespace TestFreezer
 
             // Composing HTNs
             Console.WriteLine("Composing HTNs");
-            Composite.ComposeHTNs(1, CompositeMethods);
+            Composite.ComposeHTNs(2, CompositeMethods);
 
             // Caching Causal Maps
             Console.WriteLine("Caching Causal Maps");
             CacheMaps.Reset();
             CacheMaps.CacheLinks(GroundActionFactory.GroundActions);
             CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, initPlan.Goal.Predicates);
-            CacheMaps.CacheAddReuseHeuristic(initPlan.Initial, initPlan.Goal.Predicates);
+            CacheMaps.CacheAddReuseHeuristic(initPlan.Initial);
             initPlan = PlanSpacePlanner.CreateInitialPlan(pfreeze);
 
 

@@ -257,7 +257,7 @@ namespace BoltFreezer.PlanTools
             
         }
 
-        public static void CacheAddReuseHeuristic(IState InitialState, List<IPredicate> goalConditions)
+        public static void CacheAddReuseHeuristic(IState InitialState)
         {
             // Use dynamic programming
             var initialMap = new Dictionary<IPredicate, int>();

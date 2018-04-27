@@ -189,14 +189,20 @@ namespace BoltFreezer.PlanTools
             foreach (var pre in newStep.OpenConditions)
             {
                 var newOC = new OpenCondition(pre, newStep);
-                if (init.Contains(pre))
-                {
-                    newOC.hasDummyInit = true;
-                }
+                
                 if (isGoal)
                 {
                     newOC.isDummyGoal = true;
                 }
+
+                if (init.Contains(pre))
+                {
+                    newOC.hasDummyInit = true;
+                    CausalLinks.Add(new CausalLink<IPlanStep>(pre, newStep.InitCndt, newStep));
+                  //  newStep.Fulfill(pre);
+                    continue;
+                }
+
                 Flaws.Add(this, newOC);
             }
         }
@@ -270,8 +276,9 @@ namespace BoltFreezer.PlanTools
                     Orderings.Insert(dummyInit, newsubstep);
                     IDMap[substep.ID] = newsubstep;
                     newSubSteps.Add(newsubstep);
-                    InsertPrimitiveSubstep(newsubstep, dummyInit.Effects, false);
                     newsubstep.InitCndt = dummyInit;
+                    InsertPrimitiveSubstep(newsubstep, dummyInit.Effects, false);
+                    
                     if (newsubstep.Depth > Hdepth)
                     {
                         Hdepth = newsubstep.Depth;
@@ -374,6 +381,7 @@ namespace BoltFreezer.PlanTools
                     }
                 }
             }
+
 
             // This is needed because we'll check if these substeps are threatening links
             newStep.SubSteps = newSubSteps;

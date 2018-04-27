@@ -152,6 +152,20 @@ namespace BoltFreezer.PlanTools
                 Terms.Add(udt);
             }
 
+            //foreach(var substep in SubSteps)
+            //{
+            //    foreach(var precon in substep.Preconditions)
+            //    {
+            //        if (substep.OpenConditions.Contains(precon))
+            //        {
+            //            if (InitialStep.Effects.Contains(precon))
+            //            {
+            //                SubLinks.Add(new CausalLink<IPlanStep>(precon, InitialStep, substep));
+            //            }
+            //        }
+            //    }
+            //}
+
             return numUnBoundArgs;
         }
 
