@@ -10,6 +10,8 @@ namespace BoltFreezer.PlanTools
     public class ADstar : ISearch
     {
         private IFrontier frontier;
+        private bool onlyStopOnDepth;
+
         public IFrontier Frontier
         {
             get { return frontier; }
@@ -22,6 +24,13 @@ namespace BoltFreezer.PlanTools
 
         public ADstar()
         {
+            onlyStopOnDepth = false;
+            frontier = new PriorityQueue();
+        }
+
+        public ADstar(bool onlyPassOnDepth)
+        {
+            onlyStopOnDepth = onlyPassOnDepth;
             frontier = new PriorityQueue();
         }
 
@@ -45,16 +54,19 @@ namespace BoltFreezer.PlanTools
                 Console.WriteLine(plan.Decomps);
                 if (IP.Console_log)
                 {
-                    Console.WriteLine(plan.ToStringOrdered());
                     //Console.WriteLine(plan.ToStringOrdered());
-                    Console.WriteLine(flaw);
+                    //Console.WriteLine(plan.ToStringOrdered());
+                    //Console.WriteLine(flaw);
                 }
 
                 // Termination criteria
                 if (flaw == null)
                 {
-                    if (plan.Hdepth == 0)
-                        continue;
+                    if (onlyStopOnDepth)
+                    {
+                        if (plan.Hdepth == 0)
+                            continue;
+                    }
 
                     watch.Stop();
                     var elapsedMs = watch.ElapsedMilliseconds;
@@ -186,6 +198,7 @@ namespace BoltFreezer.PlanTools
 
     public class BFS : ISearch
     {
+        private bool onlyStopOnDepth;
         private IFrontier frontier;
 
         public IFrontier Frontier
@@ -205,6 +218,13 @@ namespace BoltFreezer.PlanTools
 
         public BFS()
         {
+            onlyStopOnDepth = false;
+            frontier = new BFSFrontier();
+        }
+
+        public BFS(bool onlystopOnDepth)
+        {
+            onlyStopOnDepth = onlystopOnDepth;
             frontier = new BFSFrontier();
         }
 
@@ -227,13 +247,19 @@ namespace BoltFreezer.PlanTools
 
                 if (IP.Console_log)
                 {
-                    Console.WriteLine(plan);
-                    Console.WriteLine(flaw);
+                    //Console.WriteLine(plan);
+                    //Console.WriteLine(flaw);
                 }
 
                 // Termination criteria
                 if (flaw == null)
                 {
+                    if (onlyStopOnDepth)
+                    {
+                        if (plan.Hdepth == 0)
+                            continue;
+                    }
+
                     watch.Stop();
                     var elapsedMs = watch.ElapsedMilliseconds;
                     Solutions.Add(plan);

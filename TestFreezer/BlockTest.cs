@@ -8,6 +8,7 @@ using BoltFreezer.PlanTools;
 using BoltFreezer.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -31,7 +32,7 @@ namespace TestFreezer
             return PF;
         }
 
-        public static List<Problem> RandomProblemGenerator(int numProblems, Tuple<int,int> blockRange, int locMin, int agentMax, int maxGoals)
+        public static List<Problem> RandomProblemGenerator(int numProblems, Tuple<int,int> blockRange, int agentMax, int maxGoals, string domainName)
         {
             List<Problem> generatedProblems = new List<Problem>();
 
@@ -43,7 +44,7 @@ namespace TestFreezer
                 var blocks = r.Next(blockRange.First, blockRange.Second+1);
                 var agents = r.Next(1, agentMax + 1);
                 var locs = r.Next(blocks + agents, blocks+agents + blockRange.Second+1);
-                var goals = r.Next(1, maxGoals + 1);
+                var goals = r.Next(1, Math.Min(blocks+1, maxGoals + 1));
 
                 // Create a problem with this specification. 
                 
@@ -60,8 +61,8 @@ namespace TestFreezer
                     if (j > 0)
                     {
                         // pick a value that's between 1 and 3 (or however many locations have been created
-                        var numAdjacentsToCreate = Math.Min(r.Next(1, 4), initialPreds.Count());
-                        var result = initialPreds.PickRandom(numAdjacentsToCreate);
+                        var numAdjacentsToCreate = Math.Min(r.Next(1, 4), problemObjects.Count());
+                        var result = problemObjects.PickRandom(numAdjacentsToCreate);
                         foreach (var loc in result)
                         {
                             var newAdjacent = new Predicate("adjacent", new List<ITerm>() { new Term(loc.Name, true) as ITerm, new Term(newLoc.Name, true) as ITerm }, true) as IPredicate;
@@ -76,8 +77,8 @@ namespace TestFreezer
                 }
 
                 // pick location of blocks and agents
-                var blockLocations = initialPreds.PickRandom(blocks).ToList();
-                var agentLocations = initialPreds.Where(loc => !blockLocations.Contains(loc)).PickRandom(agents).ToList();
+                var blockLocations = problemObjects.PickRandom(blocks).ToList();
+                var agentLocations = problemObjects.Where(loc => !blockLocations.Contains(loc)).PickRandom(agents).ToList();
 
                 // Create Blocks
                 var assignableBlocks = new List<Obj>();
@@ -124,7 +125,7 @@ namespace TestFreezer
                 }
 
                 // instantiate problem
-                var generatedProblem = new Problem(i.ToString(), i.ToString(), "BlockWorld", "", problemObjects, initialPreds, goalPreds);
+                var generatedProblem = new Problem(i.ToString(), i.ToString(), domainName, "", problemObjects, initialPreds, goalPreds);
                 generatedProblems.Add(generatedProblem);
 
             }
@@ -347,7 +348,263 @@ namespace TestFreezer
             return compositeDecompList;
 
         }
-        
+
+        public static void WriteProblemToFile(Problem problem, string directory)
+        {
+            var file = directory + "_" + problem.Name + ".txt";
+            
+            using (StreamWriter writer = new StreamWriter(file, false))
+            {
+                writer.Write(problem.ToString());
+            }
+        }
+
+        public static IPredicate ParenthesisStringToPredicate(string stringItem)
+        {
+            var splitInput = stringItem.Split(' ');
+            var predName = splitInput[0].TrimStart('(');
+            var terms = new List<ITerm>();
+            foreach (string item in splitInput.Skip(1))
+            {
+                var cleanedItem = item.TrimEnd(')');
+                var newTerm = new Term(cleanedItem, true) as ITerm;
+                terms.Add(newTerm);
+            }
+            var predic = new Predicate(predName, terms, true) as IPredicate;
+            return predic;
+        }
+
+        public static Problem ReadStringGeneratedProblem(string file, int problemNumber)
+        {
+            string[] input = System.IO.File.ReadAllLines(file);
+
+            List<IObject> problemObjects = new List<IObject>();
+            List<IPredicate> initialPreds = new List<IPredicate>();
+            List<IPredicate> goalPreds = new List<IPredicate>();
+
+            // objects, then initial state, then goal state
+            int i = 3;
+            bool onObjects = true;
+            bool onInit = false;
+            while (true)
+            {
+                if (onObjects)
+                {
+
+                    var objType = input[i].Split('_').First();
+                    if (objType.Equals("agent"))
+                    {
+                        objType = "steeringagent";
+                    }
+                    var newObject = new Obj(input[i], objType) as IObject;
+                    problemObjects.Add(newObject);
+                    i++;
+                    if (input[i].Equals("") || input[i].Equals("\n"))
+                    {
+                        onObjects = false;
+                        onInit = true;
+                        i = i + 2;
+                    }
+                }
+
+                if (onInit)
+                {
+
+                    var newInit = ParenthesisStringToPredicate(input[i]);
+                    initialPreds.Add(newInit);
+                    i++;
+
+                    if (input[i].Equals("") || input[i].Equals("\n"))
+                    {
+                        onInit = false;
+                        i = i + 2;
+                    }
+                }
+
+                if (!onInit && !onObjects)
+                {
+                    var pred = ParenthesisStringToPredicate(input[i]);
+                    goalPreds.Add(pred);
+                    i++;
+                }
+
+                if (i >= input.Count())
+                {
+                    break;
+                }
+                
+            }
+
+            // create new Problem
+            var prob =  new Problem(problemNumber.ToString(), problemNumber.ToString(), "blocks", "", problemObjects, initialPreds, goalPreds);
+            return prob;
+        }
+
+
+        public static void RunProblem(string directory, string domainName, string domainDirectory, Domain domain, Problem problem, float cutoff, int HTN_level, Dictionary<Composite, List<Decomposition>> CompositeMethods)
+        {
+            // Reset Cached Items
+            GroundActionFactory.Reset();
+            CacheMaps.Reset();
+
+            var PF = new ProblemFreezer(domainName, domainDirectory, domain, problem);
+            PF.Serialize();
+
+            Console.WriteLine("Detecting Statics");
+            GroundActionFactory.DetectStatics(CacheMaps.CausalMap, CacheMaps.ThreatMap);
+
+            var initPlan = PlanSpacePlanner.CreateInitialPlan(PF);
+
+            // Removing irrelevant actions
+            Console.WriteLine("Removing Irrelevant Actions");
+            var staticInitial = initPlan.Initial.Predicates.Where(state => GroundActionFactory.Statics.Contains(state));
+
+            // Every action that has No preconditions which are both static and not in staticInitial
+            var possibleActions = GroundActionFactory.GroundActions.Where(action => !action.Preconditions.Any(pre => GroundActionFactory.Statics.Contains(pre) && !staticInitial.Contains(pre)));
+            GroundActionFactory.GroundActions = possibleActions.ToList();
+            GroundActionFactory.GroundLibrary = possibleActions.ToDictionary(item => item.ID, item => item);
+
+            // Composing HTNs
+            Console.WriteLine("Composing HTNs");
+            Composite.ComposeHTNs(HTN_level, CompositeMethods);
+
+            // Caching Causal Maps
+            Console.WriteLine("Caching Causal Maps");
+            CacheMaps.Reset();
+            CacheMaps.CacheLinks(GroundActionFactory.GroundActions);
+            CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, initPlan.Goal.Predicates);
+
+            // Cache Heuristic Costs (dynamic programming)
+            Console.WriteLine("Caching Heuristic Costs");
+            CacheMaps.CacheAddReuseHeuristic(initPlan.Initial);
+
+            // Redo to gaurantee accuracy (needs refactoring)
+            initPlan = PlanSpacePlanner.CreateInitialPlan(PF);
+
+            var probNum = Int32.Parse(problem.Name);
+           
+
+            Console.WriteLine(String.Format("Running Problem {0}", probNum));
+
+            RunPlanner(initPlan.Clone() as IPlan, new ADstar(false), new E0(new AddReuseHeuristic(), true), cutoff, directory, probNum);
+
+            //RunPlanner(initPlan.Clone() as IPlan, new ADstar(true), new E0(new AddReuseHeuristic()), cutoff, directory, probNum);
+            //RunPlanner(initPlan.Clone() as IPlan, new ADstar(true), new E1(new AddReuseHeuristic()), cutoff, directory, probNum);
+            //RunPlanner(initPlan.Clone() as IPlan, new ADstar(true), new E2(new AddReuseHeuristic()), cutoff, directory, probNum);
+            //RunPlanner(initPlan.Clone() as IPlan, new ADstar(true), new E3(new AddReuseHeuristic()), cutoff, directory, probNum);
+            //RunPlanner(initPlan.Clone() as IPlan, new BFS(false), new Nada(new ZeroHeuristic()), cutoff, directory, probNum);
+
+            // RunPlanner(initPlan.Clone() as IPlan, new BFS(true), new Nada(new ZeroHeuristic()), cutoff, directory, probNum);
+        }
+
+        public static void ReadGeneratedAndTest(int numProblems, string directory, float cutoff, int HTN_level)
+        {
+            System.IO.Directory.CreateDirectory(directory);
+            System.IO.Directory.CreateDirectory(directory + @"\Problems\");
+            Parser.path = @"D:\documents\frostbow\boltfreezer\";
+            List<IPlan> initialPlans = new List<IPlan>();
+
+            var domainName = "blocks";
+            var domainDirectory = Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl";
+            var domain = Parser.GetDomain(Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl", PlanType.PlanSpace);
+            var CompositeMethods = ReadCompositeOperators();
+
+            for (int i =0; i < numProblems; i++)
+            {
+                var prob = ReadStringGeneratedProblem(directory + string.Format(@"\Problems\_{0}.txt", i), i);
+
+                RunProblem(directory, domainName, domainDirectory, domain, prob, cutoff, HTN_level, CompositeMethods);
+            }
+        }
+
+        public static void GenerateAndTest(int numProblems, string directory, float cutoff, int HTN_level)
+        {
+            System.IO.Directory.CreateDirectory(directory);
+            System.IO.Directory.CreateDirectory(directory + @"\Problems\");
+            Parser.path = @"D:\documents\frostbow\boltfreezer\";
+            List<IPlan> initialPlans = new List<IPlan>();
+
+            var domainName = "blocks";
+            var domainDirectory = Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl";
+            var domain = Parser.GetDomain(Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl", PlanType.PlanSpace);
+            //var CompositeMethods = ReadCompositeOperators();
+
+            List<Problem> problems = RandomProblemGenerator(numProblems, new Tuple<int, int>(1, 4), 3, 2, domainName);
+
+            foreach(var problem in problems)
+            {
+                WriteProblemToFile(problem, directory + @"\Problems\");
+                // Reset Cached Items
+                // GroundActionFactory.Reset();
+                // CacheMaps.Reset();
+
+                // var PF = new ProblemFreezer(domainName, domainDirectory, domain, problem);
+                // PF.Serialize();
+
+                // Console.WriteLine("Detecting Statics");
+                // GroundActionFactory.DetectStatics(CacheMaps.CausalMap, CacheMaps.ThreatMap);
+
+                // var initPlan = PlanSpacePlanner.CreateInitialPlan(PF);
+
+                // // Removing irrelevant actions
+                // Console.WriteLine("Removing Irrelevant Actions");
+                // var staticInitial = initPlan.Initial.Predicates.Where(state => GroundActionFactory.Statics.Contains(state));
+
+                // // Every action that has No preconditions which are both static and not in staticInitial
+                // var possibleActions = GroundActionFactory.GroundActions.Where(action => !action.Preconditions.Any(pre => GroundActionFactory.Statics.Contains(pre) && !staticInitial.Contains(pre)));
+                // GroundActionFactory.GroundActions = possibleActions.ToList();
+                // GroundActionFactory.GroundLibrary = possibleActions.ToDictionary(item => item.ID, item => item);
+
+                // // Composing HTNs
+                // Console.WriteLine("Composing HTNs");
+                // Composite.ComposeHTNs(HTN_level, CompositeMethods);
+
+                // // Caching Causal Maps
+                // Console.WriteLine("Caching Causal Maps");
+                // CacheMaps.Reset();
+                // CacheMaps.CacheLinks(GroundActionFactory.GroundActions);
+                // CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, initPlan.Goal.Predicates);
+
+                // // Cache Heuristic Costs (dynamic programming)
+                // CacheMaps.CacheAddReuseHeuristic(initPlan.Initial);
+
+                // // Redo to gaurantee accuracy (needs refactoring)
+                // initPlan = PlanSpacePlanner.CreateInitialPlan(PF);
+
+                // var probNum = Int32.Parse(problem.Name);
+                //// RunPlanner(initPlan.Clone() as IPlan, new ADstar(false), new E0(new AddReuseHeuristic(), true), cutoff, directory, probNum);
+
+                // RunPlanner(initPlan.Clone() as IPlan, new ADstar(true), new E0(new AddReuseHeuristic()), cutoff, directory, probNum);
+                // RunPlanner(initPlan.Clone() as IPlan, new ADstar(true), new E1(new AddReuseHeuristic()), cutoff, directory, probNum);
+                // RunPlanner(initPlan.Clone() as IPlan, new ADstar(true), new E2(new AddReuseHeuristic()), cutoff, directory, probNum);
+                // RunPlanner(initPlan.Clone() as IPlan, new ADstar(true), new E3(new AddReuseHeuristic()), cutoff, directory, probNum);
+                // RunPlanner(initPlan.Clone() as IPlan, new BFS(false), new Nada(new ZeroHeuristic()), cutoff, directory, probNum);
+
+                //// RunPlanner(initPlan.Clone() as IPlan, new BFS(true), new Nada(new ZeroHeuristic()), cutoff, directory, probNum);
+
+
+                // Add to List
+                //  initialPlans.Add(initPlan);//
+            }
+
+            //  return initialPlans;
+        }
+
+        public static void RunPlanner(IPlan initPi, ISearch SearchMethod, ISelection SelectMethod, float cutoff, string directoryToSaveTo, int problem)
+        {
+            var POP = new PlanSpacePlanner(initPi, SelectMethod, SearchMethod, true)
+            {
+                directory = directoryToSaveTo,
+                problemNumber = problem,
+            };
+            var Solutions = POP.Solve(1, cutoff);
+            if (Solutions != null)
+            {
+                Console.WriteLine(Solutions[0].ToStringOrdered());
+            }
+
+        }
+
 
         public static IPlan ReadAndCompile(bool serializeIt, int whichProblem)
         {

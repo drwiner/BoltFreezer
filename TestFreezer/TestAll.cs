@@ -145,6 +145,7 @@ namespace TestFreezer
             var problem = 1;
             var initPlan = BlockTest.ReadAndCompile(true, problem);
 
+            RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new AddReuseHeuristic()), k, cutoff, directory, problem);
             RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E1(new AddReuseHeuristic()), k, cutoff, directory, problem);
             RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E2(new AddReuseHeuristic()), k, cutoff, directory, problem);
             RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E3(new AddReuseHeuristic()), k, cutoff, directory, problem);
@@ -152,11 +153,39 @@ namespace TestFreezer
             //RunPlanner(initPlan.Clone() as IPlan, new BFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, 0);
         }
 
+        //public static void RunBlockTestGenerateProblems()
+        //{
+        //    var directory = @"D:\Documents\Frostbow\Benchmarks\blocks\randomGen\";
+        //    System.IO.Directory.CreateDirectory(directory);
+        //    var cutoff = 60000f;
+        //    var k = 1;
+        //    var initPlans = BlockTest.GenerateAndTest(10);
+        //    for(int i = 0; i < initPlans.Count; i++)
+        //    {
+        //        var initPlan = initPlans[i];
+
+
+        //        RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new AddReuseHeuristic()), k, cutoff, directory, i);
+        //        RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E1(new AddReuseHeuristic()), k, cutoff, directory, i);
+        //        RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E2(new AddReuseHeuristic()), k, cutoff, directory, i);
+        //        RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E3(new AddReuseHeuristic()), k, cutoff, directory, i);
+        //        RunPlanner(initPlan.Clone() as IPlan, new BFS(), new Nada(new ZeroHeuristic()), k, cutoff, directory, i);
+        //    }
+        //}
+
+
         static void Main(string[] args)
         {
 
             // RunTravelTestInternal();
-            RunBlockTestInternal();
+            //RunBlockTestInternal();
+            //RunBlockTestGenerateProblems();
+
+            // Generate Poblems
+            var directory = @"D:\Documents\Frostbow\Benchmarks\blocks\randomGen\";
+            //BlockTest.GenerateAndTest(40, directory, 60000f, 2);
+
+            BlockTest.ReadGeneratedAndTest(40, directory, 60000f, 2);
         }
 
     }

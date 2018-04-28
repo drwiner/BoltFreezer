@@ -233,9 +233,9 @@ namespace BoltFreezer.PlanSpace
                             new Tuple<string, string>("primitives", primitives.ToString() ),
                             new Tuple<string, string>("decomps", decomps.ToString() ),
                             new Tuple<string, string>("composites", composites.ToString() ),
-                            new Tuple<string, string>("hdepth", plan.Hdepth.ToString() )
+                            new Tuple<string, string>("hdepth", plan.Hdepth.ToString() ),
                         };
-
+            
             var file = directory + problemNumber.ToString() + "-" + search.ToString() + "-" + selection.ToString() + ".txt";
             using (StreamWriter writer = new StreamWriter(file, false))
             {

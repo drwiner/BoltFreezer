@@ -33,9 +33,16 @@ namespace BoltFreezer.PlanTools
     public class E0 : ISelection
     {
         private IHeuristic HMethod;
-
+        private bool firstNoFlaws;
         public E0(IHeuristic hmethod)
         {
+            firstNoFlaws = false;
+            HMethod = hmethod;
+        }
+
+        public E0(IHeuristic hmethod, bool firstnoflaws)
+        {
+            firstNoFlaws = firstnoflaws;
             HMethod = hmethod;
         }
 
@@ -53,9 +60,12 @@ namespace BoltFreezer.PlanTools
                 return -10000f - plan.Steps.Count;
             }
 
-            if (plan.Flaws.Count == 0)
+            if (firstNoFlaws)
             {
-                return -100f - plan.Steps.Count;
+                if (plan.Flaws.Count == 0)
+                {
+                    return -100f - plan.Steps.Count;
+                }
             }
 
             return plan.Steps.Count - (3 * plan.Decomps) + HMethod.Heuristic(plan);
