@@ -142,8 +142,11 @@ namespace TestFreezer
             System.IO.Directory.CreateDirectory(directory);
             var cutoff = 600000f;
             var k = 1;
-            var problem = 1;
+            var problem = 5;
             var initPlan = BlockTest.ReadAndCompile(true, problem);
+
+            // search (false ==> ignore depth as stopping condition, is default). Selection (E0) (true=> do check for no flaws no matter depth).
+            RunPlanner(initPlan.Clone() as IPlan, new ADstar(false), new E0(new AddReuseHeuristic(), true), k, cutoff, directory, problem);
 
             RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E0(new AddReuseHeuristic()), k, cutoff, directory, problem);
             RunPlanner(initPlan.Clone() as IPlan, new ADstar(), new E1(new AddReuseHeuristic()), k, cutoff, directory, problem);
@@ -176,16 +179,20 @@ namespace TestFreezer
 
         static void Main(string[] args)
         {
+            RunBlockTestInternal();
+
 
             // RunTravelTestInternal();
             //RunBlockTestInternal();
             //RunBlockTestGenerateProblems();
 
             // Generate Poblems
-            var directory = @"D:\Documents\Frostbow\Benchmarks\blocks\randomGen\";
+
+            //var directory = @"D:\Documents\Frostbow\Benchmarks\blocks\randomGen\";
+
             //BlockTest.GenerateAndTest(40, directory, 60000f, 2);
 
-            BlockTest.ReadGeneratedAndTest(40, directory, 60000f, 2);
+          ///  BlockTest.ReadGeneratedAndTest(40, directory, 60000f, 2);
         }
 
     }

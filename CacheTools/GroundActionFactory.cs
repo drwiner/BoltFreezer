@@ -85,6 +85,11 @@ namespace BoltFreezer.PlanTools
                 // this ensures that this ground operator has a unique ID
                 var groundOperator = new Operator(opClone.Name, opClone.Terms, opClone.Bindings, opClone.Preconditions, opClone.Effects);
                 
+                if (GroundActionFactory.GroundActions.Contains(groundOperator))
+                {
+                    continue;
+                }
+
                 if (GroundLibrary.ContainsKey(groundOperator.ID))
                     throw new System.Exception();
 

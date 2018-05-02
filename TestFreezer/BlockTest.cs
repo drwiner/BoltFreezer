@@ -346,7 +346,6 @@ namespace TestFreezer
             var multimove = MultimoveComposites();
             compositeDecompList[multimove.First] = multimove.Second;
             return compositeDecompList;
-
         }
 
         public static void WriteProblemToFile(Problem problem, string directory)

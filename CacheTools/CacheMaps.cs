@@ -77,7 +77,10 @@ namespace BoltFreezer.PlanTools
                             if (!CausalMap.ContainsKey(tprecond))
                                 CausalMap.Add(tprecond, new List<int>() { hstep.ID });
                             else
+                                if (!CausalMap[tprecond].Contains(hstep.ID))
+                            {
                                 CausalMap[tprecond].Add(hstep.ID);
+                            }
                         }
                         if (hstep.Effects.Contains(tprecond.GetReversed()))
                         {
@@ -107,7 +110,11 @@ namespace BoltFreezer.PlanTools
                                 if (!CausalMap.ContainsKey(teff))
                                     CausalMap.Add(teff, new List<int>() { hstep.ID });
                                 else
-                                    CausalMap[teff].Add(hstep.ID);
+                                    if (!CausalMap[teff].Contains(hstep.ID))
+                                    {
+                                        CausalMap[teff].Add(hstep.ID);
+                                    }
+                                //CausalMap[teff].Add(hstep.ID);
                             }
                             if (hstep.Effects.Contains(teff.GetReversed()))
                             {
@@ -143,7 +150,12 @@ namespace BoltFreezer.PlanTools
                             if (!CausalMap.ContainsKey(tprecond))
                                 CausalMap.Add(tprecond, new List<int>() { hstep.ID });
                             else
-                                CausalMap[tprecond].Add(hstep.ID);
+                            {
+                                if (!CausalMap[tprecond].Contains(hstep.ID)){
+                                    CausalMap[tprecond].Add(hstep.ID);
+                                }
+
+                            }
                         }
                         if (hstep.Effects.Contains(tprecond.GetReversed()))
                         {
@@ -169,7 +181,7 @@ namespace BoltFreezer.PlanTools
                         {
                             if (hstep.Effects.Contains(teff))
                             {
-                                if (!CausalMap.ContainsKey(teff))
+                                if (!CausalMap.ContainsKey(teff)) 
                                     CausalMap.Add(teff, new List<int>() { hstep.ID });
                                 else
                                     CausalMap[teff].Add(hstep.ID);
@@ -192,7 +204,12 @@ namespace BoltFreezer.PlanTools
 
             foreach( var goalCondition in goal)
             {
-                foreach(var gstep in groundSteps)
+                if (CausalMap.ContainsKey(goalCondition) || ThreatMap.ContainsKey(goalCondition))
+                {
+                    continue;
+                }
+
+                foreach (var gstep in groundSteps)
                 {
                     if (gstep.Height > 0)
                     {
