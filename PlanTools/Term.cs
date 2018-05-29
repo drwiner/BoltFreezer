@@ -10,9 +10,9 @@ namespace BoltFreezer.PlanTools
     [Serializable]
     public class Term : ITerm
     {
-        private string variable;
-        private string constant;
-        private string type;
+        protected string variable;
+        protected string constant;
+        protected string type;
 
         // Terms may have a variable symbol.
         public string Variable 

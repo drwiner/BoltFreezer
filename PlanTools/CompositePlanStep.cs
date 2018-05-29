@@ -9,12 +9,12 @@ namespace BoltFreezer.PlanTools
 {
     public class CompositePlanStep : PlanStep, ICompositePlanStep
     {
-        private IComposite compositeAction;
-        private IPlanStep initialStep;
-        private IPlanStep goalStep;
-        private List<Tuple<IPlanStep, IPlanStep>> subOrderings;
-        private List<CausalLink<IPlanStep>> subLinks;
-        private List<IPlanStep> subSteps;
+        protected IComposite compositeAction;
+        protected IPlanStep initialStep;
+        protected IPlanStep goalStep;
+        protected List<Tuple<IPlanStep, IPlanStep>> subOrderings;
+        protected List<CausalLink<IPlanStep>> subLinks;
+        protected List<IPlanStep> subSteps;
 
         public IComposite CompositeAction {
             get { return compositeAction; }

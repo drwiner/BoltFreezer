@@ -11,10 +11,10 @@ namespace BoltFreezer.PlanTools
     
     public class Graph<T>
     {
-        private HashSet<T> nodes;
+        protected HashSet<T> nodes;
         public HashSet<Tuple<T, T>> edges;
 
-        private Dictionary<T, HashSet<T>> DescendantMap;
+        protected Dictionary<T, HashSet<T>> DescendantMap;
 
         public Graph()
         {
@@ -96,7 +96,7 @@ namespace BoltFreezer.PlanTools
             return descendants;
         }
 
-        private bool InDescendants(T start, T goal)
+        protected bool InDescendants(T start, T goal)
         {
             if (DescendantMap[start].Contains(goal))
             {
@@ -133,7 +133,7 @@ namespace BoltFreezer.PlanTools
             return false;
         }
 
-        private bool AnyInDescendants(T start, List<T> goals)
+        protected bool AnyInDescendants(T start, List<T> goals)
         {
             if (DescendantMap[start].Any(desc => goals.Contains(desc)))
                 return true;

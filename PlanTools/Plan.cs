@@ -13,17 +13,17 @@ namespace BoltFreezer.PlanTools
     [Serializable]
     public class Plan : IEquatable<Plan>, IPlan
     {
-        private List<IPlanStep> steps;
-        private IState initial;
-        private IState goal;
-        private IPlanStep initialStep = null;
-        private IPlanStep goalStep = null;
+        protected List<IPlanStep> steps;
+        protected IState initial;
+        protected IState goal;
+        protected IPlanStep initialStep = null;
+        protected IPlanStep goalStep = null;
 
-        private Graph<IPlanStep> orderings;
-        private List<CausalLink<IPlanStep>> causalLinks;
-        private Flawque flaws;
-        private int decomps;
-        private int hdepth;
+        protected Graph<IPlanStep> orderings;
+        protected List<CausalLink<IPlanStep>> causalLinks;
+        protected Flawque flaws;
+        protected int decomps;
+        protected int hdepth;
 
         // Access the plan's steps.
         public List<IPlanStep> Steps
@@ -412,7 +412,7 @@ namespace BoltFreezer.PlanTools
         }
 
         // This method is used when a composite step may threaten a causal link.
-        private void DecomposeThreat(CausalLink<IPlanStep> causalLink, ICompositePlanStep ThisIsAThreat)
+        protected void DecomposeThreat(CausalLink<IPlanStep> causalLink, ICompositePlanStep ThisIsAThreat)
         {
             //if (CacheMaps.IsThreat(causalLink.Predicate, ThisIsAThreat))
             //{

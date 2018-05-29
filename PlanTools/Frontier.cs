@@ -34,7 +34,7 @@ namespace BoltFreezer.PlanTools
     {
         public int Count => stack.Count;
 
-        private Stack<IPlan> stack;
+        protected Stack<IPlan> stack;
 
         public DFSFrontier()
         {
@@ -56,7 +56,7 @@ namespace BoltFreezer.PlanTools
     {
         public int Count => queue.Count;
 
-        private Queue<IPlan> queue;
+        protected Queue<IPlan> queue;
 
         public BFSFrontier()
         {

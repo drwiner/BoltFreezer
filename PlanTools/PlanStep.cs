@@ -9,11 +9,11 @@ namespace BoltFreezer.PlanTools
     public class PlanStep : IPlanStep
     {
         private static int Counter = -1;
-        private IOperator action;
-        private List<IPredicate> openConditions;
-        private int depth = 0;
-        private IPlanStep initCndt;
-        private int id;
+        protected IOperator action;
+        protected List<IPredicate> openConditions;
+        protected int depth = 0;
+        protected IPlanStep initCndt;
+        protected int id;
 
         public IPlanStep InitCndt
         {

@@ -12,13 +12,13 @@ namespace BoltFreezer.PlanSpace
 {
     public class PlanSpacePlanner : IPlanner
     {
-        private ISelection selection;
-        private ISearch search;
+        protected ISelection selection;
+        protected ISearch search;
 
-        private List<Plan> Visited = new List<Plan>();
+        protected List<Plan> Visited = new List<Plan>();
 
-        private bool console_log;
-        private int opened, expanded = 0;
+        protected bool console_log;
+        protected int opened, expanded = 0;
         public int problemNumber;
         public string directory;
 

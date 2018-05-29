@@ -12,10 +12,10 @@ namespace BoltFreezer.PlanTools
     [Serializable]
     public class Predicate : IPredicate
     {
-        private string name;
-        private List<ITerm> terms;
-        private bool sign;
-        private Hashtable observing;
+        protected string name;
+        protected List<ITerm> terms;
+        protected bool sign;
+        protected Hashtable observing;
 
         // Access the predicate's name.
         public string Name

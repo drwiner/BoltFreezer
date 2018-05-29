@@ -13,10 +13,10 @@ namespace BoltFreezer.PlanTools
     {
         private static int Counter = -1;
 
-        private IPredicate predicate;
-        private T head;
-        private T tail;
-        private int id;
+        protected IPredicate predicate;
+        protected T head;
+        protected T tail;
+        protected int id;
         //private List<IOperator> span;
 
 

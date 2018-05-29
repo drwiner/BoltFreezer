@@ -13,21 +13,21 @@ namespace BoltFreezer.PlanTools
     [Serializable]
     public class Operator : IOperator
     {
-        private static int Counter = -1;
+        protected static int Counter = -1;
 
-        private int height;
-        private IPredicate predicate;
-        private List<IPredicate> preconditions;
-        private List<IPredicate> effects;
+        protected int height;
+        protected IPredicate predicate;
+        protected List<IPredicate> preconditions;
+        protected List<IPredicate> effects;
 
-        private int id;
-        private Hashtable bindings;
+        protected int id;
+        protected Hashtable bindings;
 
         // use these do I?
-        private List<IAxiom> conditionals;
-        private List<ITerm> consenting;
-        private List<IPredicate> exceptionalEffects;
-        private List<List<ITerm>> nonequalities;
+        protected List<IAxiom> conditionals;
+        protected List<ITerm> consenting;
+        protected List<IPredicate> exceptionalEffects;
+        protected List<List<ITerm>> nonequalities;
 
 
         public static void SetCounterExternally(int newVal)

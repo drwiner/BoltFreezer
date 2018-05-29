@@ -11,12 +11,12 @@ namespace BoltFreezer.DecompTools
 {
     public class Decomposition : Operator, IComposite
     {
-        private IOperator initialStep;
-        private IOperator goalStep;
-        private List<Tuple<IPlanStep, IPlanStep>> subOrderings;
-        private List<CausalLink<IPlanStep>> subLinks;
-        private List<IPlanStep> subSteps;
-        private List<IPredicate> literals;
+        protected IOperator initialStep;
+        protected IOperator goalStep;
+        protected List<Tuple<IPlanStep, IPlanStep>> subOrderings;
+        protected List<CausalLink<IPlanStep>> subLinks;
+        protected List<IPlanStep> subSteps;
+        protected List<IPredicate> literals;
 
         public List<IPredicate> Literals
         {

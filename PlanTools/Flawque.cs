@@ -15,9 +15,9 @@ namespace BoltFreezer.PlanTools
         // Cannot use heap because the values are mutable and won't be kept sorted unless they are all re-inserted. If we have to do that, there's no benefit
         public List<OpenCondition> OpenConditions;
         //public SimplePriorityQueue<OpenCondition> OpenConditions = new SimplePriorityQueue<OpenCondition>();
-        
+
         // LIFO
-        private Stack<ThreatenedLinkFlaw> threatenedLinks;
+        protected Stack<ThreatenedLinkFlaw> threatenedLinks;
 
         public Flawque()
         {

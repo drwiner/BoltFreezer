@@ -10,9 +10,9 @@ namespace BoltFreezer.PlanTools
     [Serializable]
     public class Obj : IObject
     {
-        private string name;
-        private string subType;
-        private List<string> types;
+        protected string name;
+        protected string subType;
+        protected List<string> types;
 
         // Access the object's name.
         public string Name
