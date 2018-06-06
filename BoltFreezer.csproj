@@ -79,7 +79,10 @@
     <Compile Include="FileIO\SimpleJson.cs" />
     <Compile Include="Interfaces\POP\IFlawLibrary.cs" />
     <Compile Include="Interfaces\POP\ISelection.cs" />
+    <Compile Include="PlanTools\ActionOperator.cs" />
+    <Compile Include="PlanTools\CompositeActionOperator.cs" />
     <Compile Include="PlanTools\Literal.cs" />
+    <Compile Include="PlanTools\PlanStepAction.cs" />
     <Compile Include="PlanTools\Selection.cs" />
     <Compile Include="Scheduling\CompositeSchedule.cs" />
     <Compile Include="Scheduling\CompositeSchedulePlanStep.cs" />
