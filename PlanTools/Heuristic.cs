@@ -1,6 +1,7 @@
 ﻿
 using BoltFreezer.Enums;
 using BoltFreezer.Interfaces;
+using BoltFreezer.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -104,6 +105,8 @@ namespace BoltFreezer.PlanTools
                         sumo += visitedPreds.Get(oc.precondition.Sign)[oc.precondition];
                         continue;
                     }
+
+                    throw new System.Exception("visitedPreds does not contain " + oc.precondition.ToString());
 
                     //currentlyEvaluatedPreds.Add(oc.precondition);
                     //var amountToAdd = AddHeuristic(plan.Initial, oc.precondition, new HashSet<IPredicate>() { oc.precondition });

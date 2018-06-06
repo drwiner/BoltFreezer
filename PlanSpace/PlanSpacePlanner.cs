@@ -22,6 +22,8 @@ namespace BoltFreezer.PlanSpace
         public int problemNumber;
         public string directory;
 
+        public List<Tuple<string, string>> timeCollections = new List<Tuple<string, string>>();
+
         // TODO: keep track of plan-space search tree and not just frontier
         //private List<PlanSpaceEdge> PlanSpaceGraph;
 
@@ -73,10 +75,18 @@ namespace BoltFreezer.PlanSpace
             return initialPlan;
         }
 
+        public void LogTime(string operationName, long timeItTook)
+        {
+            timeCollections.Add(new Tuple<string, string>(operationName, timeItTook.ToString()));
+        }
+
         public void Insert(IPlan plan)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            long before = watch.ElapsedMilliseconds;
             if (!plan.Orderings.HasCycle())
             {
+                LogTime("checkOrderings", watch.ElapsedMilliseconds - before);
                 //if (Visited.Contains(plan as Plan))
                 //{
                 //    return;
@@ -86,11 +96,16 @@ namespace BoltFreezer.PlanSpace
                 Search.Frontier.Enqueue(plan, Score(plan));
                 opened++;
             }
+            LogTime("checkOrderings", watch.ElapsedMilliseconds - before);
         }
 
         public float Score(IPlan plan)
         {
-            return selection.Evaluate(plan);
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            long before = watch.ElapsedMilliseconds;
+            var answer =  selection.Evaluate(plan);
+            LogTime("evaluatePlanToInsert", watch.ElapsedMilliseconds - before);
+            return answer;
         }
 
         public List<IPlan> Solve(int k, float cutoff)
@@ -125,8 +140,10 @@ namespace BoltFreezer.PlanSpace
                     };
                 }
                 //newStep.Height = cndt.Height;
+
                 planClone.Insert(newStep);
                 planClone.Repair(oc, newStep);
+
 
                 // check if inserting new Step (with orderings given by Repair) add cndts/risks to existing open conditions, affecting their status in the heap
                 //planClone.Flaws.UpdateFlaws(planClone, newStep);
@@ -217,6 +234,20 @@ namespace BoltFreezer.PlanSpace
                 Insert(demote);
             }
 
+        }
+
+        public void WriteTimesToFile()
+        {
+            var file = directory + @"/Times/" +  problemNumber.ToString() + "-" + search.ToString() + "-" + selection.ToString() + ".txt";
+            Directory.CreateDirectory(directory + @"/Times/");
+            using (StreamWriter writer = new StreamWriter(file, false))
+            {
+                foreach (Tuple<string, string> dataItem in timeCollections)
+                {
+                    writer.WriteLine(dataItem.First + "\t" + dataItem.Second);
+                }
+                writer.WriteLine("\n");
+            }
         }
 
         public void WriteToFile(long elapsedMs, Plan plan) {

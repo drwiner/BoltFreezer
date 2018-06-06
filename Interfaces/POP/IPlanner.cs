@@ -24,7 +24,11 @@ namespace BoltFreezer.Interfaces
 
         void RepairThreat(IPlan plan, ThreatenedLinkFlaw tclf);
 
+        void LogTime(string operationName, long timeItTook);
+
         bool Console_log { get; }
+
+        void WriteTimesToFile();
 
         // Must be a Plan for now, may need upate for IPlan
         void WriteToFile(long elapsedMs, Plan plan);

@@ -183,7 +183,7 @@ namespace BoltFreezer.PlanTools
             foreach (var elm in nodes)
             {
                 //var descendants = GetDescendants(elm);
-                var predecessors = edges.Where(e => e.Second.Equals(elm)).Select(e => e.First) as List<T>;
+                var predecessors = edges.Where(e => e.Second.Equals(elm)).Select(e => e.First).ToList();
                 if (predecessors == null)
                     continue;
 

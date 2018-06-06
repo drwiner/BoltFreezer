@@ -1,5 +1,6 @@
 ﻿using BoltFreezer.Enums;
 using BoltFreezer.Interfaces;
+using BoltFreezer.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,7 +76,7 @@ namespace BoltFreezer.PlanTools
                     if (Solutions.Count >= k)
                     {
                         IP.WriteToFile(elapsedMs, plan as Plan);
-
+                        IP.WriteTimesToFile();
                         return Solutions;
                     }
                     continue;
@@ -85,6 +86,7 @@ namespace BoltFreezer.PlanTools
                 {
                     watch.Stop();
                     IP.WriteToFile(watch.ElapsedMilliseconds, plan as Plan);
+                    IP.WriteTimesToFile();
                     return null;
                 }
 
@@ -97,8 +99,13 @@ namespace BoltFreezer.PlanTools
 
                 else if (flaw.Ftype == Enums.FlawType.Condition)
                 {
+                    var beforeAddStep = watch.ElapsedMilliseconds;
                     IP.AddStep(plan, flaw as OpenCondition);
+                    IP.LogTime("addStep", watch.ElapsedMilliseconds - beforeAddStep);
+
+                    var beforeReuseStep = watch.ElapsedMilliseconds;
                     IP.Reuse(plan, flaw as OpenCondition);
+                    IP.LogTime("reuseStep", watch.ElapsedMilliseconds - beforeReuseStep);
                 }
 
             }
