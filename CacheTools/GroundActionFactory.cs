@@ -105,18 +105,19 @@ namespace BoltFreezer.PlanTools
             }
         }
 
-        public static void DetectStatics(Dictionary<IPredicate,List<int>> CMap, Dictionary<IPredicate, List<int>> TMap)
+        public static void DetectStatics(Dictionary<Literal,List<int>> CMap, Dictionary<Literal, List<int>> TMap)
         {
             
             foreach (var op in GroundActions)
             {
                 foreach (var pre in op.Preconditions)
                 {
+                    var preLiteral = new Literal(pre);
                     if (Statics.Contains(pre))
                     {
                         continue;
                     }
-                    if (!CMap.ContainsKey(pre) && !TMap.ContainsKey(pre))
+                    if (!CMap.ContainsKey(preLiteral) && !TMap.ContainsKey(preLiteral))
                     {
                         Statics.Add(pre);
                     }

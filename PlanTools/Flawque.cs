@@ -47,10 +47,11 @@ namespace BoltFreezer.PlanTools
                 return;
             }
 
+            var ocpreconAsLiteral = new Literal(oc.precondition);
             // Use this value to keep track of amount of work.
-            if (HeuristicMethods.visitedPreds.ContainsKey(oc.precondition))
+            if (HeuristicMethods.visitedPreds.ContainsKey(ocpreconAsLiteral))
             {
-                oc.addReuseHeuristic = HeuristicMethods.visitedPreds[oc.precondition];
+                oc.addReuseHeuristic = HeuristicMethods.visitedPreds[ocpreconAsLiteral];
             }
 
             // Calculate risks and cndts

@@ -91,11 +91,11 @@ namespace BoltFreezer.CacheTools
 
             Console.WriteLine("\nCmap\n");
 
-            var cmap = BinarySerializer.DeSerializeObject<Dictionary<IPredicate, List<int>>>(CausalMapFileName + ".CachedCausalMap");
+            var cmap = BinarySerializer.DeSerializeObject<Dictionary<Literal, List<int>>>(CausalMapFileName + ".CachedCausalMap");
             CacheMaps.CausalMap = cmap;
 
             Console.WriteLine("\nTmap\n");
-            var tcmap = BinarySerializer.DeSerializeObject<Dictionary<IPredicate, List<int>>>(ThreatMapFileName + ".CachedThreatMap");
+            var tcmap = BinarySerializer.DeSerializeObject<Dictionary<Literal, List<int>>>(ThreatMapFileName + ".CachedThreatMap");
             CacheMaps.ThreatMap = tcmap;
 
             Console.WriteLine("Finding Statics");

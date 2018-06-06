@@ -11,31 +11,33 @@ namespace BoltFreezer.PlanTools
         /// <summary>
         /// Stored mappings for repair applicability. Do Not Use unless you are serializing
         /// </summary>
-        public static Dictionary<IPredicate, List<int>> CausalMap = new Dictionary<IPredicate, List<int>>();
+        public static Dictionary<Literal, List<int>> CausalMap = new Dictionary<Literal, List<int>>();
 
         /// <summary>
         /// Stored mappings for threat detection. Do Not Use unless you are serializing
         /// </summary>
-        public static Dictionary<IPredicate, List<int>> ThreatMap = new Dictionary<IPredicate, List<int>>();
+        public static Dictionary<Literal, List<int>> ThreatMap = new Dictionary<Literal, List<int>>();
 
         public static void Reset()
         {
-            CausalMap = new Dictionary<IPredicate, List<int>>();
-            ThreatMap = new Dictionary<IPredicate, List<int>>();
+            CausalMap = new Dictionary<Literal, List<int>>();
+            ThreatMap = new Dictionary<Literal, List<int>>();
         }
 
         public static IEnumerable<IOperator> GetCndts(IPredicate pred)
         {
-            if (CausalMap.ContainsKey(pred))
-                return from intID in CausalMap[pred] select GroundActionFactory.GroundLibrary[intID];
+            var toLiteral = new Literal(pred);
+            if (CausalMap.ContainsKey(toLiteral))
+                return from intID in CausalMap[toLiteral] select GroundActionFactory.GroundLibrary[intID];
 
             return new List<IOperator>();
         }
 
         public static IEnumerable<IOperator> GetThreats(IPredicate pred)
         {
-            if (ThreatMap.ContainsKey(pred))
-                return ThreatMap[pred].Select(intID => GroundActionFactory.GroundLibrary[intID]);
+            var toLiteral = new Literal(pred);
+            if (ThreatMap.ContainsKey(toLiteral))
+                return ThreatMap[toLiteral].Select(intID => GroundActionFactory.GroundLibrary[intID]);
             //        Where(intID => x.First.Equals(elm)).Select(x => x.Second);
             //return from intID in ThreatMap[pred] select GroundActionFactory.GroundLibrary[intID];
             return new List<IOperator>();
@@ -43,18 +45,20 @@ namespace BoltFreezer.PlanTools
 
         public static bool IsCndt(IPredicate pred, IPlanStep ps)
         {
-            if (!CausalMap.ContainsKey(pred))
+            var toLiteral = new Literal(pred);
+            if (!CausalMap.ContainsKey(toLiteral))
                 return false;
 
-            return CausalMap[pred].Contains(ps.Action.ID);
+            return CausalMap[toLiteral].Contains(ps.Action.ID);
         }
 
         public static bool IsThreat(IPredicate pred, IPlanStep ps)
         {
-            if (!ThreatMap.ContainsKey(pred))
+            var toLiteral = new Literal(pred);
+            if (!ThreatMap.ContainsKey(toLiteral))
                 return false;
 
-            return ThreatMap[pred].Contains(ps.Action.ID);
+            return ThreatMap[toLiteral].Contains(ps.Action.ID);
         }
 
         // Checks for mappings pairwise
@@ -64,7 +68,8 @@ namespace BoltFreezer.PlanTools
             {
                 foreach (var tprecond in tstep.Preconditions)
                 {
-                    if (CausalMap.ContainsKey(tprecond) || ThreatMap.ContainsKey(tprecond))
+                    var toLiteral = new Literal(tprecond);
+                    if (CausalMap.ContainsKey(toLiteral) || ThreatMap.ContainsKey(toLiteral))
                     {
                         // Then this precondition has already been evaluated.
                         continue;
@@ -74,20 +79,20 @@ namespace BoltFreezer.PlanTools
                     {
                         if (hstep.Effects.Contains(tprecond))
                         {
-                            if (!CausalMap.ContainsKey(tprecond))
-                                CausalMap.Add(tprecond, new List<int>() { hstep.ID });
+                            if (!CausalMap.ContainsKey(toLiteral))
+                                CausalMap.Add(toLiteral, new List<int>() { hstep.ID });
                             else
-                                if (!CausalMap[tprecond].Contains(hstep.ID))
+                                if (!CausalMap[toLiteral].Contains(hstep.ID))
                             {
-                                CausalMap[tprecond].Add(hstep.ID);
+                                CausalMap[toLiteral].Add(hstep.ID);
                             }
                         }
                         if (hstep.Effects.Contains(tprecond.GetReversed()))
                         {
-                            if (!ThreatMap.ContainsKey(tprecond))
-                                ThreatMap.Add(tprecond, new List<int>() { hstep.ID });
+                            if (!ThreatMap.ContainsKey(toLiteral))
+                                ThreatMap.Add(toLiteral, new List<int>() { hstep.ID });
                             else
-                                ThreatMap[tprecond].Add(hstep.ID);
+                                ThreatMap[toLiteral].Add(hstep.ID);
                         }
                     }
                 }
@@ -97,7 +102,8 @@ namespace BoltFreezer.PlanTools
                 {
                     foreach (var teff in tstep.Effects)
                     {
-                        if (CausalMap.ContainsKey(teff) || ThreatMap.ContainsKey(teff))
+                        var effLiteral = new Literal(teff);
+                        if (CausalMap.ContainsKey(effLiteral) || ThreatMap.ContainsKey(effLiteral))
                         {
                             // Then this precondition has already been evaluated.
                             continue;
@@ -107,21 +113,21 @@ namespace BoltFreezer.PlanTools
                         {
                             if (hstep.Effects.Contains(teff))
                             {
-                                if (!CausalMap.ContainsKey(teff))
-                                    CausalMap.Add(teff, new List<int>() { hstep.ID });
+                                if (!CausalMap.ContainsKey(effLiteral))
+                                    CausalMap.Add(effLiteral, new List<int>() { hstep.ID });
                                 else
-                                    if (!CausalMap[teff].Contains(hstep.ID))
+                                    if (!CausalMap[effLiteral].Contains(hstep.ID))
                                     {
-                                        CausalMap[teff].Add(hstep.ID);
+                                        CausalMap[effLiteral].Add(hstep.ID);
                                     }
                                 //CausalMap[teff].Add(hstep.ID);
                             }
                             if (hstep.Effects.Contains(teff.GetReversed()))
                             {
-                                if (!ThreatMap.ContainsKey(teff))
-                                    ThreatMap.Add(teff, new List<int>() { hstep.ID });
+                                if (!ThreatMap.ContainsKey(effLiteral))
+                                    ThreatMap.Add(effLiteral, new List<int>() { hstep.ID });
                                 else
-                                    ThreatMap[teff].Add(hstep.ID);
+                                    ThreatMap[effLiteral].Add(hstep.ID);
                             }
                         }
                     }
@@ -136,33 +142,33 @@ namespace BoltFreezer.PlanTools
             {
                 foreach (var tprecond in tstep.Preconditions)
                 {
-
+                    var preLiteral = new Literal(tprecond);
                     foreach (var hstep in heads)
                     {
-                        if (CausalMap[tprecond].Contains(hstep.ID) || ThreatMap[tprecond].Contains(hstep.ID))
-                        {
-                            // then this head step has already been checked for this condition
-                            continue;
-                        }
+                        //if (CausalMap[tprecond].Contains(hstep.ID) || ThreatMap[tprecond].Contains(hstep.ID))
+                        //{
+                        //    // then this head step has already been checked for this condition
+                        //    continue;
+                        //}
 
                         if (hstep.Effects.Contains(tprecond))
                         {
-                            if (!CausalMap.ContainsKey(tprecond))
-                                CausalMap.Add(tprecond, new List<int>() { hstep.ID });
+                            if (!CausalMap.ContainsKey(preLiteral))
+                                CausalMap.Add(preLiteral, new List<int>() { hstep.ID });
                             else
                             {
-                                if (!CausalMap[tprecond].Contains(hstep.ID)){
-                                    CausalMap[tprecond].Add(hstep.ID);
+                                if (!CausalMap[preLiteral].Contains(hstep.ID)){
+                                    CausalMap[preLiteral].Add(hstep.ID);
                                 }
 
                             }
                         }
                         if (hstep.Effects.Contains(tprecond.GetReversed()))
                         {
-                            if (!ThreatMap.ContainsKey(tprecond))
-                                ThreatMap.Add(tprecond, new List<int>() { hstep.ID });
+                            if (!ThreatMap.ContainsKey(preLiteral))
+                                ThreatMap.Add(preLiteral, new List<int>() { hstep.ID });
                             else
-                                ThreatMap[tprecond].Add(hstep.ID);
+                                ThreatMap[preLiteral].Add(hstep.ID);
                         }
                     }
                 }
@@ -171,27 +177,27 @@ namespace BoltFreezer.PlanTools
                 {
                     foreach (var teff in tstep.Effects)
                     {
-                        if (CausalMap.ContainsKey(teff) || ThreatMap.ContainsKey(teff))
-                        {
-                            // Then this precondition has already been evaluated.
-                            continue;
-                        }
-
+                        //if (CausalMap.ContainsKey(teff) || ThreatMap.ContainsKey(teff))
+                        //{
+                        //    // Then this precondition has already been evaluated.
+                        //    continue;
+                        //}
+                        var effLiteral = new Literal(teff);
                         foreach (var hstep in heads)
                         {
                             if (hstep.Effects.Contains(teff))
                             {
-                                if (!CausalMap.ContainsKey(teff)) 
-                                    CausalMap.Add(teff, new List<int>() { hstep.ID });
+                                if (!CausalMap.ContainsKey(effLiteral)) 
+                                    CausalMap.Add(effLiteral, new List<int>() { hstep.ID });
                                 else
-                                    CausalMap[teff].Add(hstep.ID);
+                                    CausalMap[effLiteral].Add(hstep.ID);
                             }
                             if (hstep.Effects.Contains(teff.GetReversed()))
                             {
-                                if (!ThreatMap.ContainsKey(teff))
-                                    ThreatMap.Add(teff, new List<int>() { hstep.ID });
+                                if (!ThreatMap.ContainsKey(effLiteral))
+                                    ThreatMap.Add(effLiteral, new List<int>() { hstep.ID });
                                 else
-                                    ThreatMap[teff].Add(hstep.ID);
+                                    ThreatMap[effLiteral].Add(hstep.ID);
                             }
                         }
                     }
@@ -204,7 +210,8 @@ namespace BoltFreezer.PlanTools
 
             foreach( var goalCondition in goal)
             {
-                if (CausalMap.ContainsKey(goalCondition) || ThreatMap.ContainsKey(goalCondition))
+                var goalLiteral = new Literal(goalCondition);
+                if (CausalMap.ContainsKey(goalLiteral) || ThreatMap.ContainsKey(goalLiteral))
                 {
                     continue;
                 }
@@ -217,24 +224,24 @@ namespace BoltFreezer.PlanTools
                     }
                     if (gstep.Effects.Contains(goalCondition))
                     {
-                        if (!CausalMap.ContainsKey(goalCondition))
-                            CausalMap.Add(goalCondition, new List<int>() { gstep.ID });
+                        if (!CausalMap.ContainsKey(goalLiteral))
+                            CausalMap.Add(goalLiteral, new List<int>() { gstep.ID });
                         else
-                            CausalMap[goalCondition].Add(gstep.ID);
+                            CausalMap[goalLiteral].Add(gstep.ID);
 
                     }
                     if (gstep.Effects.Contains(goalCondition.GetReversed()))
                     {
-                        if (!ThreatMap.ContainsKey(goalCondition))
-                            ThreatMap.Add(goalCondition, new List<int>() { gstep.ID });
+                        if (!ThreatMap.ContainsKey(goalLiteral))
+                            ThreatMap.Add(goalLiteral, new List<int>() { gstep.ID });
                         else
-                            ThreatMap[goalCondition].Add(gstep.ID);
+                            ThreatMap[goalLiteral].Add(gstep.ID);
                     }
                 }
             }
         }
 
-        private static Dictionary<IPredicate, int> RecursiveHeuristicCache(Dictionary<IPredicate, int> currentMap, List<IPredicate> InitialConditions)
+        private static Dictionary<Literal, int> RecursiveHeuristicCache(Dictionary<Literal, int> currentMap, List<IPredicate> InitialConditions)
         {
             // Steps that are executable given the initial conditions. These conditions can represent a state that is logically inconsistent (and (at bob store) (not (at bob store)))
             var initiallyRelevant = GroundActionFactory.GroundActions.Where(action => action.Height == 0 && action.Preconditions.All(pre => InitialConditions.Contains(pre)));
@@ -246,19 +253,20 @@ namespace BoltFreezer.PlanTools
             foreach (var newStep in initiallyRelevant)
             {
                 // sum_{pre in newstep.preconditions} currentMap[pre]
-                var thisStepsValue = newStep.Preconditions.Sum(pre => currentMap[pre]);
+                var thisStepsValue = newStep.Preconditions.Sum(pre => currentMap[new Literal(pre)]);
 
                 foreach(var eff in newStep.Effects)
                 {
+                    var effLiteral = new Literal(eff);
                     // ignore effects we've already seen; these occur "earlier" in planning graph
-                    if (currentMap.ContainsKey(eff))
+                    if (currentMap.ContainsKey(effLiteral))
                         continue;
 
                     // If we make it this far, then we've reached an unexplored literal effect
                     toContinue = true;
 
                     // The current value of this effect is 1 (this new step) + the sum of the preconditions of this step in the map.
-                    currentMap[eff] = 1 + thisStepsValue;
+                    currentMap[effLiteral] = 1 + thisStepsValue;
 
                     // Add this effect to the new initial Condition for subsequent round
                     InitialConditions.Add(eff);
@@ -277,10 +285,10 @@ namespace BoltFreezer.PlanTools
         public static void CacheAddReuseHeuristic(IState InitialState)
         {
             // Use dynamic programming
-            var initialMap = new Dictionary<IPredicate, int>();
+            var initialMap = new Dictionary<Literal, int>();
             foreach(var item in InitialState.Predicates)
             {
-                initialMap[item]= 0;
+                initialMap[new Literal(item)]= 0;
             }
             List<IPredicate> newInitialList = InitialState.Predicates;
             foreach(var pre in CacheMaps.CausalMap.Keys)
@@ -292,7 +300,7 @@ namespace BoltFreezer.PlanTools
                 if (!newInitialList.Contains(pre.GetReversed()))
                 {
                     newInitialList.Add(pre);
-                    initialMap[pre] = 0;
+                    initialMap[new Literal(pre)] = 0;
                 }
             }
 

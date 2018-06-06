@@ -228,8 +228,8 @@ namespace BoltFreezer.FileIO
 
             GroundActionFactory.GroundActions = new List<IOperator>();
             GroundActionFactory.GroundLibrary = new Dictionary<int, IOperator>();
-            CacheMaps.CausalMap = new Dictionary<IPredicate, List<int>>();
-            CacheMaps.ThreatMap = new Dictionary<IPredicate, List<int>>();
+            CacheMaps.CausalMap = new Dictionary<Literal, List<int>>();
+            CacheMaps.ThreatMap = new Dictionary<Literal, List<int>>();
 
             Operator initialOp = new Operator();
             Operator goalOp = new Operator();
@@ -318,9 +318,9 @@ namespace BoltFreezer.FileIO
                     foreach (var keyvalue in CausalMap)
                     {
                         var predKey = StringToPredicate(keyvalue.Key);
-                        if (!CacheMaps.CausalMap.ContainsKey(predKey))
+                        if (!CacheMaps.CausalMap.ContainsKey(new Literal(predKey)))
                         {
-                            CacheMaps.CausalMap[predKey] = IntListFromJsonArray(keyvalue.Value as JsonArray);
+                            CacheMaps.CausalMap[new Literal(predKey)] = IntListFromJsonArray(keyvalue.Value as JsonArray);
                         }
 
                     }
@@ -331,7 +331,7 @@ namespace BoltFreezer.FileIO
                     foreach (var keyvalue in ThreatMap)
                     {
                         var predKey = StringToPredicate(keyvalue.Key);
-                        if (!CacheMaps.ThreatMap.ContainsKey(predKey))
+                        if (!CacheMaps.ThreatMap.ContainsKey(new Literal(predKey)))
                         {
                             var intList = new List<object>();
                             var jsonList = keyvalue.Value as JsonArray;

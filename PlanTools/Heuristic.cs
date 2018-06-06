@@ -1,6 +1,7 @@
 ﻿
 using BoltFreezer.Enums;
 using BoltFreezer.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -63,11 +64,11 @@ namespace BoltFreezer.PlanTools
         }
     }
 
-
+    [Serializable]
     public static class HeuristicMethods
     {
         // These may be stored in preprocessing step
-        public static Dictionary<IPredicate, int> visitedPreds = new Dictionary<IPredicate, int>();
+        public static Dictionary<Literal, int> visitedPreds = new Dictionary<Literal, int>();
 
         // h^r_add(pi) = sum_(oc in plan) 0 if exists a step possibly preceding oc.step and h_add(oc.precondition) otherwise.
         public static int AddReuseHeuristic(IPlan plan)
@@ -98,24 +99,31 @@ namespace BoltFreezer.PlanTools
                 // append heuristic for open condition
                 if (!existsA)
                 {
+                    var ocAsLiteral = new Literal(oc.precondition);
                     // we should always have the conditions in the visitedPreds dictionary if we processed correctly
-                    if (visitedPreds.ContainsKey(oc.precondition))
+                    if (visitedPreds.ContainsKey(ocAsLiteral))
                     {
-                        sumo += visitedPreds[oc.precondition];
+                        sumo += visitedPreds[ocAsLiteral];
                         continue;
                     }
+                    else
+                    {
+                        throw new System.Exception();
+                    }
+                    //var k = visitedPreds;
+
 
                     //currentlyEvaluatedPreds.Add(oc.precondition);
                     //var amountToAdd = AddHeuristic(plan.Initial, oc.precondition, new HashSet<IPredicate>() { oc.precondition });
-                    var amountToAdd = AddHeuristic(oc.precondition);
-                    sumo += amountToAdd;
-                    visitedPreds[oc.precondition] = amountToAdd;
+                    //var amountToAdd = AddHeuristic(oc.precondition);
+                    //sumo += amountToAdd;
+                    //visitedPreds[ocAsLiteral] = amountToAdd;
                 }
             }
             return sumo;
         }
 
-        public static int AddHeuristic(IPredicate precondition)
+        public static int AddHeuristic(Literal precondition)
         {
             if (visitedPreds[precondition] == 0)
             {
@@ -129,7 +137,7 @@ namespace BoltFreezer.PlanTools
                 {
                     continue;
                 }
-                var sumo = cndt.Preconditions.Sum(pre => visitedPreds[pre]);
+                var sumo = cndt.Preconditions.Sum(pre => visitedPreds[new Literal(pre)]);
                 if (sumo < bestSoFar)
                 {
                     bestSoFar = sumo;
@@ -152,7 +160,7 @@ namespace BoltFreezer.PlanTools
 
             int minSoFar = 1000;
             // Then this is a static condition that can never be true... we should avoid this plan.
-            if (!CacheMaps.CausalMap.ContainsKey(condition))
+            if (!CacheMaps.CausalMap.ContainsKey(new Literal(condition)))
             {
                 return minSoFar;
             }

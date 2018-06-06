@@ -9,6 +9,7 @@ using System.Text;
 
 namespace BoltFreezer.PlanTools
 {
+    [Serializable]
     public class Composite : Operator, IComposite
     {
         protected IOperator initialStep;
@@ -126,12 +127,17 @@ namespace BoltFreezer.PlanTools
             {
                 foreach (var term in effect.Terms)
                 {
+
                     var compTerm = Terms.FirstOrDefault(cterm => term.Variable.Equals(cterm.Variable));
                     if (compTerm == null)
                     {
-                        throw new System.Exception();
+                        Terms.Add(term);
+                        //throw new System.Exception();
                     }
-                    term.Constant = compTerm.Constant;
+                    else
+                    {
+                        term.Constant = compTerm.Constant;
+                    }
                 }
             }
             foreach (var precon in GoalStep.Preconditions)
@@ -141,9 +147,13 @@ namespace BoltFreezer.PlanTools
                     var compTerm = Terms.FirstOrDefault(cterm => term.Variable.Equals(cterm.Variable));
                     if (compTerm == null)
                     {
-                        throw new System.Exception();
+                        Terms.Add(term);
+                        //throw new System.Exception();
                     }
-                    term.Constant = compTerm.Constant;
+                    else
+                    {
+                        term.Constant = compTerm.Constant;
+                    }
                 }
             }
             var unlistedDecompTerms = decomp.Terms.Where(dt => !Terms.Any(t => dt.Equals(t)));
