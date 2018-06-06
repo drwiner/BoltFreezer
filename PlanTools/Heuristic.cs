@@ -67,7 +67,7 @@ namespace BoltFreezer.PlanTools
     public static class HeuristicMethods
     {
         // These may be stored in preprocessing step
-        public static Dictionary<IPredicate, int> visitedPreds = new Dictionary<IPredicate, int>();
+        public static TupleMap<IPredicate, int> visitedPreds = new TupleMap<IPredicate, int>();
 
         // h^r_add(pi) = sum_(oc in plan) 0 if exists a step possibly preceding oc.step and h_add(oc.precondition) otherwise.
         public static int AddReuseHeuristic(IPlan plan)
@@ -99,9 +99,9 @@ namespace BoltFreezer.PlanTools
                 if (!existsA)
                 {
                     // we should always have the conditions in the visitedPreds dictionary if we processed correctly
-                    if (visitedPreds.ContainsKey(oc.precondition))
+                    if (visitedPreds.Get(oc.precondition.Sign).ContainsKey(oc.precondition))
                     {
-                        sumo += visitedPreds[oc.precondition];
+                        sumo += visitedPreds.Get(oc.precondition.Sign)[oc.precondition];
                         continue;
                     }
 
@@ -109,7 +109,7 @@ namespace BoltFreezer.PlanTools
                     //var amountToAdd = AddHeuristic(plan.Initial, oc.precondition, new HashSet<IPredicate>() { oc.precondition });
                     var amountToAdd = AddHeuristic(oc.precondition);
                     sumo += amountToAdd;
-                    visitedPreds[oc.precondition] = amountToAdd;
+                    visitedPreds.Get(oc.precondition.Sign)[oc.precondition] = amountToAdd;
                 }
             }
             return sumo;
@@ -117,7 +117,7 @@ namespace BoltFreezer.PlanTools
 
         public static int AddHeuristic(IPredicate precondition)
         {
-            if (visitedPreds[precondition] == 0)
+            if (visitedPreds.Get(precondition.Sign)[precondition] == 0)
             {
                 return 0;
             }
@@ -129,7 +129,7 @@ namespace BoltFreezer.PlanTools
                 {
                     continue;
                 }
-                var sumo = cndt.Preconditions.Sum(pre => visitedPreds[pre]);
+                var sumo = cndt.Preconditions.Sum(pre => visitedPreds.Get(pre.Sign)[pre]);
                 if (sumo < bestSoFar)
                 {
                     bestSoFar = sumo;
@@ -152,7 +152,7 @@ namespace BoltFreezer.PlanTools
 
             int minSoFar = 1000;
             // Then this is a static condition that can never be true... we should avoid this plan.
-            if (!CacheMaps.CausalMap.ContainsKey(condition))
+            if (!CacheMaps.CausalTupleMap.Get(condition.Sign).ContainsKey(condition))
             {
                 return minSoFar;
             }

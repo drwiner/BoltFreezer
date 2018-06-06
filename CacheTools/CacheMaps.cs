@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BoltFreezer.Interfaces;
 using System.Linq;
+using BoltFreezer.Utilities;
 
 namespace BoltFreezer.PlanTools
 {
@@ -11,31 +12,44 @@ namespace BoltFreezer.PlanTools
         /// <summary>
         /// Stored mappings for repair applicability. Do Not Use unless you are serializing
         /// </summary>
-        public static Dictionary<IPredicate, List<int>> CausalMap = new Dictionary<IPredicate, List<int>>();
+        /// 
+        public static TupleMap<IPredicate, List<int>> CausalTupleMap = new TupleMap<IPredicate, List<int>>();
+        public static TupleMap<IPredicate, List<int>> ThreatTupleMap = new TupleMap<IPredicate, List<int>>();
+
+        public static Dictionary<IPredicate, List<int>> PosCausalMap = new Dictionary<IPredicate, List<int>>();
+        public static Dictionary<IPredicate, List<int>> NegCausalMap = new Dictionary<IPredicate, List<int>>();
 
         /// <summary>
         /// Stored mappings for threat detection. Do Not Use unless you are serializing
         /// </summary>
-        public static Dictionary<IPredicate, List<int>> ThreatMap = new Dictionary<IPredicate, List<int>>();
+        public static Dictionary<IPredicate, List<int>> PosThreatMap = new Dictionary<IPredicate, List<int>>();
+        public static Dictionary<IPredicate, List<int>> NegThreatMap = new Dictionary<IPredicate, List<int>>();
 
         public static void Reset()
         {
-            CausalMap = new Dictionary<IPredicate, List<int>>();
-            ThreatMap = new Dictionary<IPredicate, List<int>>();
+            CausalTupleMap = new TupleMap<IPredicate, List<int>>();
+            ThreatTupleMap = new TupleMap<IPredicate, List<int>>();
+            //PosCausalMap = new Dictionary<IPredicate, List<int>>();
+            //NegCausalMap = new Dictionary<IPredicate, List<int>>();
+            //PosThreatMap = new Dictionary<IPredicate, List<int>>();
+            //NegThreatMap = new Dictionary<IPredicate, List<int>>();
         }
 
         public static IEnumerable<IOperator> GetCndts(IPredicate pred)
         {
-            if (CausalMap.ContainsKey(pred))
-                return from intID in CausalMap[pred] select GroundActionFactory.GroundLibrary[intID];
-
+            var whichMap = CausalTupleMap.Get(pred.Sign);
+            if (whichMap.ContainsKey(pred))
+                return from intID in whichMap[pred] select GroundActionFactory.GroundLibrary[intID];
+            
             return new List<IOperator>();
         }
 
         public static IEnumerable<IOperator> GetThreats(IPredicate pred)
         {
-            if (ThreatMap.ContainsKey(pred))
-                return ThreatMap[pred].Select(intID => GroundActionFactory.GroundLibrary[intID]);
+            var whichMap = ThreatTupleMap.Get(pred.Sign);
+            if (whichMap.ContainsKey(pred))
+                return whichMap[pred].Select(intID => GroundActionFactory.GroundLibrary[intID]);
+            
             //        Where(intID => x.First.Equals(elm)).Select(x => x.Second);
             //return from intID in ThreatMap[pred] select GroundActionFactory.GroundLibrary[intID];
             return new List<IOperator>();
@@ -43,18 +57,20 @@ namespace BoltFreezer.PlanTools
 
         public static bool IsCndt(IPredicate pred, IPlanStep ps)
         {
-            if (!CausalMap.ContainsKey(pred))
-                return false;
+            var whichMap = CausalTupleMap.Get(pred.Sign);
 
-            return CausalMap[pred].Contains(ps.Action.ID);
+            if (!whichMap.ContainsKey(pred))
+                return false;
+            return whichMap[pred].Contains(ps.Action.ID);
+           
         }
 
         public static bool IsThreat(IPredicate pred, IPlanStep ps)
         {
-            if (!ThreatMap.ContainsKey(pred))
+            var whichMap = ThreatTupleMap.Get(pred.Sign);
+            if (!whichMap.ContainsKey(pred))
                 return false;
-
-            return ThreatMap[pred].Contains(ps.Action.ID);
+            return whichMap[pred].Contains(ps.Action.ID);
         }
 
         // Checks for mappings pairwise
@@ -64,32 +80,35 @@ namespace BoltFreezer.PlanTools
             {
                 foreach (var tprecond in tstep.Preconditions)
                 {
-                    if (CausalMap.ContainsKey(tprecond) || ThreatMap.ContainsKey(tprecond))
+                    var causemap = CausalTupleMap.Get(tprecond.Sign);
+                    var threatmap = ThreatTupleMap.Get(tprecond.Sign);
+
+                    if (causemap.ContainsKey(tprecond) || threatmap.ContainsKey(tprecond))
                     {
                         // Then this precondition has already been evaluated.
                         continue;
                     }
-
+                        
                     foreach (var hstep in groundSteps)
                     {
                         if (hstep.Effects.Contains(tprecond))
                         {
-                            if (!CausalMap.ContainsKey(tprecond))
-                                CausalMap.Add(tprecond, new List<int>() { hstep.ID });
-                            else
-                                if (!CausalMap[tprecond].Contains(hstep.ID))
+                            if (!causemap.ContainsKey(tprecond))
+                                causemap.Add(tprecond, new List<int>() { hstep.ID });
+                            else if (!causemap[tprecond].Contains(hstep.ID))
                             {
-                                CausalMap[tprecond].Add(hstep.ID);
+                                causemap[tprecond].Add(hstep.ID);
                             }
                         }
                         if (hstep.Effects.Contains(tprecond.GetReversed()))
                         {
-                            if (!ThreatMap.ContainsKey(tprecond))
-                                ThreatMap.Add(tprecond, new List<int>() { hstep.ID });
+                            if (!threatmap.ContainsKey(tprecond))
+                                threatmap.Add(tprecond, new List<int>() { hstep.ID });
                             else
-                                ThreatMap[tprecond].Add(hstep.ID);
+                                threatmap[tprecond].Add(hstep.ID);
                         }
                     }
+
                 }
 
                 // also need to load composite effects because these are dummy goal step open conditions.
@@ -97,7 +116,9 @@ namespace BoltFreezer.PlanTools
                 {
                     foreach (var teff in tstep.Effects)
                     {
-                        if (CausalMap.ContainsKey(teff) || ThreatMap.ContainsKey(teff))
+                        var causeMap = CausalTupleMap.Get(teff.Sign);
+                        var threatmap = ThreatTupleMap.Get(teff.Sign);
+                        if (causeMap.ContainsKey(teff) || threatmap.ContainsKey(teff))
                         {
                             // Then this precondition has already been evaluated.
                             continue;
@@ -107,21 +128,21 @@ namespace BoltFreezer.PlanTools
                         {
                             if (hstep.Effects.Contains(teff))
                             {
-                                if (!CausalMap.ContainsKey(teff))
-                                    CausalMap.Add(teff, new List<int>() { hstep.ID });
+                                if (!causeMap.ContainsKey(teff))
+                                    causeMap.Add(teff, new List<int>() { hstep.ID });
                                 else
-                                    if (!CausalMap[teff].Contains(hstep.ID))
+                                    if (!causeMap[teff].Contains(hstep.ID))
                                     {
-                                        CausalMap[teff].Add(hstep.ID);
+                                    causeMap[teff].Add(hstep.ID);
                                     }
                                 //CausalMap[teff].Add(hstep.ID);
                             }
                             if (hstep.Effects.Contains(teff.GetReversed()))
                             {
-                                if (!ThreatMap.ContainsKey(teff))
-                                    ThreatMap.Add(teff, new List<int>() { hstep.ID });
+                                if (!threatmap.ContainsKey(teff))
+                                    threatmap.Add(teff, new List<int>() { hstep.ID });
                                 else
-                                    ThreatMap[teff].Add(hstep.ID);
+                                    threatmap[teff].Add(hstep.ID);
                             }
                         }
                     }
@@ -136,10 +157,13 @@ namespace BoltFreezer.PlanTools
             {
                 foreach (var tprecond in tstep.Preconditions)
                 {
+                    var causeMap = CausalTupleMap.Get(tprecond.Sign);
+                    var threatmap = ThreatTupleMap.Get(tprecond.Sign);
 
                     foreach (var hstep in heads)
                     {
-                        if (CausalMap[tprecond].Contains(hstep.ID) || ThreatMap[tprecond].Contains(hstep.ID))
+
+                        if (causeMap[tprecond].Contains(hstep.ID) || threatmap[tprecond].Contains(hstep.ID))
                         {
                             // then this head step has already been checked for this condition
                             continue;
@@ -147,22 +171,22 @@ namespace BoltFreezer.PlanTools
 
                         if (hstep.Effects.Contains(tprecond))
                         {
-                            if (!CausalMap.ContainsKey(tprecond))
-                                CausalMap.Add(tprecond, new List<int>() { hstep.ID });
+                            if (!causeMap.ContainsKey(tprecond))
+                                causeMap.Add(tprecond, new List<int>() { hstep.ID });
                             else
                             {
-                                if (!CausalMap[tprecond].Contains(hstep.ID)){
-                                    CausalMap[tprecond].Add(hstep.ID);
+                                if (!causeMap[tprecond].Contains(hstep.ID)){
+                                    causeMap[tprecond].Add(hstep.ID);
                                 }
 
                             }
                         }
                         if (hstep.Effects.Contains(tprecond.GetReversed()))
                         {
-                            if (!ThreatMap.ContainsKey(tprecond))
-                                ThreatMap.Add(tprecond, new List<int>() { hstep.ID });
+                            if (!threatmap.ContainsKey(tprecond))
+                                threatmap.Add(tprecond, new List<int>() { hstep.ID });
                             else
-                                ThreatMap[tprecond].Add(hstep.ID);
+                                threatmap[tprecond].Add(hstep.ID);
                         }
                     }
                 }
@@ -171,7 +195,10 @@ namespace BoltFreezer.PlanTools
                 {
                     foreach (var teff in tstep.Effects)
                     {
-                        if (CausalMap.ContainsKey(teff) || ThreatMap.ContainsKey(teff))
+                        var causeMap = CausalTupleMap.Get(teff.Sign);
+                        var threatmap = ThreatTupleMap.Get(teff.Sign);
+
+                        if (causeMap.ContainsKey(teff) || threatmap.ContainsKey(teff))
                         {
                             // Then this precondition has already been evaluated.
                             continue;
@@ -181,17 +208,17 @@ namespace BoltFreezer.PlanTools
                         {
                             if (hstep.Effects.Contains(teff))
                             {
-                                if (!CausalMap.ContainsKey(teff)) 
-                                    CausalMap.Add(teff, new List<int>() { hstep.ID });
+                                if (!causeMap.ContainsKey(teff))
+                                    causeMap.Add(teff, new List<int>() { hstep.ID });
                                 else
-                                    CausalMap[teff].Add(hstep.ID);
+                                    causeMap[teff].Add(hstep.ID);
                             }
                             if (hstep.Effects.Contains(teff.GetReversed()))
                             {
-                                if (!ThreatMap.ContainsKey(teff))
-                                    ThreatMap.Add(teff, new List<int>() { hstep.ID });
+                                if (!threatmap.ContainsKey(teff))
+                                    threatmap.Add(teff, new List<int>() { hstep.ID });
                                 else
-                                    ThreatMap[teff].Add(hstep.ID);
+                                    threatmap[teff].Add(hstep.ID);
                             }
                         }
                     }
@@ -204,7 +231,10 @@ namespace BoltFreezer.PlanTools
 
             foreach( var goalCondition in goal)
             {
-                if (CausalMap.ContainsKey(goalCondition) || ThreatMap.ContainsKey(goalCondition))
+                var causeMap = CausalTupleMap.Get(goalCondition.Sign);
+                var threatmap = ThreatTupleMap.Get(goalCondition.Sign);
+
+                if (causeMap.ContainsKey(goalCondition) || threatmap.ContainsKey(goalCondition))
                 {
                     continue;
                 }
@@ -217,24 +247,24 @@ namespace BoltFreezer.PlanTools
                     }
                     if (gstep.Effects.Contains(goalCondition))
                     {
-                        if (!CausalMap.ContainsKey(goalCondition))
-                            CausalMap.Add(goalCondition, new List<int>() { gstep.ID });
+                        if (!causeMap.ContainsKey(goalCondition))
+                            causeMap.Add(goalCondition, new List<int>() { gstep.ID });
                         else
-                            CausalMap[goalCondition].Add(gstep.ID);
+                            causeMap[goalCondition].Add(gstep.ID);
 
                     }
                     if (gstep.Effects.Contains(goalCondition.GetReversed()))
                     {
-                        if (!ThreatMap.ContainsKey(goalCondition))
-                            ThreatMap.Add(goalCondition, new List<int>() { gstep.ID });
+                        if (!threatmap.ContainsKey(goalCondition))
+                            threatmap.Add(goalCondition, new List<int>() { gstep.ID });
                         else
-                            ThreatMap[goalCondition].Add(gstep.ID);
+                            threatmap[goalCondition].Add(gstep.ID);
                     }
                 }
             }
         }
 
-        private static Dictionary<IPredicate, int> RecursiveHeuristicCache(Dictionary<IPredicate, int> currentMap, List<IPredicate> InitialConditions)
+        private static TupleMap<IPredicate, int> RecursiveHeuristicCache(TupleMap<IPredicate, int> currentMap, List<IPredicate> InitialConditions)
         {
             // Steps that are executable given the initial conditions. These conditions can represent a state that is logically inconsistent (and (at bob store) (not (at bob store)))
             var initiallyRelevant = GroundActionFactory.GroundActions.Where(action => action.Height == 0 && action.Preconditions.All(pre => InitialConditions.Contains(pre)));
@@ -246,19 +276,19 @@ namespace BoltFreezer.PlanTools
             foreach (var newStep in initiallyRelevant)
             {
                 // sum_{pre in newstep.preconditions} currentMap[pre]
-                var thisStepsValue = newStep.Preconditions.Sum(pre => currentMap[pre]);
+                var thisStepsValue = newStep.Preconditions.Sum(pre => currentMap.Get(pre.Sign)[pre]);
 
                 foreach(var eff in newStep.Effects)
                 {
                     // ignore effects we've already seen; these occur "earlier" in planning graph
-                    if (currentMap.ContainsKey(eff))
+                    if (currentMap.Get(eff.Sign).ContainsKey(eff))
                         continue;
 
                     // If we make it this far, then we've reached an unexplored literal effect
                     toContinue = true;
 
                     // The current value of this effect is 1 (this new step) + the sum of the preconditions of this step in the map.
-                    currentMap[eff] = 1 + thisStepsValue;
+                    currentMap.Get(eff.Sign)[eff] = 1 + thisStepsValue;
 
                     // Add this effect to the new initial Condition for subsequent round
                     InitialConditions.Add(eff);
@@ -277,27 +307,52 @@ namespace BoltFreezer.PlanTools
         public static void CacheAddReuseHeuristic(IState InitialState)
         {
             // Use dynamic programming
-            var initialMap = new Dictionary<IPredicate, int>();
+            var initialMap = new TupleMap<IPredicate, int>();
+            //var initialMap = new Dictionary<IPredicate, int>();
             foreach(var item in InitialState.Predicates)
             {
-                initialMap[item]= 0;
+                initialMap.Get(true)[item] = 0;
             }
             List<IPredicate> newInitialList = InitialState.Predicates;
-            foreach(var pre in CacheMaps.CausalMap.Keys)
+            foreach(var pre in CacheMaps.CausalTupleMap.Get(false).Keys)
             {
-                if (pre.Sign)
-                {
-                    continue;
-                }
                 if (!newInitialList.Contains(pre.GetReversed()))
                 {
                     newInitialList.Add(pre);
-                    initialMap[pre] = 0;
+                    initialMap.Get(false)[pre] = 0;
                 }
             }
 
             HeuristicMethods.visitedPreds = RecursiveHeuristicCache(initialMap, newInitialList);
          
         }
+    }
+
+    [Serializable]
+    public class TupleMap<T1, T2>
+    {
+        public Dictionary<T1, T2> PosMap = new Dictionary<T1, T2>();
+        public Dictionary<T1, T2> NegMap = new Dictionary<T1, T2>();
+
+        public TupleMap(Dictionary<T1, T2> posMap, Dictionary<T1, T2> negMap)
+        {
+            PosMap = posMap;
+            NegMap = negMap;
+        }
+
+        public TupleMap()
+        {
+
+        }
+
+        public Dictionary<T1, T2> Get(bool which)
+        {
+            if (which)
+            {
+                return PosMap;
+            }
+            return NegMap;
+        }
+
     }
 }

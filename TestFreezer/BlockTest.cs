@@ -450,7 +450,7 @@ namespace TestFreezer
             PF.Serialize();
 
             Console.WriteLine("Detecting Statics");
-            GroundActionFactory.DetectStatics(CacheMaps.CausalMap, CacheMaps.ThreatMap);
+            GroundActionFactory.DetectStatics(CacheMaps.CausalTupleMap, CacheMaps.ThreatTupleMap);
 
             var initPlan = PlanSpacePlanner.CreateInitialPlan(PF);
 
@@ -617,7 +617,7 @@ namespace TestFreezer
 
             // Detecting static conditions
             Console.WriteLine("Detecting Statics");
-            GroundActionFactory.DetectStatics(CacheMaps.CausalMap, CacheMaps.ThreatMap);
+            GroundActionFactory.DetectStatics(CacheMaps.CausalTupleMap, CacheMaps.ThreatTupleMap);
 
             var initPlan = PlanSpacePlanner.CreateInitialPlan(pfreeze);
 
