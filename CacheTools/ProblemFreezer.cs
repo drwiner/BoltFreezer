@@ -72,8 +72,8 @@ namespace BoltFreezer.CacheTools
             CacheMaps.CacheLinks(GroundActionFactory.GroundActions);
             CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, testProblem.Goal);
 
-            BinarySerializer.SerializeObject(CausalMapFileName + ".CachedCausalMap", CacheMaps.PositiveCausalMap);
-            BinarySerializer.SerializeObject(ThreatMapFileName + ".CachedThreatMap", CacheMaps.PosThreatMap);
+            BinarySerializer.SerializeObject(CausalMapFileName + ".CachedCausalMap", CacheMaps.CausalTupleMap);
+            BinarySerializer.SerializeObject(ThreatMapFileName + ".CachedThreatMap", CacheMaps.ThreatTupleMap);
         }
 
         public void Deserialize()
@@ -91,15 +91,15 @@ namespace BoltFreezer.CacheTools
 
             Console.WriteLine("\nCmap\n");
 
-            var cmap = BinarySerializer.DeSerializeObject<Dictionary<IPredicate, List<int>>>(CausalMapFileName + ".CachedCausalMap");
-            CacheMaps.PositiveCausalMap = cmap;
+            var cmap = BinarySerializer.DeSerializeObject<TupleMap<IPredicate, List<int>>>(CausalMapFileName + ".CachedCausalMap");
+            CacheMaps.CausalTupleMap = cmap;
 
             Console.WriteLine("\nTmap\n");
-            var tcmap = BinarySerializer.DeSerializeObject<Dictionary<IPredicate, List<int>>>(ThreatMapFileName + ".CachedThreatMap");
-            CacheMaps.PosThreatMap = tcmap;
+            var tcmap = BinarySerializer.DeSerializeObject<TupleMap<IPredicate, List<int>>>(ThreatMapFileName + ".CachedThreatMap");
+            CacheMaps.ThreatTupleMap = tcmap;
 
             Console.WriteLine("Finding Statics");
-            GroundActionFactory.DetectStatics(CacheMaps.PositiveCausalMap, CacheMaps.PosThreatMap);
+            GroundActionFactory.DetectStatics(CacheMaps.CausalTupleMap, CacheMaps.ThreatTupleMap);
             foreach (var stat in GroundActionFactory.Statics)
             {
                 Console.WriteLine(stat);

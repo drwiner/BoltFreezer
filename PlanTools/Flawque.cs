@@ -48,9 +48,9 @@ namespace BoltFreezer.PlanTools
             }
 
             // Use this value to keep track of amount of work.
-            if (HeuristicMethods.visitedPreds.ContainsKey(oc.precondition))
+            if (HeuristicMethods.visitedPreds.Get(oc.precondition.Sign).ContainsKey(oc.precondition))
             {
-                oc.addReuseHeuristic = HeuristicMethods.visitedPreds[oc.precondition];
+                oc.addReuseHeuristic = HeuristicMethods.visitedPreds.Get(oc.precondition.Sign)[oc.precondition];
             }
 
             // Calculate risks and cndts

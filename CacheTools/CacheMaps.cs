@@ -16,14 +16,14 @@ namespace BoltFreezer.PlanTools
         public static TupleMap<IPredicate, List<int>> CausalTupleMap = new TupleMap<IPredicate, List<int>>();
         public static TupleMap<IPredicate, List<int>> ThreatTupleMap = new TupleMap<IPredicate, List<int>>();
 
-        public static Dictionary<IPredicate, List<int>> PosCausalMap = new Dictionary<IPredicate, List<int>>();
-        public static Dictionary<IPredicate, List<int>> NegCausalMap = new Dictionary<IPredicate, List<int>>();
+        //public static Dictionary<IPredicate, List<int>> PosCausalMap = new Dictionary<IPredicate, List<int>>();
+        //public static Dictionary<IPredicate, List<int>> NegCausalMap = new Dictionary<IPredicate, List<int>>();
 
-        /// <summary>
-        /// Stored mappings for threat detection. Do Not Use unless you are serializing
-        /// </summary>
-        public static Dictionary<IPredicate, List<int>> PosThreatMap = new Dictionary<IPredicate, List<int>>();
-        public static Dictionary<IPredicate, List<int>> NegThreatMap = new Dictionary<IPredicate, List<int>>();
+        ///// <summary>
+        ///// Stored mappings for threat detection. Do Not Use unless you are serializing
+        ///// </summary>
+        //public static Dictionary<IPredicate, List<int>> PosThreatMap = new Dictionary<IPredicate, List<int>>();
+        //public static Dictionary<IPredicate, List<int>> NegThreatMap = new Dictionary<IPredicate, List<int>>();
 
         public static void Reset()
         {

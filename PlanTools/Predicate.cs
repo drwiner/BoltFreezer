@@ -10,14 +10,41 @@ using BoltFreezer.Interfaces;
 namespace BoltFreezer.PlanTools
 {
     [Serializable]
-    public class Predicate : IPredicate
+    public class Predicate : IPredicate, ITerm
     {
         protected string name;
         protected List<ITerm> terms;
         protected bool sign;
         protected Hashtable observing;
 
-        // Access the predicate's name.
+        protected string variable;
+
+        // Predicate can also be a term, allowing nested predicates
+        public string Variable
+        {
+            get  { return variable; }
+            set  { variable = value; }
+        }
+
+        public string Constant
+        {
+            get
+            {
+                return this.ToString();
+            }
+            set => throw new NotImplementedException();
+        
+        }
+
+        public string Type
+        {
+            get { return "predicate"; }
+            set => throw new NotImplementedException();
+        }
+
+        bool ITerm.Bound => true;
+
+// Access the predicate's name.
         public string Name
         {
             get { return name; }
@@ -310,7 +337,21 @@ namespace BoltFreezer.PlanTools
 
             List<ITerm> newTerms = new List<ITerm>();
             foreach (ITerm term in terms)
-                newTerms.Add(term.Clone() as Term);
+            {
+                
+                //var pred = term as IPredicate;
+                if (term is Predicate pred)
+                {
+                    var modTerm = pred.Clone() as IPredicate;
+                    newTerms.Add(modTerm as ITerm);
+                }
+                else
+                {
+                    newTerms.Add(term.Clone() as Term);
+                }
+            
+            }
+                //newTerms.Add(term.Clone() as Term);
 
             bool newSign = sign;
 
@@ -391,6 +432,19 @@ namespace BoltFreezer.PlanTools
 
                 return hash;
             }
+        }
+
+        public bool IsConsistent(ITerm other)
+        {
+            if(other is IPredicate otherTerm)
+            {
+                return IsConsistent(otherTerm);
+            }
+            if (other is Predicate otherPred)
+            {
+                return IsConsistent(otherPred as IPredicate);
+            }
+            return false;
         }
     }
 }
