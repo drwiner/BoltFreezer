@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BlockTest.cs" />
+    <Compile Include="TestUnityBlocksworld.cs" />
     <Compile Include="TravelTest.cs" />
     <Compile Include="TestAll.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

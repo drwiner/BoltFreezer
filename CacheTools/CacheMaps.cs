@@ -13,7 +13,7 @@ namespace BoltFreezer.PlanTools
         /// Stored mappings for repair applicability. Do Not Use unless you are serializing
         /// </summary>
         /// 
-        public static TupleMap<IPredicate, List<int>> CausalTupleMap = new TupleMap<IPredicate, List<int>>();
+        public static BoltFreezer.Utilities.TupleMap<IPredicate, List<int>> CausalTupleMap = new TupleMap<IPredicate, List<int>>();
         public static TupleMap<IPredicate, List<int>> ThreatTupleMap = new TupleMap<IPredicate, List<int>>();
 
         //public static Dictionary<IPredicate, List<int>> PosCausalMap = new Dictionary<IPredicate, List<int>>();

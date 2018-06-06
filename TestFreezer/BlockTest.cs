@@ -6,6 +6,7 @@ using BoltFreezer.Interfaces;
 using BoltFreezer.PlanSpace;
 using BoltFreezer.PlanTools;
 using BoltFreezer.Utilities;
+using PlanningNamespace;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -647,6 +648,50 @@ namespace TestFreezer
 
             return initPlan;
         }
+
+        public static IPlan ReadAndCompileWithScheduling(bool serializeIt, int whichProblem)
+        {
+            Parser.path = @"D:\documents\frostbow\boltfreezer\";
+
+            GroundActionFactory.Reset();
+            CacheMaps.Reset();
+
+            // Reads Domain and problem, also populates ground actions and caches causal maps
+            var pfreeze = ReadDomainAndProblem(serializeIt, whichProblem);
+
+            // Detecting static conditions
+            Console.WriteLine("Detecting Statics");
+            GroundActionFactory.DetectStatics(CacheMaps.CausalTupleMap, CacheMaps.ThreatTupleMap);
+
+            var initPlan = PlannerScheduler.CreateInitialPlan(pfreeze);
+
+            // Removing irrelevant actions
+            Console.WriteLine("Removing Irrelevant Actions");
+            var staticInitial = initPlan.Initial.Predicates.Where(state => GroundActionFactory.Statics.Contains(state));
+
+            // Every action that has No preconditions which are both static and not in staticInitial
+            var possibleActions = GroundActionFactory.GroundActions.Where(action => !action.Preconditions.Any(pre => GroundActionFactory.Statics.Contains(pre) && !staticInitial.Contains(pre)));
+            GroundActionFactory.GroundActions = possibleActions.ToList();
+            GroundActionFactory.GroundLibrary = possibleActions.ToDictionary(item => item.ID, item => item);
+
+            var CompositeMethods = ReadCompositeOperators();
+
+            // Composing HTNs
+            Console.WriteLine("Composing HTNs");
+            Composite.ComposeHTNs(2, CompositeMethods);
+
+            // Caching Causal Maps
+            Console.WriteLine("Caching Causal Maps");
+            CacheMaps.Reset();
+            CacheMaps.CacheLinks(GroundActionFactory.GroundActions);
+            CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, initPlan.Goal.Predicates);
+            CacheMaps.CacheAddReuseHeuristic(initPlan.Initial);
+            initPlan = PlannerScheduler.CreateInitialPlan(pfreeze);
+
+
+            return initPlan;
+        }
+
 
     }
 }

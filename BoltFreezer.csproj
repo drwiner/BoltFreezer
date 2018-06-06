@@ -80,6 +80,15 @@
     <Compile Include="Interfaces\POP\IFlawLibrary.cs" />
     <Compile Include="Interfaces\POP\ISelection.cs" />
     <Compile Include="PlanTools\Selection.cs" />
+    <Compile Include="Scheduling\ActionSeg.cs" />
+    <Compile Include="Scheduling\CamPlanStep.cs" />
+    <Compile Include="Scheduling\CamSchema.cs" />
+    <Compile Include="Scheduling\CompositeSchedule.cs" />
+    <Compile Include="Scheduling\CompositeSchedulePlanStep.cs" />
+    <Compile Include="Scheduling\PlannerScheduler.cs" />
+    <Compile Include="Scheduling\PlanSchedule.cs" />
+    <Compile Include="Scheduling\Schedule.cs" />
+    <Compile Include="Scheduling\TimelineDecomposition.cs" />
     <Compile Include="Utilities\BinaryHeap.cs" />
     <Compile Include="CacheTools\CacheMaps.cs" />
     <Compile Include="Enums\ActionType.cs" />
