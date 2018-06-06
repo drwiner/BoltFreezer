@@ -55,4 +55,13 @@ namespace BoltFreezer.Interfaces
 
         Object Template();
     }
+
+    public interface IAction : IOperator
+    {
+        // Actions have preconditions.
+        new List<Literal> Preconditions { get; set; }
+
+        // Actions have effects.
+        new List<Literal> Effects { get; set; }
+    }
 }
