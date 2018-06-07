@@ -163,7 +163,7 @@ namespace BoltFreezer.PlanTools
                     foreach (var hstep in heads)
                     {
 
-                        if (causeMap[tprecond].Contains(hstep.ID) || threatmap[tprecond].Contains(hstep.ID))
+                        if ((causeMap.ContainsKey(tprecond) && causeMap[tprecond].Contains(hstep.ID)) || (threatmap.ContainsKey(tprecond) && threatmap[tprecond].Contains(hstep.ID)))
                         {
                             // then this head step has already been checked for this condition
                             continue;

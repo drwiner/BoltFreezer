@@ -9,6 +9,7 @@ using System.Text;
 
 namespace BoltFreezer.PlanTools
 {
+    [Serializable]
     public class Composite : Operator, IComposite
     {
         protected IOperator initialStep;

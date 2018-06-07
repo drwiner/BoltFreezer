@@ -184,7 +184,7 @@ namespace BoltFreezer.PlanTools
             {
                 //var descendants = GetDescendants(elm);
                 var predecessors = edges.Where(e => e.Second.Equals(elm)).Select(e => e.First).ToList();
-                if (predecessors == null)
+                if (predecessors == null || predecessors.Count == 0)
                     continue;
 
                 if (AnyInDescendants(elm, predecessors))

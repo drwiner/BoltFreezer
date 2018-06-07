@@ -101,10 +101,11 @@ namespace BoltFreezer.PlanSpace
 
         public float Score(IPlan plan)
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            long before = watch.ElapsedMilliseconds;
+            var watch2 = System.Diagnostics.Stopwatch.StartNew();
+            long before = watch2.ElapsedMilliseconds;
             var answer =  selection.Evaluate(plan);
-            LogTime("evaluatePlanToInsert", watch.ElapsedMilliseconds - before);
+            LogTime("evaluatePlanToInsert", watch2.ElapsedMilliseconds - before);
+            LogTime("expanded", Expanded);
             return answer;
         }
 
