@@ -112,6 +112,55 @@ namespace BoltFreezer.PlanTools
             //    }
             //}
 
+            if (precondition.Name.Equals("obs") || precondition.Name.Equals("obs-starts"))
+            {
+                if (other.precondition.Name.Equals("obs") && other.precondition.Name.Equals("obs-starts"))
+                {
+                    if (risks > 0 && other.risks == 0)
+                    {
+                        return -1;
+                    }
+                    else if (other.risks > 0 && risks == 0)
+                    {
+                        return 1;
+                    }
+                    if (other.risks > 0 && risks == other.risks)
+                    {
+                        // if they are both unsafe, choose one with most work
+                        if (addReuseHeuristic > other.addReuseHeuristic)
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+
+                    // Local step's open conditions first. Lower planstep ID == added to plan earlier
+                    if (step.ID < other.step.ID)
+                    {
+                        return -1;
+                    }
+                    else if (step.ID > other.step.ID)
+                        return 1;
+
+                    // If they are of the same step, only then do we select between mos work...
+                    if (addReuseHeuristic > other.addReuseHeuristic)
+                    {
+                        return -1;
+                    }
+                    else if (addReuseHeuristic < other.addReuseHeuristic)
+                    {
+                        return 1;
+                    }
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+
             // MW-Loc-Conf = {threats} LIFO / {unsafe} MW_add / {local} MW_add
 
             // if one is unsafe and the other is not.

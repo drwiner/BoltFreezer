@@ -27,4 +27,5 @@ D:\Documents\Frostbow\boltfreezer\TestFreezer\bin\x64\Debug\BoltFreezer.dll.conf
 D:\Documents\Frostbow\boltfreezer\TestFreezer\obj\x64\Debug\TestFreezer.csproj.CoreCompileInputs.cache
 D:\Documents\Frostbow\boltfreezer\TestFreezer\obj\x64\Debug\TestFreezer.exe
 D:\Documents\Frostbow\boltfreezer\TestFreezer\obj\x64\Debug\TestFreezer.pdb
-D:\Documents\Frostbow\boltfreezer\TestFreezer\obj\x64\Debug\TestFreezer.csprojResolveAssemblyReference.cache
+D:\Documents\Frostbow\boltfreezer\TestFreezer\obj\x64\Debug\TestFreezer.csprojAssemblyReference.cache
+D:\Documents\Frostbow\boltfreezer\TestFreezer\obj\x64\Debug\TestFreezer.csproj.CopyComplete

@@ -96,7 +96,7 @@ namespace BoltFreezer.PlanSpace
                 Search.Frontier.Enqueue(plan, Score(plan));
                 opened++;
             }
-            LogTime("checkOrderings", watch.ElapsedMilliseconds - before);
+            //LogTime("checkOrderings", watch.ElapsedMilliseconds - before);
         }
 
         public float Score(IPlan plan)

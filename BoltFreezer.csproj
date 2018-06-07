@@ -69,8 +69,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheTools\ProblemFreezer.cs" />
+    <Compile Include="Camera\ActionSeg.cs" />
+    <Compile Include="Camera\CamSchema.cs" />
+    <Compile Include="Camera\CamTargetSchema.cs" />
     <Compile Include="DecompTools\Constraints.cs" />
     <Compile Include="DecompTools\Decomposition.cs" />
+    <Compile Include="DecompTools\TimelineDecomposition.cs" />
+    <Compile Include="Camera\CameraEnums\Framing.cs" />
+    <Compile Include="Camera\CameraEnums\Hangle.cs" />
+    <Compile Include="Camera\CameraEnums\Orient.cs" />
+    <Compile Include="Camera\CameraEnums\Vangle.cs" />
     <Compile Include="Interfaces\DTN\IConstraint.cs" />
     <Compile Include="Interfaces\DTN\IDecomposition.cs" />
     <Compile Include="Interfaces\DTN\ITask.cs" />
@@ -79,7 +87,13 @@
     <Compile Include="FileIO\SimpleJson.cs" />
     <Compile Include="Interfaces\POP\IFlawLibrary.cs" />
     <Compile Include="Interfaces\POP\ISelection.cs" />
+    <Compile Include="Camera\CamPlanStep.cs" />
     <Compile Include="PlanTools\Selection.cs" />
+    <Compile Include="Scheduling\CompositeSchedule.cs" />
+    <Compile Include="Scheduling\CompositeSchedulePlanStep.cs" />
+    <Compile Include="Scheduling\PlannerScheduler.cs" />
+    <Compile Include="Scheduling\PlanSchedule.cs" />
+    <Compile Include="Scheduling\Schedule.cs" />
     <Compile Include="Utilities\BinaryHeap.cs" />
     <Compile Include="CacheTools\CacheMaps.cs" />
     <Compile Include="Enums\ActionType.cs" />
