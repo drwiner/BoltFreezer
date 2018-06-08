@@ -327,6 +327,10 @@ namespace BoltFreezer.PlanTools
                 }
 
                 var newclink = new CausalLink<IPlanStep>(clink.Predicate, head, tail);
+                if (tail.OpenConditions.Contains(clink.Predicate))
+                {
+                    tail.OpenConditions.Remove(clink.Predicate);
+                }
                 CausalLinks.Add(newclink);
                 Orderings.Insert(head, tail);
 
@@ -446,13 +450,18 @@ namespace BoltFreezer.PlanTools
 
         public void DetectThreats(IPlanStep possibleThreat)
         {
+            ICompositePlanStep possibleThreatComposite = new CompositePlanStep();
+            if (possibleThreat.Height > 0)
+            {
+                possibleThreatComposite = possibleThreat as ICompositePlanStep;
+            }
+
             foreach (var clink in causalLinks)
             {
 
                 if (possibleThreat.Height > 0)
                 {
-                    var possibleThreatComposite = possibleThreat as ICompositePlanStep;
-
+                    
                     if (possibleThreatComposite.SubSteps.Contains(clink.Head) || possibleThreatComposite.SubSteps.Contains(clink.Tail))
                     {
                         continue;
@@ -462,11 +471,11 @@ namespace BoltFreezer.PlanTools
 
                     var threatInit = possibleThreatComposite.InitialStep;
                     
-                    if (Orderings.IsPath(clink.Tail as IPlanStep, threatInit))
+                    if (Orderings.IsPath(clink.Tail, threatInit))
                     {
                         continue;
                     }
-                    if (Orderings.IsPath(threatGoal, clink.Head as IPlanStep))
+                    if (Orderings.IsPath(threatGoal, clink.Head))
                     {
                         continue;
                     }
@@ -488,11 +497,11 @@ namespace BoltFreezer.PlanTools
                         continue;
                     }
 
-                    if (Orderings.IsPath(clink.Tail as IPlanStep, possibleThreat))
+                    if (Orderings.IsPath(clink.Tail, possibleThreat))
                     {
                         continue;
                     }
-                    if (Orderings.IsPath(possibleThreat, clink.Head as IPlanStep))
+                    if (Orderings.IsPath(possibleThreat, clink.Head))
                     {
                         continue;
                     }

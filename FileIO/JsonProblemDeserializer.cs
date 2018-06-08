@@ -298,7 +298,7 @@ namespace BoltFreezer.FileIO
                         }
                     }
 
-                    action = new Composite(action, init, goal, subSteps, subOrderingTuples, subLinks);
+                    action = new Composite(action, new PlanStep(init), new PlanStep(goal), subSteps, subOrderingTuples, subLinks);
 
                 }
 

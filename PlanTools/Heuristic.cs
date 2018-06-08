@@ -73,6 +73,9 @@ namespace BoltFreezer.PlanTools
         // h^r_add(pi) = sum_(oc in plan) 0 if exists a step possibly preceding oc.step and h_add(oc.precondition) otherwise.
         public static int AddReuseHeuristic(IPlan plan)
         {
+            Logger.LogThingToType("AddReuse"," " , "HeuristicNew");
+            Logger.LogThingToType("AddReuse", " ", "HeuristicOld");
+
             var tuplemapping = new TupleMap<IPredicate, List<IPlanStep>>();
            // var posmapping = new Dictionary<IPredicate, List<int>>();
             //var negmapping = new Dictionary<IPredicate, List<int>>();
@@ -81,6 +84,7 @@ namespace BoltFreezer.PlanTools
 
             if (plan.Flaws.OpenConditions.Count > plan.Steps.Count)
             {
+                var beforePreamble = Logger.Log();
                 foreach(var existingStep in plan.Steps)
                 {
                     if (existingStep.Height > 0)
@@ -102,8 +106,11 @@ namespace BoltFreezer.PlanTools
                     }
                 }
 
+                Logger.LogTimeToType("collectStepsPreamble", Logger.Log() - beforePreamble, "HeuristicNew");
+                
                 foreach (var oc in plan.Flaws.OpenConditions)
                 {
+                    var beforeEachOc = Logger.Log();
                     var existsA = false;
                     if (effList.Contains(oc.precondition))
                     {
@@ -128,6 +135,7 @@ namespace BoltFreezer.PlanTools
 
                         throw new System.Exception("visitedPreds does not contain " + oc.precondition.ToString());
                     }
+                    Logger.LogTimeToType("EachOC", Logger.Log() - beforeEachOc, "HeuristicNew");
                 }
 
                 return sumo;
@@ -139,6 +147,7 @@ namespace BoltFreezer.PlanTools
             foreach (var oc in plan.Flaws.OpenConditions)
             {
 
+                var wayBefore = Logger.Log();
                 // Does there exist a step in the plan that can establish this needed precondition?
                 var existsA = false;
                 foreach (var existingStep in plan.Steps)
@@ -147,12 +156,13 @@ namespace BoltFreezer.PlanTools
                     if (existingStep.Height > 0)
                         continue;
 
-
+                    var before = Logger.Log();
                     if (CacheMaps.IsCndt(oc.precondition, existingStep))
                     {
                         existsA = true;
                         break;
                     }
+                    Logger.LogTimeToType("IsCndt", Logger.Log() - before, "HeuristicOld");
 
                     if (plan.Orderings.IsPath(oc.step, existingStep))
                         continue;
@@ -170,6 +180,8 @@ namespace BoltFreezer.PlanTools
 
                     throw new System.Exception("visitedPreds does not contain " + oc.precondition.ToString());
                 }
+
+                Logger.LogTimeToType("EachOC", Logger.Log() - wayBefore, "HeuristicOld");
             }
             return sumo;
         }

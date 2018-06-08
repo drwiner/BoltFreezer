@@ -56,7 +56,7 @@ namespace BoltFreezer.Scheduling
             var IDMap = new Dictionary<int, IPlanStep>();
 
             // Clone, Add, and Order Initial step
-            var dummyInit = newStep.InitialStep.Clone() as IPlanStep;
+            var dummyInit = new PlanStep(newStep.InitialStep) as IPlanStep;
             dummyInit.Depth = newStep.Depth;
             IDMap[newStep.InitialStep.ID] = dummyInit;
             Steps.Add(dummyInit);
@@ -64,7 +64,7 @@ namespace BoltFreezer.Scheduling
             Orderings.Insert(dummyInit, GoalStep);
 
             // Clone, Add, and order Goal step
-            var dummyGoal = newStep.GoalStep.Clone() as IPlanStep;
+            var dummyGoal = new PlanStep(newStep.GoalStep) as IPlanStep;
             dummyGoal.Depth = newStep.Depth;
             dummyGoal.InitCndt = dummyInit;
             InsertPrimitiveSubstep(dummyGoal, dummyInit.Effects, true);

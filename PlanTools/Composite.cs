@@ -12,8 +12,8 @@ namespace BoltFreezer.PlanTools
     [Serializable]
     public class Composite : Operator, IComposite
     {
-        protected IOperator initialStep;
-        protected IOperator goalStep;
+        protected IPlanStep initialStep;
+        protected IPlanStep goalStep;
         protected List<Tuple<IPlanStep, IPlanStep>> subOrderings;
         protected List<CausalLink<IPlanStep>> subLinks;
         protected List<IPlanStep> subSteps;
@@ -25,12 +25,12 @@ namespace BoltFreezer.PlanTools
             set { primaryEffects = value; }
         }
 
-        public IOperator InitialStep {
+        public IPlanStep InitialStep {
             get { return initialStep; }
             set { initialStep = value; }
         }
 
-        public IOperator GoalStep
+        public IPlanStep GoalStep
         {
             get { return goalStep; }
             set { goalStep = value; }
@@ -59,11 +59,11 @@ namespace BoltFreezer.PlanTools
             subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
             subLinks = new List<CausalLink<IPlanStep>>();
             subSteps = new List<IPlanStep>();
-            initialStep = new Operator();
-            goalStep = new Operator();
+            initialStep = new PlanStep();
+            goalStep = new PlanStep();
         }
 
-        public Composite(string name, List<ITerm> terms, IOperator init, IOperator goal, List<IPredicate> Preconditions, List<IPredicate> Effects, int ID) 
+        public Composite(string name, List<ITerm> terms, IPlanStep init, IPlanStep goal, List<IPredicate> Preconditions, List<IPredicate> Effects, int ID) 
             : base(name, terms, new Hashtable(), Preconditions, Effects, ID)
         {
             subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
@@ -73,7 +73,7 @@ namespace BoltFreezer.PlanTools
             goalStep = goal;
         }
 
-        public Composite(IOperator core, IOperator init, IOperator goal, List<IPlanStep> substeps, List<Tuple<IPlanStep, IPlanStep>> suborderings, List<CausalLink<IPlanStep>> sublinks)
+        public Composite(IOperator core, IPlanStep init, IPlanStep goal, List<IPlanStep> substeps, List<Tuple<IPlanStep, IPlanStep>> suborderings, List<CausalLink<IPlanStep>> sublinks)
             : base(core.Name, core.Terms, new Hashtable(), core.Preconditions, core.Effects, core.ID)
         {
             subOrderings = suborderings;
@@ -89,8 +89,8 @@ namespace BoltFreezer.PlanTools
             subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
             subLinks = new List<CausalLink<IPlanStep>>();
             subSteps = new List<IPlanStep>();
-            initialStep = new Operator("DummyInit", new List<IPredicate>(), core.Preconditions);
-            goalStep = new Operator("DummyGoal", core.Effects, new List<IPredicate>());
+            initialStep = new PlanStep(new Operator("DummyInit", new List<IPredicate>(), core.Preconditions));
+            goalStep = new PlanStep(new Operator("DummyGoal", core.Effects, new List<IPredicate>()));
             Height = core.Height;
             NonEqualities = core.NonEqualities;
         }
@@ -348,7 +348,7 @@ namespace BoltFreezer.PlanTools
             }
 
             var newBase = new Operator(base.Predicate.Clone() as Predicate, newPreconds, newEffects);
-            return new Composite(newBase, InitialStep.Clone() as IOperator, GoalStep.Clone() as IOperator, SubSteps, SubOrderings, SubLinks)
+            return new Composite(newBase, InitialStep.Clone() as IPlanStep, GoalStep.Clone() as IPlanStep, SubSteps, SubOrderings, SubLinks)
             {
                 Height = this.Height,
                 NonEqualities = this.NonEqualities
@@ -358,8 +358,8 @@ namespace BoltFreezer.PlanTools
         public new Object Clone()
         {
             var op = base.Clone() as IOperator;
-            var init = InitialStep.Clone() as IOperator;
-            var goal = GoalStep.Clone() as IOperator;
+            var init = InitialStep.Clone() as IPlanStep;
+            var goal = GoalStep.Clone() as IPlanStep;
 
             return new Composite(op, init, goal, SubSteps, SubOrderings, SubLinks)
             {

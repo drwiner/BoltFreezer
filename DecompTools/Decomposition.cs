@@ -11,8 +11,8 @@ namespace BoltFreezer.DecompTools
 {
     public class Decomposition : Operator, IComposite
     {
-        protected IOperator initialStep;
-        protected IOperator goalStep;
+        protected IPlanStep initialStep;
+        protected IPlanStep goalStep;
         protected List<Tuple<IPlanStep, IPlanStep>> subOrderings;
         protected List<CausalLink<IPlanStep>> subLinks;
         protected List<IPlanStep> subSteps;
@@ -24,13 +24,13 @@ namespace BoltFreezer.DecompTools
             set { literals = value; }
         }
 
-        public IOperator InitialStep
+        public IPlanStep InitialStep
         {
             get { return initialStep; }
             set { initialStep = value; }
         }
 
-        public IOperator GoalStep
+        public IPlanStep GoalStep
         {
             get { return goalStep; }
             set { goalStep = value; }
@@ -59,8 +59,8 @@ namespace BoltFreezer.DecompTools
             subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
             subLinks = new List<CausalLink<IPlanStep>>();
             subSteps = new List<IPlanStep>();
-            initialStep = new Operator();
-            goalStep = new Operator();
+            initialStep = new PlanStep();
+            goalStep = new PlanStep();
             literals = new List<IPredicate>();
         }
 
@@ -70,8 +70,8 @@ namespace BoltFreezer.DecompTools
             subOrderings = new List<Tuple<IPlanStep, IPlanStep>>();
             subLinks = new List<CausalLink<IPlanStep>>();
             subSteps = new List<IPlanStep>();
-            initialStep = new Operator();
-            goalStep = new Operator();
+            initialStep = new PlanStep(init);
+            goalStep = new PlanStep(dummy);
         }
 
         public Decomposition(IOperator core, List<IPredicate> literals, List<IPlanStep> substeps, List<Tuple<IPlanStep, IPlanStep>> suborderings, List<CausalLink<IPlanStep>> sublinks)
@@ -81,8 +81,19 @@ namespace BoltFreezer.DecompTools
             subOrderings = suborderings;
             subLinks = sublinks;
             subSteps = substeps;
-            initialStep = new Operator();
-            goalStep = new Operator();
+            initialStep = new PlanStep();
+            goalStep = new PlanStep();
+        }
+
+        public Decomposition(IOperator core, List<IPredicate> literals, IPlanStep init, IPlanStep goal, List<IPlanStep> substeps, List<Tuple<IPlanStep, IPlanStep>> suborderings, List<CausalLink<IPlanStep>> sublinks)
+            : base(core.Name, core.Terms, new Hashtable(), core.Preconditions, core.Effects, core.ID)
+        {
+            this.literals = literals;
+            subOrderings = suborderings;
+            subLinks = sublinks;
+            subSteps = substeps;
+            initialStep = init;
+            goalStep = goal;
         }
 
 
@@ -376,14 +387,19 @@ namespace BoltFreezer.DecompTools
         {
             var op = base.Clone() as IOperator;
             var newSubsteps = new List<IPlanStep>();
+
             foreach (var substep in SubSteps)
             {
                 var newsubstep = substep.Clone() as IPlanStep;
                 newsubstep.Action = newsubstep.Action.Clone() as Operator;
                 newSubsteps.Add(newsubstep);
             }
+
+          //  var newinitial = InitialStep.Clone() as IPlanStep;
+            //newinitial.Action = InitialStep.Action.Clone() as Operator;
             // do same for literals
-            return new Decomposition(op, Literals, newSubsteps, SubOrderings, SubLinks);
+            return new Decomposition(op, Literals, InitialStep.Clone() as IPlanStep, GoalStep.Clone() as IPlanStep, newSubsteps, SubOrderings, SubLinks);
+           // return new Decomposition(op, Literals, newSubsteps, SubOrderings, SubLinks);
         }
 
     }

@@ -31,5 +31,14 @@ namespace BoltFreezer.Utilities
             return NegMap;
         }
 
+        public void AddKeyIfMissing(bool sign, T1 key, T2 emptyValue)
+        {
+            var whichDictionary = Get(sign);
+            if (!whichDictionary.ContainsKey(key))
+            {
+                whichDictionary[key] = emptyValue;
+            }
+        }
+
     }
 }

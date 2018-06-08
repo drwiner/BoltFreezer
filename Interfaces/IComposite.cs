@@ -9,8 +9,8 @@ namespace BoltFreezer.Interfaces
 {
     public interface IComposite : IOperator
     {
-        IOperator InitialStep { get; set; }
-        IOperator GoalStep { get; set; }
+        IPlanStep InitialStep { get; set; }
+        IPlanStep GoalStep { get; set; }
 
         // Sub-plan <S, O, L> must be plan steps to distinguish (labels) and fulfill open conditions
         List<IPlanStep> SubSteps { get; set; }

@@ -57,8 +57,8 @@ namespace BoltFreezer.PlanTools
         public CompositePlanStep(IComposite comp) : base(comp as IOperator)
         {
             compositeAction = comp;
-            initialStep = new PlanStep(comp.InitialStep);
-            goalStep = new PlanStep(comp.GoalStep);
+            initialStep = comp.InitialStep;
+            goalStep = comp.GoalStep;
 
             // Do not bother changing the PlanStep skin of these, as this has to happen during insertion
             subSteps = comp.SubSteps;
@@ -69,8 +69,8 @@ namespace BoltFreezer.PlanTools
         public CompositePlanStep(ICompositePlanStep comp) : base(comp as IPlanStep)
         {
             compositeAction = comp.Action as IComposite;
-            initialStep = new PlanStep(comp.InitialStep);
-            goalStep = new PlanStep(comp.GoalStep);
+            initialStep = comp.InitialStep;
+            goalStep = comp.GoalStep;
 
             // Do not bother changing the PlanStep skin of these, as this has to happen during insertion
             subSteps = comp.SubSteps;
@@ -106,8 +106,8 @@ namespace BoltFreezer.PlanTools
             compositeAction = ps.Action as Composite;
 
             // This is the moment the initial step and goal step are instantiated. They will be cloned before inserted
-            initialStep = new PlanStep(compositeAction.InitialStep);
-            goalStep = new PlanStep(compositeAction.GoalStep);
+            initialStep = compositeAction.InitialStep;
+            goalStep = compositeAction.GoalStep;
 
             // Sub-steps are to be newly instantiated later during inset decomp. 
             subSteps = compositeAction.SubSteps;
