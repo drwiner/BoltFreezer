@@ -185,30 +185,49 @@ namespace BoltFreezer.PlanSpace
 
                 if (step.Height > 0)
                 {
+                    if (CacheMaps.IsCndt(oc.precondition, step))
+                    {
+
+                        var stepAsComposite = step as CompositePlanStep;
+
+                        if (stepAsComposite.SubSteps.Contains(oc.step))
+                        {
+                            continue;
+                        }
+                        // before adding a repair, check if there is a path.
+                        if (plan.Orderings.IsPath(oc.step, stepAsComposite.GoalStep))
+                            continue;
+
+                        if (plan.Orderings.IsPath(oc.step, stepAsComposite.InitialStep))
+                            continue;
+
+                        var planClone = plan.Clone() as IPlan;
+                        planClone.Repair(oc, stepAsComposite.GoalStep);
+                        Insert(planClone);
+                    }
                     continue;
                 }
-
-                if (step == oc.step.InitCndt && oc.hasDummyInit)
+                else
                 {
-                    var planClone = plan.Clone() as IPlan;
-                    planClone.Repair(oc, step);
-                    Insert(planClone);
-                    continue;
-                }
 
-                //if (step.Effects.Contains(oc.precondition))
-                //{
-                //    Console.Write("here");
-                //}
-
-                if (CacheMaps.IsCndt(oc.precondition, step)){
-                    // before adding a repair, check if there is a path.
-                    if (plan.Orderings.IsPath(oc.step, step))
+                    if (step == oc.step.InitCndt && oc.hasDummyInit)
+                    {
+                        var planClone = plan.Clone() as IPlan;
+                        planClone.Repair(oc, step);
+                        Insert(planClone);
                         continue;
-                    
-                    var planClone = plan.Clone() as IPlan;
-                    planClone.Repair(oc, step);
-                    Insert(planClone);
+                    }
+
+                    if (CacheMaps.IsCndt(oc.precondition, step))
+                    {
+                        // before adding a repair, check if there is a path.
+                        if (plan.Orderings.IsPath(oc.step, step))
+                            continue;
+
+                        var planClone = plan.Clone() as IPlan;
+                        planClone.Repair(oc, step);
+                        Insert(planClone);
+                    }
                 }
             }
         }

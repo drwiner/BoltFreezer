@@ -68,7 +68,7 @@ namespace BoltFreezer.PlanTools
                 }
             }
 
-            return plan.Steps.Count - (3 * plan.Decomps) + HMethod.Heuristic(plan);
+            return plan.Steps.Count - (2 * plan.Decomps) + HMethod.Heuristic(plan);
         }
     }
 

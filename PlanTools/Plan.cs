@@ -470,7 +470,6 @@ namespace BoltFreezer.PlanTools
                     var threatGoal = possibleThreatComposite.GoalStep;
 
                     var threatInit = possibleThreatComposite.InitialStep;
-                    
                     if (Orderings.IsPath(clink.Tail, threatInit))
                     {
                         continue;
@@ -478,6 +477,17 @@ namespace BoltFreezer.PlanTools
                     if (Orderings.IsPath(threatGoal, clink.Head))
                     {
                         continue;
+                    }
+
+                    foreach (var precon in threatGoal.Preconditions)
+                    {
+                        if (precon.Equals(clink.Predicate.GetReversed()))
+                        {
+                            // then this composite step is a threat.
+                            Flaws.Add(new ThreatenedLinkFlaw(clink, threatInit));
+                            Flaws.Add(new ThreatenedLinkFlaw(clink, threatGoal));
+                            break;
+                        }
                     }
 
                     //if (CacheMaps.IsThreat(clink.Predicate, possibleThreat))
@@ -488,7 +498,7 @@ namespace BoltFreezer.PlanTools
                     //}
 
                     // Now we need to consider all sub-steps since any one of them could interfere.
-                    DecomposeThreat(clink, possibleThreatComposite);
+                    //DecomposeThreat(clink, possibleThreatComposite);
                 }
                 else
                 {
@@ -646,10 +656,7 @@ namespace BoltFreezer.PlanTools
 
             foreach (var step in Steps)
             {
-                if (step.Height > 0)
-                {
-                    continue;
-                }
+                
                 if (step.ID == repairStep.ID || step.ID == needStep.ID)
                 {
                     continue;
@@ -658,17 +665,54 @@ namespace BoltFreezer.PlanTools
                 {
                     continue;
                 }
-                // step is a threat to need precondition
-                if (Orderings.IsPath(needStep, step))
+
+                if (step.Height > 0)
                 {
-                    continue;
-                }
-                if (Orderings.IsPath(step, repairStep.InitialStep as IPlanStep))
-                {
-                    continue;
+
+                    // we need to check that this step's goal step
+                    var stepAsComp = step as CompositePlanStep;
+
+                    if (stepAsComp.SubSteps.Contains(clink.Head) || stepAsComp.SubSteps.Contains(clink.Tail))
+                    {
+                        continue;
+                        // replace this with... is Decompositional Link-based path from step to clink.Head or clink.Tail
+                    }
+
+                    var compGoal = stepAsComp.GoalStep;
+                    var compInit = stepAsComp.InitialStep;
+
+                    if (clink.Head.ID == compInit.ID || clink.Tail.ID == compInit.ID || clink.Head.ID == compGoal.ID || clink.Tail.ID == compGoal.ID)
+                    {
+                        continue;
+                    }
+
+                    // step is a threat to need precondition
+                    if (Orderings.IsPath(needStep, compInit))
+                    {
+                        continue;
+                    }
+                    if (Orderings.IsPath(compGoal, repairStep.InitialStep as IPlanStep))
+                    {
+                        continue;
+                    }
+                    Flaws.Add(new ThreatenedLinkFlaw(clink, compGoal));
+                    Flaws.Add(new ThreatenedLinkFlaw(clink, compInit));
                 }
 
-                Flaws.Add(new ThreatenedLinkFlaw(clink, step));
+                else
+                {
+                    // step is a threat to need precondition
+                    if (Orderings.IsPath(needStep, step))
+                    {
+                        continue;
+                    }
+                    if (Orderings.IsPath(step, repairStep.InitialStep as IPlanStep))
+                    {
+                        continue;
+                    }
+                    Flaws.Add(new ThreatenedLinkFlaw(clink, step));
+                }
+                
             }
         }
 

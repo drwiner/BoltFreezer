@@ -71,13 +71,15 @@ namespace BoltFreezer.Scheduling
             IDMap[newStep.GoalStep.ID] = dummyGoal;
             Orderings.Insert(dummyInit, dummyGoal);
 
-
-            var newStepCopy = new PlanStep(new Operator(newStep.Action.Predicate as Predicate, new List<IPredicate>(), new List<IPredicate>()));
+            // needs same operator ID as newStep, in order to still be referenced for primary-effect-based open conditions
+            var newStepCopy = new CompositeSchedulePlanStep(new Operator(newStep.Action.Predicate.Name, newStep.Action.Terms, new Hashtable(), new List<IPredicate>(), new List<IPredicate>(), newStep.Action.ID));
             Steps.Add(newStepCopy);
             //  orderings.Insert(dummyInit, newStepCopy);
             //  orderings.Insert(newStepCopy, dummyGoal);
             newStepCopy.Height = newStep.Height;
             var newSubSteps = new List<IPlanStep>();
+            newStepCopy.InitialStep = dummyInit;
+            newStepCopy.GoalStep = dummyGoal;
 
             foreach (var substep in newStep.SubSteps)
             {
@@ -238,7 +240,14 @@ namespace BoltFreezer.Scheduling
 
             // This is needed because we'll check if these substeps are threatening links
             newStep.SubSteps = newSubSteps;
+            newStepCopy.SubSteps = newSubSteps;
+            // inital
+            
+
             newStep.InitialStep = dummyInit;
+
+            // goal
+            
             newStep.GoalStep = dummyGoal;
 
             foreach (var pre in newStep.OpenConditions)
@@ -370,7 +379,10 @@ namespace BoltFreezer.Scheduling
         public new System.Object Clone()
         {
             var basePlanClone = base.Clone() as Plan;
-            var newPlan = new PlanSchedule(basePlanClone, new HashSet<Tuple<IPlanStep, IPlanStep>>(Cntgs.edges));
+            var newPlan = new PlanSchedule(basePlanClone, new HashSet<Tuple<IPlanStep, IPlanStep>>(Cntgs.edges))
+            {
+                Decomps = Decomps
+            };
             return newPlan;
         }
     }

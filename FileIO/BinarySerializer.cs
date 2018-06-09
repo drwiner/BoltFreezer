@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 
@@ -30,7 +32,7 @@ namespace BoltFreezer.FileIO
             }
             return default(T);
         }
- 
+
 
         public static Stream WaitForFile(string fullPath, FileMode mode)
         {
