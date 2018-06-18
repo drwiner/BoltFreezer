@@ -70,6 +70,7 @@
   <ItemGroup>
     <Compile Include="CacheTools\ProblemFreezer.cs" />
     <Compile Include="Camera\ActionSeg.cs" />
+    <Compile Include="Camera\CameraEnums\Directive.cs" />
     <Compile Include="Camera\CamSchema.cs" />
     <Compile Include="Camera\CamTargetSchema.cs" />
     <Compile Include="DecompTools\Constraints.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="PlanTools\Selection.cs" />
     <Compile Include="Scheduling\CompositeSchedule.cs" />
     <Compile Include="Scheduling\CompositeSchedulePlanStep.cs" />
+    <Compile Include="Scheduling\MergeManager.cs" />
     <Compile Include="Scheduling\PlannerScheduler.cs" />
     <Compile Include="Scheduling\PlanSchedule.cs" />
     <Compile Include="Scheduling\Schedule.cs" />

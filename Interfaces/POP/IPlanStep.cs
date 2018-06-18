@@ -16,6 +16,10 @@ namespace BoltFreezer.Interfaces
 
         IPlanStep InitCndt { get; set; }
 
+        IPlanStep GoalCndt { get; set; }
+
+        IPlanStep Parent { get; set; }
+
         int Depth { get; set; }
 
         // Actions keep track of open preconditions

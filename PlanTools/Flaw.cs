@@ -112,9 +112,9 @@ namespace BoltFreezer.PlanTools
             //    }
             //}
 
-            if (precondition.Name.Equals("obs") || precondition.Name.Equals("obs-starts"))
+            if (precondition.Name.Equals("obss") || precondition.Name.Equals("obs-starts"))
             {
-                if (other.precondition.Name.Equals("obs") || other.precondition.Name.Equals("obs-starts"))
+                if (other.precondition.Name.Equals("obss") || other.precondition.Name.Equals("obs-starts"))
                 {
                     if (risks > 0 && other.risks == 0)
                     {

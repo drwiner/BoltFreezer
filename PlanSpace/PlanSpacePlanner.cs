@@ -93,7 +93,13 @@ namespace BoltFreezer.PlanSpace
                 //}
 
                 //Visited.Add(plan as Plan);
-                Search.Frontier.Enqueue(plan, Score(plan));
+                var score = Score(plan);
+                if (score > 200)
+                {
+                    // reduce size of frontier
+                    return;
+                }
+                Search.Frontier.Enqueue(plan, score);
                 opened++;
             }
             //LogTime("checkOrderings", watch.ElapsedMilliseconds - before);
@@ -237,23 +243,43 @@ namespace BoltFreezer.PlanSpace
             
             var cl = tclf.causallink;
             var threat = tclf.threatener;
-
-            // Promote
-            if (!plan.Orderings.IsPath(threat, cl.Tail))
+            if (threat is CompositePlanStep cps)
             {
-                var promote = plan.Clone() as IPlan;
-                promote.Orderings.Insert(cl.Tail, threat);
-                Insert(promote);
+                if (!plan.Orderings.IsPath(cps.InitialStep, cl.Tail))
+                {
+                    var promote = plan.Clone() as IPlan;
+                    promote.ID += "p";
+                    promote.Orderings.Insert(cl.Tail, cps.InitialStep);
+                    Insert(promote);
+                }
+                if (!plan.Orderings.IsPath(cl.Head, cps.GoalStep))
+                {
+                    var demote = plan.Clone() as IPlan;
+                    demote.ID += "d";
+                    demote.Orderings.Insert(cps.GoalStep, cl.Head);
+                    Insert(demote);
+                }
             }
-
-            // Demote
-            if (!plan.Orderings.IsPath(cl.Head, threat))
+            else
             {
-                var demote = plan.Clone() as IPlan;
-                demote.Orderings.Insert(threat, cl.Head);
-                Insert(demote);
-            }
+                // Promote
+                if (!plan.Orderings.IsPath(threat, cl.Tail))
+                {
+                    var promote = plan.Clone() as IPlan;
+                    promote.ID += "p";
+                    promote.Orderings.Insert(cl.Tail, threat);
+                    Insert(promote);
+                }
 
+                // Demote
+                if (!plan.Orderings.IsPath(cl.Head, threat))
+                {
+                    var demote = plan.Clone() as IPlan;
+                    demote.ID += "d";
+                    demote.Orderings.Insert(threat, cl.Head);
+                    Insert(demote);
+                }
+            }
         }
 
         public void WriteTimesToFile()

@@ -247,7 +247,7 @@ namespace TestFreezer
 
             CacheMaps.CacheGoalLinks(GroundActionFactory.GroundActions, initPlan.Goal.Predicates);
 
-            GroundActionFactory.DetectStatics(CacheMaps.CausalTupleMap, CacheMaps.ThreatTupleMap);
+            GroundActionFactory.DetectStatics();
 
             return initPlan;
         }

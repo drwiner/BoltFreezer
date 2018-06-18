@@ -7,6 +7,7 @@ using System.Text;
 
 namespace BoltFreezer.PlanTools
 {
+    [Serializable]
     public class CompositePlanStep : PlanStep, ICompositePlanStep
     {
         protected IComposite compositeAction;
@@ -90,6 +91,7 @@ namespace BoltFreezer.PlanTools
             subLinks = clinks;
         }
 
+
         public CompositePlanStep(ICompositePlanStep comp, List<IPredicate> openconditions, IPlanStep init, IPlanStep goal, int ID) : base(comp as IPlanStep, openconditions, ID)
         {
             compositeAction = comp.Action as IComposite;
@@ -99,6 +101,7 @@ namespace BoltFreezer.PlanTools
             subOrderings = comp.SubOrderings;
             subLinks = comp.SubLinks;
         }
+
 
         // Declaring new Composite Plan Step from sub-step, base(ps) will assign new ID to plan step.
         public CompositePlanStep(IPlanStep ps) : base(ps)
@@ -117,7 +120,14 @@ namespace BoltFreezer.PlanTools
 
         public new Object Clone()
         {
-            return new CompositePlanStep(CompositeAction, OpenConditions, InitialStep, GoalStep, SubSteps, SubOrderings, SubLinks, ID)
+            var newSubStepContainer = new List<IPlanStep>();
+            foreach(var step in SubSteps)
+            {
+                newSubStepContainer.Add(step);
+            }
+
+            return new CompositePlanStep(CompositeAction, OpenConditions, InitialStep.Clone() as IPlanStep, GoalStep.Clone() as IPlanStep, 
+                newSubStepContainer, new HashSet<Tuple<IPlanStep, IPlanStep>>(SubOrderings).ToList(), new HashSet<CausalLink<IPlanStep>>(SubLinks).ToList(), ID)
             {
                 Depth = base.Depth
             };

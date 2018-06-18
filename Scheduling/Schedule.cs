@@ -1,4 +1,5 @@
-﻿using BoltFreezer.PlanTools;
+﻿using BoltFreezer.Interfaces;
+using BoltFreezer.PlanTools;
 using BoltFreezer.Utilities;
 using System;
 using System.Collections;
@@ -7,31 +8,31 @@ using System.Collections.Generic;
 namespace BoltFreezer.Scheduling
 {
     [Serializable]
-    public class Schedule<T> : Graph<T>
+    public class Schedule : Graph<IPlanStep>
     {
 
         public Schedule() : base()
         {
 
         }
-        public Schedule(HashSet<T> nodes, HashSet<Tuple<T, T>> edges) : base(nodes, edges, new Dictionary<T, HashSet<T>>())
+        public Schedule(HashSet<IPlanStep> nodes, HashSet<Tuple<IPlanStep, IPlanStep>> edges) : base(nodes, edges, new Dictionary<IPlanStep, HashSet<IPlanStep>>())
         {
         }
 
-        public Schedule(HashSet<T> nodes, HashSet<Tuple<T, T>> edges, HashSet<Tuple<T, T>> cntgs) : base(nodes, edges, new Dictionary<T, HashSet<T>>())
+        public Schedule(HashSet<IPlanStep> nodes, HashSet<Tuple<IPlanStep, IPlanStep>> edges, HashSet<Tuple<IPlanStep, IPlanStep>> cntgs) : base(nodes, edges, new Dictionary<IPlanStep, HashSet<IPlanStep>>())
         {
         }
 
-        public Schedule(HashSet<Tuple<T, T>> cntgs) : base(new HashSet<T>(), cntgs, new Dictionary<T, HashSet<T>>())
+        public Schedule(HashSet<Tuple<IPlanStep, IPlanStep>> cntgs) : base(new HashSet<IPlanStep>(), cntgs, new Dictionary<IPlanStep, HashSet<IPlanStep>>())
         {
         }
 
-        public Schedule(List<Tuple<T, T>> cntgs) : base(new HashSet<T>(), new HashSet<Tuple<T, T>>(cntgs), new Dictionary<T, HashSet<T>>())
+        public Schedule(List<Tuple<IPlanStep, IPlanStep>> cntgs) : base(new HashSet<IPlanStep>(), new HashSet<Tuple<IPlanStep, IPlanStep>>(cntgs), new Dictionary<IPlanStep, HashSet<IPlanStep>>())
         {
         }
 
 
-        public bool HasFault(Graph<T> orderings)
+        public bool HasFault(Graph<IPlanStep> orderings)
         {
             /* PYTHON CODE: 
              * 
@@ -59,8 +60,8 @@ namespace BoltFreezer.Scheduling
 
             return True
             */
-            List<T> sources = new List<T>();
-            List<T> sinks = new List<T>();
+            List<IPlanStep> sources = new List<IPlanStep>();
+            List<IPlanStep> sinks = new List<IPlanStep>();
             foreach (var edge in edges)
             {
                 // base cases
@@ -78,10 +79,17 @@ namespace BoltFreezer.Scheduling
 
                 foreach (var ordering in orderings.edges)
                 {
+                   
+
                     if (ordering.First.Equals(edge.First) && !ordering.Second.Equals(edge.Second))
                     {
+                        if (ordering.Second.Name.Equals("DummyGoal") || ordering.Second.Name.Equals("DummyInit") || ordering.Second.Height > 0)
+                        {
+                            continue;
+                        }
+
                         // There cannot be a path from the ordering to the tail of the cntg edge
-                        if (IsPath(ordering.Second, edge.Second))
+                        if (orderings.IsPath(ordering.Second, edge.Second))
                         {
                             return true;
                         }
@@ -89,8 +97,13 @@ namespace BoltFreezer.Scheduling
 
                     if (ordering.Second.Equals(edge.Second) && !ordering.First.Equals(edge.First))
                     {
+                        if (ordering.First.Name.Equals("DummyGoal") || ordering.First.Name.Equals("DummyInit") || ordering.First.Height > 0)
+                        {
+                            continue;
+                        }
+
                         // There cannot be a path from the head of cntg edge to the head of the ordering
-                        if (IsPath(edge.First, ordering.First))
+                        if (orderings.IsPath(edge.First, ordering.First))
                         {
                             return true;
                         }

@@ -90,6 +90,13 @@ namespace BoltFreezer.CacheTools
             // THIS is so that initial and goal steps created don't get matched with these
             Operator.SetCounterExternally(GroundActionFactory.GroundActions.Count + 1);
 
+            Console.WriteLine("Finding Statics");
+            GroundActionFactory.DetectStatics();
+            foreach (var stat in GroundActionFactory.Statics)
+            {
+                Console.WriteLine(stat);
+            }
+
             Console.WriteLine("\nCmap\n");
 
             var cmap = BinarySerializer.DeSerializeObject<TupleMap<IPredicate, List<int>>>(CausalMapFileName + ".CachedCausalMap");
@@ -99,12 +106,6 @@ namespace BoltFreezer.CacheTools
             var tcmap = BinarySerializer.DeSerializeObject<TupleMap<IPredicate, List<int>>>(ThreatMapFileName + ".CachedThreatMap");
             CacheMaps.ThreatTupleMap = tcmap;
 
-            Console.WriteLine("Finding Statics");
-            GroundActionFactory.DetectStatics(CacheMaps.CausalTupleMap, CacheMaps.ThreatTupleMap);
-            foreach (var stat in GroundActionFactory.Statics)
-            {
-                Console.WriteLine(stat);
-            }
         }
 
         public void FreezeProblem(bool serialize, bool deserialize)

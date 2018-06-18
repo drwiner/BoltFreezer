@@ -13,12 +13,31 @@ namespace BoltFreezer.PlanTools
         protected List<IPredicate> openConditions;
         protected int depth = 0;
         protected IPlanStep initCndt;
+        protected IPlanStep goalCndt;
+        protected IPlanStep parent;
         protected int id;
+
+        public static void SetCounterExternally(int newVal)
+        {
+            Counter = newVal;
+        }
 
         public IPlanStep InitCndt
         {
             get { return initCndt; }
             set { initCndt = value; }
+        }
+
+        public IPlanStep GoalCndt
+        {
+            get { return goalCndt; }
+            set { goalCndt = value; }
+        }
+
+        public IPlanStep Parent
+        {
+            get { return parent; }
+            set { parent = value; }
         }
 
         public IOperator Action
@@ -188,7 +207,9 @@ namespace BoltFreezer.PlanTools
             return new PlanStep(Action, OpenConditions, ID)
             {
                 Depth = depth,
-                InitCndt = initCndt
+                InitCndt = initCndt,
+                GoalCndt = goalCndt,
+                Parent = parent
             };
         }
 

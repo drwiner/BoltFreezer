@@ -132,8 +132,9 @@ namespace BoltFreezer.PlanTools
                             sumo += visitedPreds.Get(oc.precondition.Sign)[oc.precondition];
                             continue;
                         }
-
-                        throw new System.Exception("visitedPreds does not contain " + oc.precondition.ToString());
+                        // Fail gracefully
+                        sumo += 100000;
+                        //throw new System.Exception("visitedPreds does not contain " + oc.precondition.ToString());
                     }
                     Logger.LogTimeToType("EachOC", Logger.Log() - beforeEachOc, "HeuristicNew");
                 }
@@ -177,8 +178,8 @@ namespace BoltFreezer.PlanTools
                         sumo += visitedPreds.Get(oc.precondition.Sign)[oc.precondition];
                         continue;
                     }
-
-                    throw new System.Exception("visitedPreds does not contain " + oc.precondition.ToString());
+                    sumo += 100000;
+                    //throw new System.Exception("visitedPreds does not contain " + oc.precondition.ToString());
                 }
 
                 Logger.LogTimeToType("EachOC", Logger.Log() - wayBefore, "HeuristicOld");

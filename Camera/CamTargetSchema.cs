@@ -1,4 +1,5 @@
 ﻿using BoltFreezer.Camera.CameraEnums;
+using BoltFreezer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,9 +53,25 @@ namespace BoltFreezer.Camera
         }
 
 
+        public void SetActionSegTargets(Dictionary<int, IPlanStep> ID_Dict)
+        {
+            foreach(var actionseg in ActionSegs)
+            {
+                if (ID_Dict.ContainsKey(actionseg.ActionID))
+                {
+                    actionseg.ActionID = ID_Dict[actionseg.ActionID].ID;
+                }
+            }
+        }
+
         public CamTargetSchema Clone()
         {
-            return new CamTargetSchema(orient, location, ActionSegs);
+            var newActionSegs = new List<ActionSeg>();
+            foreach(var actionseg in ActionSegs)
+            {
+                newActionSegs.Add(actionseg.Clone());
+            }
+            return new CamTargetSchema(orient, location, newActionSegs);
         }
     }
 }

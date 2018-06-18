@@ -7,12 +7,15 @@ using System.Collections;
 
 using BoltFreezer.Interfaces;
 using BoltFreezer.Utilities;
+using BoltFreezer.Camera;
 
 namespace BoltFreezer.PlanTools
 {
     [Serializable]
     public class Plan : IEquatable<Plan>, IPlan
     {
+        private static int Counter = -1;
+
         protected List<IPlanStep> steps;
         protected IState initial;
         protected IState goal;
@@ -24,6 +27,13 @@ namespace BoltFreezer.PlanTools
         protected Flawque flaws;
         protected int decomps;
         protected int hdepth;
+        public string id;
+
+        public string ID
+        {
+            get { return id; }
+            set { id = value; }
+        }
 
         // Access the plan's steps.
         public List<IPlanStep> Steps
@@ -107,6 +117,7 @@ namespace BoltFreezer.PlanTools
             goal = new State();
             initialStep = new PlanStep(new Operator("initial", new List<IPredicate>(), initial.Predicates));
             goalStep = new PlanStep(new Operator("goal", goal.Predicates, new List<IPredicate>()));
+            id = System.Threading.Interlocked.Increment(ref Counter).ToString();
         }
 
         public Plan(IState _initial, IState _goal)
@@ -119,6 +130,7 @@ namespace BoltFreezer.PlanTools
             goal = _goal;
             initialStep = new PlanStep(new Operator("initial", new List<IPredicate>(), initial.Predicates));
             goalStep = new PlanStep(new Operator("goal", goal.Predicates, new List<IPredicate>()));
+            id = System.Threading.Interlocked.Increment(ref Counter).ToString();
         }
 
         public Plan(Operator _initial, Operator _goal)
@@ -131,6 +143,7 @@ namespace BoltFreezer.PlanTools
             goal = new State(_goal.Preconditions);
             initialStep = new PlanStep(_initial);
             goalStep = new PlanStep(_goal);
+            id = System.Threading.Interlocked.Increment(ref Counter).ToString();
         }
 
         // Used when cloning a plan: <S, O, L>, F
@@ -144,6 +157,7 @@ namespace BoltFreezer.PlanTools
             this.goal = goal;
             this.initialStep = initialStep;
             this.goalStep = goalStep;
+            id = System.Threading.Interlocked.Increment(ref Counter).ToString();
         }
 
         public void Insert(IPlanStep newStep)
@@ -459,6 +473,11 @@ namespace BoltFreezer.PlanTools
             foreach (var clink in causalLinks)
             {
 
+                if (!CacheMaps.IsThreat(clink.Predicate, possibleThreat))
+                {
+                    continue;
+                }
+
                 if (possibleThreat.Height > 0)
                 {
                     
@@ -470,6 +489,12 @@ namespace BoltFreezer.PlanTools
                     var threatGoal = possibleThreatComposite.GoalStep;
 
                     var threatInit = possibleThreatComposite.InitialStep;
+
+                    if (threatInit.Equals(clink.Head) || threatInit.Equals(clink.Head) || threatGoal.Equals(clink.Tail) || threatInit.Equals(clink.Tail))
+                    {
+                        continue;
+                    }
+
                     if (Orderings.IsPath(clink.Tail, threatInit))
                     {
                         continue;
@@ -479,16 +504,18 @@ namespace BoltFreezer.PlanTools
                         continue;
                     }
 
-                    foreach (var precon in threatGoal.Preconditions)
-                    {
-                        if (precon.Equals(clink.Predicate.GetReversed()))
-                        {
-                            // then this composite step is a threat.
-                            Flaws.Add(new ThreatenedLinkFlaw(clink, threatInit));
-                            Flaws.Add(new ThreatenedLinkFlaw(clink, threatGoal));
-                            break;
-                        }
-                    }
+                    Flaws.Add(new ThreatenedLinkFlaw(clink, possibleThreat));
+
+                    //foreach (var precon in threatGoal.Preconditions)
+                    //{
+                    //    if (precon.Equals(clink.Predicate.GetReversed()))
+                    //    {
+                    //        // then this composite step is a threat.
+                    //        Flaws.Add(new ThreatenedLinkFlaw(clink, possibleThreat));
+                    //        //Flaws.Add(new ThreatenedLinkFlaw(clink, threatGoal));
+                    //        break;
+                    //    }
+                    //}
 
                     //if (CacheMaps.IsThreat(clink.Predicate, possibleThreat))
                     //{
@@ -502,10 +529,6 @@ namespace BoltFreezer.PlanTools
                 }
                 else
                 {
-                    if (!CacheMaps.IsThreat(clink.Predicate, possibleThreat))
-                    {
-                        continue;
-                    }
 
                     if (Orderings.IsPath(clink.Tail, possibleThreat))
                     {
@@ -695,8 +718,10 @@ namespace BoltFreezer.PlanTools
                     {
                         continue;
                     }
-                    Flaws.Add(new ThreatenedLinkFlaw(clink, compGoal));
-                    Flaws.Add(new ThreatenedLinkFlaw(clink, compInit));
+
+                    
+                    Flaws.Add(new ThreatenedLinkFlaw(clink, stepAsComp));
+                  //  Flaws.Add(new ThreatenedLinkFlaw(clink, compInit));
                 }
 
                 else
@@ -741,12 +766,13 @@ namespace BoltFreezer.PlanTools
         // Displays the contents of the plan.
         public override string ToString ()
         {
-            StringBuilder sb = new StringBuilder();
+            return id.ToString();
+            //StringBuilder sb = new StringBuilder();
 
-            foreach (var step in steps)
-                sb.AppendLine(step.ToString());
+            //foreach (var step in steps)
+            //    sb.AppendLine(step.ToString());
 
-            return sb.ToString();
+            //return sb.ToString();
         }
 
         // Displays the contents of the plan.
@@ -795,11 +821,13 @@ namespace BoltFreezer.PlanTools
             Flawque flawList = flaws.Clone() as Flawque;
 
             //return new Plan(newSteps, newInitial, newGoal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList);
-            return new Plan(newSteps, Initial, Goal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList)
+            var p =  new Plan(newSteps, Initial, Goal, newInitialStep, newGoalStep, newOrderings, newLinks, flawList)
             {
                 Hdepth = hdepth,
                 Decomps = decomps
             };
+            p.id = id + p.id;
+            return p;
         }
     }
 }

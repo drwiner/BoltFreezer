@@ -16,6 +16,7 @@ namespace BoltFreezer.Interfaces
 
         //// Plans have a problem.
         //Problem Problem { get; set; }
+        string ID { get; set; }
 
         // Plans have an ordered list of steps.
         List<IPlanStep> Steps { get; set; }

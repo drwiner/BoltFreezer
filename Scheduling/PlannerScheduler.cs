@@ -26,7 +26,7 @@ namespace BoltFreezer.Scheduling
 
         public static IPlan CreateInitialPlan(Problem problem)
         {
-            var initialPlan = new PlanSchedule(new Plan(new State(problem.Initial) as IState, new State(problem.Goal) as IState), new List<Tuple<IPlanStep, IPlanStep>>());
+            var initialPlan = new PlanSchedule(new Plan(new State(problem.Initial) as IState, new State(problem.Goal) as IState), new List<Tuple<IPlanStep, IPlanStep>>(), new List<Tuple<int, int>>());
             foreach (var goal in problem.Goal)
                 initialPlan.Flaws.Add(initialPlan, new OpenCondition(goal, initialPlan.GoalStep as IPlanStep));
             initialPlan.Orderings.Insert(initialPlan.InitialStep, initialPlan.GoalStep);
@@ -35,7 +35,7 @@ namespace BoltFreezer.Scheduling
 
         public static IPlan CreateInitialPlan(List<IPredicate> Initial, List<IPredicate> Goal)
         {
-            var initialPlan = new PlanSchedule(new Plan(new State(Initial) as IState, new State(Goal) as IState), new List<Tuple<IPlanStep, IPlanStep>>());
+            var initialPlan = new PlanSchedule(new Plan(new State(Initial) as IState, new State(Goal) as IState), new List<Tuple<IPlanStep, IPlanStep>>(), new List<Tuple<int, int>>());
             foreach (var goal in Goal)
                 initialPlan.Flaws.Add(initialPlan, new OpenCondition(goal, initialPlan.GoalStep as IPlanStep));
             initialPlan.Orderings.Insert(initialPlan.InitialStep, initialPlan.GoalStep);
@@ -77,6 +77,7 @@ namespace BoltFreezer.Scheduling
                 
                 
                 var planClone = plan.Clone() as PlanSchedule;
+                planClone.ID += "a";
                 IPlanStep newStep;
                 if (cndt.Height > 0)
                 {
@@ -139,6 +140,147 @@ namespace BoltFreezer.Scheduling
                 before = watch.ElapsedMilliseconds;
                 Insert(planClone);
                 LogTime("InsertPlan", watch.ElapsedMilliseconds - before);
+            }
+        }
+
+        public new void Reuse(IPlan plan, OpenCondition oc)
+        {
+            // if repaired by initial state
+            if (plan.Initial.InState(oc.precondition))
+            {
+                var planClone = plan.Clone() as IPlan;
+                planClone.Repair(oc, planClone.InitialStep);
+                planClone.ID += "ri";
+                Insert(planClone);
+            }
+
+            foreach (var step in plan.Steps)
+            {
+                if (oc.step.ID == step.ID)
+                {
+                    continue;
+                }
+
+                if (step.Height > 0)
+                {
+                    if (CacheMaps.IsCndt(oc.precondition, step))
+                    {
+
+                        var stepAsComposite = step as CompositeSchedulePlanStep;
+
+                        if (stepAsComposite.SubSteps.Contains(oc.step))
+                        {
+                            continue;
+                        }
+                        // before adding a repair, check if there is a path.
+                        if (plan.Orderings.IsPath(oc.step, stepAsComposite.GoalStep))
+                            continue;
+
+                        if (plan.Orderings.IsPath(oc.step, stepAsComposite.InitialStep))
+                            continue;
+
+                        var planClone = plan.Clone() as IPlan;
+                        // need to modify stepAsComposite, so going to rereference on cloned plan.
+                        var stepAsCompositeClone = planClone.Steps.First(s => s.ID == stepAsComposite.ID) as CompositeSchedulePlanStep;
+                        planClone.Repair(oc, stepAsCompositeClone);
+                        planClone.ID += "r";
+                        Insert(planClone);
+                    }
+                    continue;
+                }
+                else
+                {
+
+                    if (step == oc.step.InitCndt && oc.hasDummyInit)
+                    {
+                        var planClone = plan.Clone() as IPlan;
+                        planClone.Repair(oc, step);
+                        planClone.ID += "r_";
+                        Insert(planClone);
+                        continue;
+                    }
+
+                    if (CacheMaps.IsCndt(oc.precondition, step))
+                    {
+                        // before adding a repair, check if there is a path.
+                        if (plan.Orderings.IsPath(oc.step, step))
+                            continue;
+
+                        var planClone = plan.Clone() as IPlan;
+                        planClone.Repair(oc, step);
+                        planClone.ID += "r";
+                        Insert(planClone);
+                    }
+                }
+            }
+        }
+
+        public new void RepairThreat(IPlan plan, ThreatenedLinkFlaw tclf)
+        {
+
+            var cl = tclf.causallink;
+            var threat = tclf.threatener;
+            if (threat is CompositeSchedulePlanStep cps)
+            {
+                if (!plan.Orderings.IsPath(cps.InitialStep, cl.Tail))
+                {
+                    var promote = plan.Clone() as IPlan;
+                    promote.ID += "p";
+
+                    if (cl.Tail.Name.Equals("DummyInit"))
+                    {
+                        promote.Orderings.Insert(cl.Tail.GoalCndt, cps.InitialStep);
+                    }
+
+                    promote.Orderings.Insert(cl.Tail, cps.InitialStep);
+                    // because no guaranteed ordering between head and tail
+                    promote.Orderings.Insert(cl.Head, cps.InitialStep);
+                    Insert(promote);
+                }
+                if (!plan.Orderings.IsPath(cl.Head, cps.GoalStep))
+                {
+                    var demote = plan.Clone() as IPlan;
+                    demote.ID += "d";
+
+                    if (cl.Head.Name.Equals("DummyGoal"))
+                    {
+                        demote.Orderings.Insert(cps.GoalStep, cl.Head.InitCndt);
+                    }
+                    demote.Orderings.Insert(cps.GoalStep, cl.Head);
+                    // because no guaranteed ordering between head and tail
+                    demote.Orderings.Insert(cps.GoalStep, cl.Tail);
+                    Insert(demote);
+                }
+            }
+            else
+            {
+                // Promote
+                if (!plan.Orderings.IsPath(threat, cl.Tail))
+                {
+                    var promote = plan.Clone() as IPlan;
+                    promote.ID += "p";
+
+                    if (cl.Tail.Name.Equals("DummyInit"))
+                    {
+                        promote.Orderings.Insert(cl.Tail.GoalCndt, threat);
+                    }
+                    promote.Orderings.Insert(cl.Tail, threat);
+                    Insert(promote);
+                }
+
+                // Demote
+                if (!plan.Orderings.IsPath(cl.Head, threat))
+                {
+                    var demote = plan.Clone() as IPlan;
+                    demote.ID += "d";
+                    if (cl.Head.Name.Equals("DummyGoal"))
+                    {
+                        demote.Orderings.Insert(threat, cl.Head.InitCndt);
+                    }
+                    demote.Orderings.Insert(threat, cl.Head);
+                    demote.Orderings.Insert(threat, cl.Tail);
+                    Insert(demote);
+                }
             }
         }
 

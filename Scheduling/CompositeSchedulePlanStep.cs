@@ -43,12 +43,17 @@ namespace BoltFreezer.Scheduling {
             Cntgs = new List<Tuple<IPlanStep, IPlanStep>>();
         }
 
-        public CompositeSchedulePlanStep(CompositePlanStep cps) : base(cps.CompositeAction, cps.OpenConditions, cps.InitialStep, cps.GoalStep, cps.SubSteps, cps.SubOrderings, cps.SubLinks, cps.ID)
+        //public CompositeSchedulePlanStep(CompositePlanStep cps) : base(cps.CompositeAction, cps.OpenConditions, cps.InitialStep, cps.GoalStep, cps.SubSteps, cps.SubOrderings, cps.SubLinks)
+        //{
+        //    Cntgs = new List<Tuple<IPlanStep, IPlanStep>>();
+        //}
+
+        public CompositeSchedulePlanStep(CompositePlanStep cps, int id) : base(cps.CompositeAction, cps.OpenConditions, cps.InitialStep, cps.GoalStep, cps.SubSteps, cps.SubOrderings, cps.SubLinks, id)
         {
             Cntgs = new List<Tuple<IPlanStep, IPlanStep>>();
         }
 
-        public CompositeSchedulePlanStep(CompositePlanStep cps, List<Tuple<IPlanStep, IPlanStep>> cntgs) : base(cps.CompositeAction, cps.OpenConditions, cps.InitialStep, cps.GoalStep, cps.SubSteps, cps.SubOrderings, cps.SubLinks, cps.ID)
+        public CompositeSchedulePlanStep(CompositePlanStep cps, List<Tuple<IPlanStep, IPlanStep>> cntgs, int id) : base(cps.CompositeAction, cps.OpenConditions, cps.InitialStep, cps.GoalStep, cps.SubSteps, cps.SubOrderings, cps.SubLinks, id)
         {
             Cntgs = cntgs;
         }
@@ -63,7 +68,7 @@ namespace BoltFreezer.Scheduling {
                 // due dilligence
                 newCntgs.Add(new Tuple<IPlanStep, IPlanStep>(cntg.First.Clone() as IPlanStep, cntg.Second.Clone() as IPlanStep));
             }
-            return new CompositeSchedulePlanStep(cps, newCntgs);
+            return new CompositeSchedulePlanStep(cps, newCntgs, cps.ID);
         }
 
     }

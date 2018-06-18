@@ -105,23 +105,42 @@ namespace BoltFreezer.PlanTools
             }
         }
 
-        public static void DetectStatics(TupleMap<IPredicate,List<int>> CMap, TupleMap<IPredicate, List<int>> TMap)
+        public static void DetectStatics()
         {
-            
-            foreach (var op in GroundActions)
+            // A static is a condition that, irrespective of sign, does not appear as an effect of an action.
+            var preconds = GroundActions.SelectMany(op => op.Preconditions);
+            var effs = GroundActions.SelectMany(op => op.Effects);
+            foreach(var precon in preconds)
             {
-                foreach (var pre in op.Preconditions)
+                if (Statics.Contains(precon))
                 {
-                    if (Statics.Contains(pre))
-                    {
-                        continue;
-                    }
-                    if (!CMap.Get(pre.Sign).ContainsKey(pre) && !TMap.Get(pre.Sign).ContainsKey(pre))
-                    {
-                        Statics.Add(pre);
-                    }
+                    continue;
                 }
+                if (effs.Contains(precon))
+                {
+                    continue;
+                }
+                if (effs.Contains(precon.GetReversed()))
+                {
+                    continue;
+                }
+                Statics.Add(precon);
             }
+            //foreach (var op in GroundActions)
+            //{
+            //    foreach (var pre in op.Preconditions)
+            //    {
+            //        if (Statics.Contains(pre))
+            //        {
+            //            continue;
+            //        }
+            //        if (!CMap.Get(pre.Sign).ContainsKey(pre) && !TMap.Get(pre.Sign).ContainsKey(pre) && !CMap.Get(!pre.Sign).ContainsKey(pre) && !TMap.Get(!pre.Sign).ContainsKey(pre))
+            //        {
+            //            Statics.Add(pre);
+            //        }
+                   
+            //    }
+            //}
         }
     }
 }
