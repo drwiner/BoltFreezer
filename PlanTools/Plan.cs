@@ -480,30 +480,68 @@ namespace BoltFreezer.PlanTools
 
                 if (possibleThreat.Height > 0)
                 {
+
+
+
+                    //if (OnDecompPath(clink.Tail, possibleThreat.ID))
+                    //{
+                    //    var tailRoot = GetDecompRoot(clink.Tail) as CompositePlanStep;
+                    //    Orderings.Insert(tailRoot.GoalStep, possibleThreatComposite.GoalStep);
+                    //    // just check if causal link between repairstep goal and step goal is threatened
+                    //    continue;
+                    //    //  Console.WriteLine("here");
+                    //}
+
+                    //if (clink.Head.Parent != null && clink.Head.Parent.Equals(possibleThreat))  //.SubSteps.Contains(clink.Head) || stepAsComp.SubSteps.Contains(clink.Tail))
+                    //{
+                    //    continue;
+                    //    // replace this with... is Decompositional Link-based path from step to clink.Head or clink.Tail
+                    //}
+
+                    //if (clink.Tail.Parent != null && clink.Tail.Parent.Equals(possibleThreat))
+                    //{
+                    //    continue;
+                    //}
+
+
+                    //if (threatInit.Equals(clink.Head) || threatInit.Equals(clink.Head) || threatGoal.Equals(clink.Tail) || threatInit.Equals(clink.Tail))
+                    //{
+                    //    continue;
+                    //}
+
+                    if (OnDecompPath(clink.Head, possibleThreat.ID))
+                    {
+                        // must be ordered within 
+                        if (Orderings.IsPath(clink.Tail, possibleThreatComposite.GoalStep))
+                        {
+                            // already tucked into Q's borders
+                            continue;
+                        }
+
+                        if (!OnDecompPath(clink.Tail, possibleThreat.ID))
+                        {
+                            // Q --> s -p-> t, not p in eff(Q), not Q --> t
+                            // then, need to tuck t into Q's borders.
+                            var tailRoot = GetDecompRoot(clink.Tail) as CompositePlanStep;
+                            Orderings.Insert(tailRoot.GoalStep, possibleThreatComposite.InitialStep);
+                        }
+                        
+                        continue;
+                    }
                     
-                    if (possibleThreatComposite.SubSteps.Contains(clink.Head) || possibleThreatComposite.SubSteps.Contains(clink.Tail))
+                    if (OnDecompPath(clink.Tail, possibleThreat.ID))
                     {
                         continue;
                     }
 
-                    var threatGoal = possibleThreatComposite.GoalStep;
-
-                    var threatInit = possibleThreatComposite.InitialStep;
-
-                    if (threatInit.Equals(clink.Head) || threatInit.Equals(clink.Head) || threatGoal.Equals(clink.Tail) || threatInit.Equals(clink.Tail))
+                    if (Orderings.IsPath(clink.Tail, possibleThreatComposite.InitialStep))
                     {
                         continue;
                     }
-
-                    if (Orderings.IsPath(clink.Tail, threatInit))
+                    if (Orderings.IsPath(possibleThreatComposite.GoalStep, clink.Head))
                     {
                         continue;
                     }
-                    if (Orderings.IsPath(threatGoal, clink.Head))
-                    {
-                        continue;
-                    }
-
                     Flaws.Add(new ThreatenedLinkFlaw(clink, possibleThreat));
 
                     //foreach (var precon in threatGoal.Preconditions)
@@ -529,7 +567,16 @@ namespace BoltFreezer.PlanTools
                 }
                 else
                 {
+                    // don't need to check decomp paths, because causal links and threat are all primitive. 
 
+                    //if (OnDecompPath(possibleThreat, clink.Head.Parent.ID))
+                    //{
+                    //    continue;
+                    //}
+                    //if (OnDecompPath(possibleThreat, clink.Tail.Parent.ID))
+                    //{
+                    //    continue;
+                    //}
                     if (Orderings.IsPath(clink.Tail, possibleThreat))
                     {
                         continue;
@@ -543,6 +590,40 @@ namespace BoltFreezer.PlanTools
                 
                 
             }
+        }
+
+        public IPlanStep GetDecompRoot(IPlanStep ps)
+        {
+            if (ps.Parent == null)
+            {
+                return ps;
+            }
+            return ps.Parent;
+        }
+
+        public bool OnDecompPath(IPlanStep ps, int target)
+        {
+            if (ps.Parent == null)
+            {
+                return false;
+            }
+
+            if (ps.Parent.ID == target)
+            {
+                return true;
+            }
+
+            return OnDecompPath(ps.Parent, target);
+        }
+
+        public void UpdateDecompTreeDepth(IPlanStep ps)
+        {
+            if (ps.Parent == null)
+            {
+                return;
+            }
+            ps.Parent.Depth = ps.Depth - 1;
+            UpdateDecompTreeDepth(ps.Parent);
         }
 
         public void Repair(OpenCondition oc, IPlanStep repairStep)

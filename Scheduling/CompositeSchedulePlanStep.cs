@@ -58,6 +58,9 @@ namespace BoltFreezer.Scheduling {
             Cntgs = cntgs;
         }
 
+        public CompositeSchedulePlanStep()
+        {
+        }
 
         public new System.Object Clone()
         {

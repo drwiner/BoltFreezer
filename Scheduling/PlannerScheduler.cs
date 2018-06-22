@@ -52,6 +52,7 @@ namespace BoltFreezer.Scheduling
             if (planschedule.Cntgs.HasFault(plan.Orderings))
             {
                 LogTime("CheckFaults", watch.ElapsedMilliseconds - before);
+                plan = null;
                 return;
             }
             LogTime("CheckFaults", watch.ElapsedMilliseconds - before);
@@ -62,6 +63,8 @@ namespace BoltFreezer.Scheduling
         public new void AddStep(IPlan plan, OpenCondition oc)
         {
             long before = 0;
+            // check oc step depth.
+           
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
             foreach (var cndt in CacheMaps.GetCndts(oc.precondition))
@@ -77,6 +80,11 @@ namespace BoltFreezer.Scheduling
                 
                 
                 var planClone = plan.Clone() as PlanSchedule;
+                //if (planClone.ID.Equals("1335"))
+                //{
+                //    Console.WriteLine("Here");
+                //}
+                
                 planClone.ID += "a";
                 IPlanStep newStep;
                 if (cndt.Height > 0)
@@ -180,6 +188,10 @@ namespace BoltFreezer.Scheduling
                             continue;
 
                         var planClone = plan.Clone() as IPlan;
+                        if (planClone.ID.Equals("1335a"))
+                        {
+                            Console.WriteLine("Here");
+                        }
                         // need to modify stepAsComposite, so going to rereference on cloned plan.
                         var stepAsCompositeClone = planClone.Steps.First(s => s.ID == stepAsComposite.ID) as CompositeSchedulePlanStep;
                         planClone.Repair(oc, stepAsCompositeClone);

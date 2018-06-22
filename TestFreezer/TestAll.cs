@@ -189,7 +189,9 @@ namespace TestFreezer
             //var ci = new CinemICEtest("InitialAndFinal(noobs)");
             var ci = new CinemICEtest("InitFinalAndBridge(4)");
             ci.problemname = "racetest(1)";
-            ci.RunTest(10000000f);
+            ci.problemname = "racetest(7)";
+            ci.problemname = "racetest(9)";
+            ci.RunTest(1000000f);
 
             // search (false ==> ignore depth as stopping condition, is default). Selection (E0) (true=> do check for no flaws no matter depth).
 

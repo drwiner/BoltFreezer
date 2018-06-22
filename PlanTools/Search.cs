@@ -50,7 +50,12 @@ namespace BoltFreezer.PlanTools
             while (Frontier.Count > 0)
             {
                 var plan = Frontier.Dequeue();
-                if (plan.ID.Equals("135a7a13a25a51ri65ri87a189a585a1277a2965a10239d15043a44047r62295ri"))
+                //if (plan.ID.Equals("135a7a13a25a51ri65ri87a189a585a1277a2965a10239d15043a44047r62295ri"))
+                if (plan.ID.Equals("1313a61a76405a") || plan.ID.Equals("1313a61a76407a")
+                    || plan.ID.Equals("1313a61a76409a")
+                    || plan.ID.Equals("1313a61a76411a")
+                    || plan.ID.Equals("1313a61a76413a")
+                    || plan.ID.Equals("1313a61a76415a"))//39709a"))
                 {
                     Console.WriteLine("Here");
                 }

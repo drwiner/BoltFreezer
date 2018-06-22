@@ -112,6 +112,15 @@ namespace BoltFreezer.PlanTools
             //    }
             //}
 
+            if (step.Depth > other.step.Depth)
+            {
+                return 1;
+            }
+            else if(step.Depth < other.step.Depth)
+            {
+                return -1;
+            }
+
             if (precondition.Name.Equals("obss") || precondition.Name.Equals("obs-starts"))
             {
                 if (other.precondition.Name.Equals("obss") || other.precondition.Name.Equals("obs-starts"))

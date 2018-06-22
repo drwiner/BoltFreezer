@@ -42,6 +42,27 @@ namespace BoltFreezer.Camera
             endPercent = end;
         }
 
+
+        public bool CanReplace(ActionSeg other)
+        {
+            if (actionID != other.ActionID)
+            {
+                return false;
+            }
+
+            if (other.startPercent > startPercent)
+            {
+                return false;
+            }
+
+            if (other.endPercent > endPercent)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public ActionSeg Clone()
         {
             return new ActionSeg(actionVarName, actionID, targetVarName, startPercent, endPercent);

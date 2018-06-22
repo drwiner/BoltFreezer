@@ -230,7 +230,7 @@ namespace BoltFreezer.DecompTools
                 newSubsteps.Add(newsubstep);
             }
 
-            return new TimelineDecomposition(baseDecomp, fabCntgs, discCntgs, newSubsteps, fabConstraints, discConstraints, discOrderings, discLinks, fabulaActionNameMap);
+            return new TimelineDecomposition(baseDecomp, fabCntgs.ToList(), discCntgs.ToList(), newSubsteps, fabConstraints.ToList(), discConstraints.ToList(), discOrderings.ToList(), discLinks.ToList(), fabulaActionNameMap.ToDictionary(x=> x.Key, x=> x.Value));
         }
     }
 }

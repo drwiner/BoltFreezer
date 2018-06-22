@@ -75,6 +75,7 @@
     <Compile Include="Camera\CamTargetSchema.cs" />
     <Compile Include="DecompTools\Constraints.cs" />
     <Compile Include="DecompTools\Decomposition.cs" />
+    <Compile Include="DecompTools\DecompositionLinks.cs" />
     <Compile Include="DecompTools\TimelineDecomposition.cs" />
     <Compile Include="Camera\CameraEnums\Framing.cs" />
     <Compile Include="Camera\CameraEnums\Hangle.cs" />

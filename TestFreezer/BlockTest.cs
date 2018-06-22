@@ -32,7 +32,7 @@ namespace TestFreezer
             return PF;
         }
 
-        public static List<Problem> RandomProblemGenerator(int numProblems, Tuple<int,int> blockRange, int agentMax, int maxGoals, string domainName)
+        public static List<Problem> RandomProblemGenerator(int numProblems, BoltFreezer.Utilities.Tuple<int, int> blockRange, int agentMax, int maxGoals, string domainName)
         {
             List<Problem> generatedProblems = new List<Problem>();
 
@@ -165,9 +165,9 @@ namespace TestFreezer
                 new CausalLink<IPlanStep>(atAgentInt, move1, move2)
             };
 
-            var suborderings = new List<Tuple<IPlanStep, IPlanStep>>()
+            var suborderings = new List<BoltFreezer.Utilities.Tuple<IPlanStep, IPlanStep>>()
             {
-                new Tuple<IPlanStep,IPlanStep>(move1, move2)
+                new BoltFreezer.Utilities.Tuple<IPlanStep,IPlanStep>(move1, move2)
             };
 
             var root = new Operator(new Predicate("multimove", objTerms, true));
@@ -227,10 +227,10 @@ namespace TestFreezer
                 new CausalLink<IPlanStep>(hasAgentThing, pickup, putdown),
                 new CausalLink<IPlanStep>(atAgentDest, move, putdown),
             };
-            var suborderings = new List<Tuple<IPlanStep, IPlanStep>>()
+            var suborderings = new List<BoltFreezer.Utilities.Tuple<IPlanStep, IPlanStep>>()
             {
-                new Tuple<IPlanStep,IPlanStep>(pickup, move),
-                new Tuple<IPlanStep,IPlanStep>(move, putdown)
+                new BoltFreezer.Utilities.Tuple<IPlanStep,IPlanStep>(pickup, move),
+                new BoltFreezer.Utilities.Tuple<IPlanStep,IPlanStep>(move, putdown)
             };
 
             var root = new Operator(new Predicate("transport", objTerms, true));
@@ -322,19 +322,19 @@ namespace TestFreezer
             return decomps;
         }
 
-        public static Tuple<Composite, List<Decomposition>> TransportComposites()
+        public static BoltFreezer.Utilities.Tuple<Composite, List<Decomposition>> TransportComposites()
         {
             var decomps =  ReadTransportDecompositions();
             var composite = ReadTransportCompositeOperator();
-            var CompositeMethods = new Tuple<Composite, List<Decomposition>>(composite, decomps);
+            var CompositeMethods = new BoltFreezer.Utilities.Tuple<Composite, List<Decomposition>>(composite, decomps);
             return CompositeMethods;
         }
 
-        public static Tuple<Composite, List<Decomposition>> MultimoveComposites()
+        public static BoltFreezer.Utilities.Tuple<Composite, List<Decomposition>> MultimoveComposites()
         {
             var decomps = ReadMultimoveDecompositions();
             var composite = ReadMultimoveCompositeOperator();
-            var CompositeMethods = new Tuple<Composite, List<Decomposition>>(composite, decomps);
+            var CompositeMethods = new BoltFreezer.Utilities.Tuple<Composite, List<Decomposition>>(composite, decomps);
             return CompositeMethods;
         }
 
@@ -528,7 +528,7 @@ namespace TestFreezer
             var domain = Parser.GetDomain(Parser.GetTopDirectory() + @"Benchmarks\" + domainName + @"\domain.pddl", PlanType.PlanSpace);
             //var CompositeMethods = ReadCompositeOperators();
 
-            List<Problem> problems = RandomProblemGenerator(numProblems, new Tuple<int, int>(1, 4), 3, 2, domainName);
+            List<Problem> problems = RandomProblemGenerator(numProblems, new BoltFreezer.Utilities.Tuple<int, int>(1, 4), 3, 2, domainName);
 
             foreach(var problem in problems)
             {

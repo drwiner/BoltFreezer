@@ -79,10 +79,10 @@ namespace TestFreezer
                 new CausalLink<IPlanStep>(inPersonCar, getInCar, getOutOfCar),
                 new CausalLink<IPlanStep>(atCarTo, drive, getOutOfCar)
             };
-            var suborderings = new List<Tuple<IPlanStep, IPlanStep>>()
+            var suborderings = new List<BoltFreezer.Utilities.Tuple<IPlanStep, IPlanStep>>()
             {
-                new Tuple<IPlanStep,IPlanStep>(getInCar, drive),
-                new Tuple<IPlanStep,IPlanStep>(drive, getOutOfCar)
+                new BoltFreezer.Utilities.Tuple<IPlanStep,IPlanStep>(getInCar, drive),
+                new BoltFreezer.Utilities.Tuple<IPlanStep,IPlanStep>(drive, getOutOfCar)
             };
 
             var root = new Operator(new Predicate("travel-by-car", objTerms, true));
@@ -146,11 +146,11 @@ namespace TestFreezer
                 new CausalLink<IPlanStep>(atPlaneTo, fly, deplane)
             };
 
-            var suborderings = new List<Tuple<IPlanStep, IPlanStep>>()
+            var suborderings = new List<BoltFreezer.Utilities.Tuple<IPlanStep, IPlanStep>>()
             {
-                new Tuple<IPlanStep,IPlanStep>(buy, board),
-                new Tuple<IPlanStep,IPlanStep>(board, fly),
-                new Tuple<IPlanStep,IPlanStep>(fly, deplane)
+                new BoltFreezer.Utilities.Tuple<IPlanStep,IPlanStep>(buy, board),
+                new BoltFreezer.Utilities.Tuple<IPlanStep,IPlanStep>(board, fly),
+                new BoltFreezer.Utilities.Tuple<IPlanStep,IPlanStep>(fly, deplane)
             };
 
             var root = new Operator(new Predicate("travel-by-plane", objTerms, true));
@@ -183,7 +183,7 @@ namespace TestFreezer
 
 
             var root = new Operator(new Predicate("generic-travel", objTerms, true));
-            var decomp = new Decomposition(root, litTerms, new List<IPlanStep>() { travelSubStep }, new List<Tuple<IPlanStep, IPlanStep>>(), new List<CausalLink<IPlanStep>>());
+            var decomp = new Decomposition(root, litTerms, new List<IPlanStep>() { travelSubStep }, new List<BoltFreezer.Utilities.Tuple<IPlanStep, IPlanStep>>(), new List<CausalLink<IPlanStep>>());
             return decomp;
         }
 

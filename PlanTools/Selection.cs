@@ -160,6 +160,42 @@ namespace BoltFreezer.PlanTools
         }
     }
 
+    public class DecompDivHdepth : ISelection
+    {
+        private IHeuristic HMethod;
+
+        public DecompDivHdepth(IHeuristic hmethod)
+        {
+            HMethod = hmethod;
+        }
+
+        public SelectionType EType => SelectionType.DecompDivHdepth;
+
+        public new string ToString()
+        {
+            return EType.ToString() + "-" + HMethod.ToString();
+        }
+
+        public float Evaluate(IPlan plan)
+        {
+            if (plan.Flaws.Count == 0 && plan.Hdepth > 0)
+            {
+                return -10000f - plan.Steps.Count;
+            }
+
+            if (plan.Hdepth == 0)
+            {
+                return HMethod.Heuristic(plan) + (plan.Steps.Count - (3 * plan.Decomps));
+            }
+            else
+            {
+                return HMethod.Heuristic(plan) +
+                (plan.Steps.Count - (3 * plan.Decomps)) - (plan.Decomps / plan.Hdepth);
+            }
+            
+        }
+    }
+
     public class E4 : ISelection
     {
         private IHeuristic HMethod;

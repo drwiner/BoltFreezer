@@ -102,6 +102,11 @@ namespace BoltFreezer.PlanSpace
                 Search.Frontier.Enqueue(plan, score);
                 opened++;
             }
+            else
+            {
+                plan = null;
+                return;
+            }
             //LogTime("checkOrderings", watch.ElapsedMilliseconds - before);
         }
 

@@ -398,7 +398,7 @@ namespace BoltFreezer.DecompTools
           //  var newinitial = InitialStep.Clone() as IPlanStep;
             //newinitial.Action = InitialStep.Action.Clone() as Operator;
             // do same for literals
-            return new Decomposition(op, Literals, InitialStep.Clone() as IPlanStep, GoalStep.Clone() as IPlanStep, newSubsteps, SubOrderings, SubLinks);
+            return new Decomposition(op, Literals, InitialStep.Clone() as IPlanStep, GoalStep.Clone() as IPlanStep, newSubsteps, SubOrderings.ToList(), SubLinks.ToList());
            // return new Decomposition(op, Literals, newSubsteps, SubOrderings, SubLinks);
         }
 
