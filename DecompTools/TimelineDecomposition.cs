@@ -29,11 +29,15 @@ namespace BoltFreezer.DecompTools
         public List<CausalLink<CamPlanStep>> discLinks;
         public List<Tuple<string, Tuple<CamPlanStep, CamPlanStep>>> discConstraints;
 
+        public ActionSeg InitialActionSeg, FinalActionSeg;
+
         public TimelineDecomposition() : base()
         {
             fabCntgs = new List<Tuple<IPlanStep, IPlanStep>>();
             discCntgs = new List<Tuple<CamPlanStep, CamPlanStep>>();
             discourseSubSteps = new List<CamPlanStep>();
+            InitialActionSeg = new ActionSeg();
+            FinalActionSeg = new ActionSeg();
         }
 
         public TimelineDecomposition(string name, List<ITerm> terms, IOperator init, IOperator dummy, List<IPredicate> Preconditions, List<IPredicate> Effects, int ID)

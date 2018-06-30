@@ -11,6 +11,7 @@ namespace BoltFreezer.Camera
         public string actionVarName = "";
         public string targetVarName = "";
         protected int actionID;
+        public int actiontypeID;
         public double startPercent = 0;
         public double endPercent = 1;
 
@@ -33,7 +34,7 @@ namespace BoltFreezer.Camera
             // These should be inserted for each pair of targets that are consecutive but not contiguous.
         }
 
-        public ActionSeg(string actionvar, int _actionID, string tarvar, double start, double end)
+        public ActionSeg(string actionvar, int _actionID, int _actiontypeID, string tarvar, double start, double end)
         {
             actionVarName = actionvar;
             actionID = _actionID;
@@ -45,12 +46,13 @@ namespace BoltFreezer.Camera
 
         public bool CanReplace(ActionSeg other)
         {
-            if (actionID != other.ActionID)
+            
+            if (actiontypeID != other.actiontypeID)
             {
                 return false;
             }
 
-            if (other.startPercent > startPercent)
+            if (other.startPercent < startPercent)
             {
                 return false;
             }
@@ -65,7 +67,7 @@ namespace BoltFreezer.Camera
 
         public ActionSeg Clone()
         {
-            return new ActionSeg(actionVarName, actionID, targetVarName, startPercent, endPercent);
+            return new ActionSeg(actionVarName, actionID, actiontypeID, targetVarName, startPercent, endPercent);
         }
 
     }

@@ -71,7 +71,13 @@ namespace BoltFreezer.Scheduling {
                 // due dilligence
                 newCntgs.Add(new Tuple<IPlanStep, IPlanStep>(cntg.First.Clone() as IPlanStep, cntg.Second.Clone() as IPlanStep));
             }
-            return new CompositeSchedulePlanStep(cps, newCntgs, cps.ID);
+            return new CompositeSchedulePlanStep(cps, newCntgs, cps.ID)
+            {
+                
+                InitialActionSeg = InitialActionSeg.Clone(),
+                FinalActionSeg = FinalActionSeg.Clone()
+            
+            };
         }
 
     }

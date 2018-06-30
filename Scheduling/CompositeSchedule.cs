@@ -1,4 +1,5 @@
-﻿using BoltFreezer.DecompTools;
+﻿using BoltFreezer.Camera;
+using BoltFreezer.DecompTools;
 using BoltFreezer.Interfaces;
 using BoltFreezer.PlanTools;
 using BoltFreezer.Utilities;
@@ -12,6 +13,40 @@ namespace BoltFreezer.Scheduling
     public class CompositeSchedule : Composite, IComposite
     {
         public List<Tuple<IPlanStep, IPlanStep>> Cntgs;
+
+        public int NumberSegments
+        {
+            get
+            {
+                int count = 0;
+                foreach (var substep in subSteps)
+                {
+                    if (substep is CamPlanStep cps)
+                    {
+                        count = count + cps.TargetDetails.ActionSegs.Count;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public int NumberCamSteps
+        {
+            get
+            {
+                int count = 0;
+                foreach (var substep in subSteps)
+                {
+                    if (substep is CamPlanStep cps)
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
+        public ActionSeg InitialActionSeg;
+        public ActionSeg FinalActionSeg;
 
         // used to create root 
         public CompositeSchedule(IOperator op) : base(op)
@@ -87,7 +122,11 @@ namespace BoltFreezer.Scheduling
             {
                 newCntgs.Add(cntg);
             }
-            var theClone = new CompositeSchedule(CompositeBase, newCntgs);
+            var theClone = new CompositeSchedule(CompositeBase, newCntgs)
+            {
+                InitialActionSeg = InitialActionSeg.Clone(),
+                FinalActionSeg = FinalActionSeg.Clone()
+            };
             return theClone;
         }
     }
