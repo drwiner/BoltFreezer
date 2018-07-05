@@ -13,36 +13,47 @@ namespace BoltFreezer.Scheduling
     [Serializable]
     public class PlanSchedule : Plan, IPlan
     {
-
+        //public List<CamPlanStep> CamScheduleSteps {
+        //    get
+        //    {
+        //        return Steps.OfType<CamPlanStep>().ToList();
+        //    }
+        //}
         public Schedule Cntgs;
+
         public MergeManager MM;
-       // public DecompositionLinks DeLinks;
+        public DecompositionLinks DeLinks;
 
         public PlanSchedule() : base()
         {
             Cntgs = new Schedule();
             MM = new MergeManager();
-            //DeLinks = new DecompositionLinks();
+            DeLinks = new DecompositionLinks();
         }
 
-        public PlanSchedule(IPlan plan, Schedule cntgs, MergeManager mm) : base(plan.Steps, plan.Initial, plan.Goal, plan.InitialStep, plan.GoalStep, plan.Orderings, plan.CausalLinks, plan.Flaws)
+        public PlanSchedule(IPlan plan, Schedule cntgs, MergeManager mm, DecompositionLinks dlinks) : base(plan.Steps, plan.Initial, plan.Goal, plan.InitialStep, plan.GoalStep, plan.Orderings, plan.CausalLinks, plan.Flaws)
         {
             Cntgs = cntgs;
             MM = mm;
-           // DeLinks = dlinks;
+            DeLinks = dlinks;
         }
 
-        public PlanSchedule(IPlan plan, HashSet<Tuple<IPlanStep, IPlanStep>> cntgs, HashSet<Tuple<int, int>> mm) : base(plan.Steps, plan.Initial, plan.Goal, plan.InitialStep, plan.GoalStep, plan.Orderings, plan.CausalLinks, plan.Flaws)
+        public PlanSchedule(IPlan plan, HashSet<Tuple<IPlanStep, IPlanStep>> cntgs, HashSet<Tuple<int, int>> mm, DecompositionLinks dlinks) : base(plan.Steps, plan.Initial, plan.Goal, plan.InitialStep, plan.GoalStep, plan.Orderings, plan.CausalLinks, plan.Flaws)
         {
             Cntgs = new Schedule(cntgs);
             MM = new MergeManager(mm);
-           // DeLinks = dlinks.Clone();
+            DeLinks = dlinks.Clone();
         }
-        public PlanSchedule(IPlan plan, List<Tuple<IPlanStep, IPlanStep>> cntgs, List<Tuple<int, int>> mm) : base(plan.Steps, plan.Initial, plan.Goal, plan.InitialStep, plan.GoalStep, plan.Orderings, plan.CausalLinks, plan.Flaws)
+        public PlanSchedule(IPlan plan, List<Tuple<IPlanStep, IPlanStep>> cntgs, List<Tuple<int, int>> mm, DecompositionLinks dlinks) : base(plan.Steps, plan.Initial, plan.Goal, plan.InitialStep, plan.GoalStep, plan.Orderings, plan.CausalLinks, plan.Flaws)
         {
             Cntgs = new Schedule(cntgs);
             MM = new MergeManager(mm);
-         //   DeLinks = dlinks.Clone();
+            DeLinks = dlinks.Clone();
+        }
+
+        public IPlanStep GetStepByID(int id)
+        {
+            return steps.Single(s => s.ID == id);
         }
 
         public new void Insert(IPlanStep newStep)
@@ -97,8 +108,10 @@ namespace BoltFreezer.Scheduling
             newStep.Effects = new List<IPredicate>();
             newStep.InitialStep = dummyInit;
             newStep.GoalStep = dummyGoal;
-            dummyGoal.Parent = newStep;
-            dummyInit.Parent = newStep;
+
+            DeLinks.Insert(newStep, dummyGoal);
+            DeLinks.Insert(newStep, dummyInit);
+
             //newStepCopy.InitialStep = dummyInit;
             //newStepCopy.GoalStep = dummyGoal;
 
@@ -108,7 +121,7 @@ namespace BoltFreezer.Scheduling
                 // substep is either a IPlanStep or ICompositePlanStep
                 if (substep.Height > 0)
                 {
-                    var compositeSubStep = new CompositeSchedulePlanStep(substep.Clone() as IPlanStep)
+                    var compositeSubStep = new CompositeSchedulePlanStep(substep.Clone() as CompositeSchedulePlanStep)
                     {
                         Depth = newStep.Depth + 1
                     };
@@ -120,11 +133,28 @@ namespace BoltFreezer.Scheduling
                     compositeSubStep.InitialStep.GoalCndt = dummyGoal;
                     compositeSubStep.GoalStep.InitCndt = dummyInit;
                     compositeSubStep.GoalStep.GoalCndt = dummyGoal;
-                    compositeSubStep.Parent = newStep;
+
+                    DeLinks.Insert(newStep, compositeSubStep);
+
+                    //compositeSubStep.Parent = newStep;
                     
                     newSubSteps.Add(compositeSubStep);
                     Insert(compositeSubStep);
-                    
+
+                    //foreach (var precon in compositeSubStep.ContextPrecons)
+                    //{
+                    //    if (newStep.ContextPrecons.Contains(precon))
+                    //    {
+                    //        // then replace.
+                    //    }
+                    //    // these precons MUST be referencing a local sub-step; or else, they reference a precondition or effect of a sub-step.
+                    //    precon.ActionRef = IDMap[precon.ActionRef.ID];
+                    //}
+                    //foreach (var eff in newStep.ContextEffects)
+                    //{
+                    //    eff.ActionRef = IDMap[eff.ActionRef.ID];
+                    //}
+
                     // Don't bother updating hdepth yet because we will check on recursion
                 }
                 else
@@ -153,7 +183,9 @@ namespace BoltFreezer.Scheduling
                     newSubSteps.Add(newsubstep);
                     newsubstep.InitCndt = dummyInit;
                     newsubstep.GoalCndt = dummyGoal;
-                    newsubstep.Parent = newStep;
+                    //newsubstep.Parent = newStep;
+                    DeLinks.Insert(newStep, newsubstep);
+
                     InsertPrimitiveSubstep(newsubstep, dummyInit.Effects, false);
 
                     if (newsubstep.Depth > Hdepth)
@@ -169,6 +201,18 @@ namespace BoltFreezer.Scheduling
                 cps.UpdateActionSegs(IDMap);
             }
 
+            //foreach (var precon in newStep.ContextPrecons)
+            //{
+            //    // these precons MUST be referencing a local sub-step; or else, they reference a precondition or effect of a sub-step.
+            //    precon.ActionRef = IDMap[precon.ActionRef.ID];
+            //}
+            //foreach (var eff in newStep.ContextEffects)
+            //{
+            //    eff.ActionRef = IDMap[eff.ActionRef.ID];
+            //}
+
+            //foreach(var precon in )
+
             foreach (var tupleOrdering in newStep.SubOrderings)
             {
 
@@ -183,12 +227,12 @@ namespace BoltFreezer.Scheduling
                 if (head.Height > 0)
                 {
                     // can you pass it back?
-                    var temp = head as ICompositePlanStep;
+                    var temp = head as CompositeSchedulePlanStep;
                     head = temp.GoalStep as IPlanStep;
                 }
                 if (tail.Height > 0)
                 {
-                    var temp = tail as ICompositePlanStep;
+                    var temp = tail as CompositeSchedulePlanStep;
                     tail = temp.InitialStep as IPlanStep;
                 }
                 Orderings.Insert(head, tail);
@@ -203,13 +247,31 @@ namespace BoltFreezer.Scheduling
                 if (head.Height > 0)
                 {
                     // how do we describe a composite as being contiguous with another step?
-                    var temp = head as ICompositePlanStep;
-                    head = temp.GoalStep as IPlanStep;
+                    var temp = head as CompositeSchedulePlanStep;
+                    //var fas = temp.FinalActionSeg;
+                    if (tail is CamPlanStep cps)
+                    {
+                        // then get final discourse step of temp // This is a HACK - because the last camera substep may be on a grandchild
+                        head = temp.CamScheduleSubSteps.Last() as IPlanStep;
+                    }
+                    else
+                    {
+                        // then get the action referenced by the final action segment - already updated actionID and is already in plan.
+                        head = steps.Where(s => s.ID == temp.FinalActionSeg.ActionID).First();
+                    }
                 }
                 if (tail.Height > 0)
                 {
-                    var temp = tail as ICompositePlanStep;
-                    tail = temp.InitialStep as IPlanStep;
+                    var temp = tail as CompositeSchedulePlanStep;
+                    if (head is CamPlanStep cps)
+                    {
+                        // then get first discourse step of temp // This is a HACK - because the first camera substep may be on a grandchild
+                        tail = temp.CamScheduleSubSteps.First() as IPlanStep;
+                    }
+                    else
+                    {
+                        tail = steps.Where(s => s.ID == temp.InitialActionSeg.ActionID).First();
+                    }
                 }
                 Cntgs.Insert(head, tail);
                 // also add orderings just in case
@@ -220,14 +282,16 @@ namespace BoltFreezer.Scheduling
             {
                 var head = IDMap[clink.Head.ID];
                 var tail = IDMap[clink.Tail.ID];
+
+                
                 if (head.Height > 0)
                 {
-                    var temp = head as CompositePlanStep;
+                    var temp = head as CompositeSchedulePlanStep;
                     head = temp.GoalStep as IPlanStep;
                 }
                 if (tail.Height > 0)
                 {
-                    var temp = tail as CompositePlanStep;
+                    var temp = tail as CompositeSchedulePlanStep;
                     tail = temp.InitialStep as IPlanStep;
                 }
 
@@ -312,7 +376,7 @@ namespace BoltFreezer.Scheduling
         /// </summary>
         /// <param name="step1"></param>
         /// <param name="step2"></param>
-        public void MergeSteps(IPlanStep step1, IPlanStep step2)
+        protected void RewrittenAs(IPlanStep step1, IPlanStep step2)
         {
 
             // Update Merge Manager
@@ -389,7 +453,7 @@ namespace BoltFreezer.Scheduling
             Cntgs.edges = newCntgs;
             CausalLinks = newLinks.ToList();
 
-            var openConditions = new List<OpenCondition>();
+            //var openConditions = new List<OpenCondition>();
             // we need to take intersection of open conditions between two steps 
             var ocsWithStep1 = Flaws.OpenConditions.Where(oc => oc.step.Equals(step1)).Select(oc=> oc.precondition);
             var ocintersection = Flaws.OpenConditions.Where(oc => oc.step.Equals(step2) && ocsWithStep1.Contains(oc.precondition));
@@ -413,67 +477,60 @@ namespace BoltFreezer.Scheduling
         }
 
         public void RepairWithMerge(IPredicate neededCondition, IPlanStep needStep, CompositeSchedulePlanStep repairStep)
+        //public void RepairWithMerge(ContextPredicate neededCondition, ContextPredicate producedCondition, IPlanStep needStep, CompositeSchedulePlanStep repairStep)
         {
-            var stepThatNeedsToBeMerged = neededCondition.Terms[0].Constant;
+            // needStep is initialStep;
+            var needStepComposite = GetStepByID(DeLinks.GetParent(needStep)) as CompositeSchedulePlanStep;
+            var subStepTermID = neededCondition.Terms[0].Constant;
+            var stepThatNeedsToBeMerged = GetStepByID(DeLinks.GetSubSteps(needStepComposite).Single(sid => GetStepByID(sid).Action.ID.ToString().Equals(subStepTermID)));
+            //var stepThatNeedsToBeMerged = needStepComposite.SubSteps.Where(s => s.Action.ID.ToString().Equals(subStepTermID)).First();
+            //var stepThatNeedsToBeMerged = neededCondition.ActionRef;
+            var stepThatDoesMerging = GetStepByID(DeLinks.GetSubSteps(repairStep).Single(sid => GetStepByID(sid).Action.ID.ToString().Equals(subStepTermID)));
+            //var stepThatDoesMerging = repairStep.SubSteps.Where(s => s.Action.ID.ToString().Equals(subStepTermID)).First();
 
-            IPlanStep needStepSubStep = new PlanStep();
-            IPlanStep repairStepSubStep = new PlanStep();
-            foreach (var step in Steps)
-            {
-                if (step.Action.ID.ToString().Equals(stepThatNeedsToBeMerged))
-                {
-                    // Repair Step must keep active reference of root merge
-                    if (repairStep.SubSteps.Contains(step))
-                    {
-                        // Subsumed
-                        repairStepSubStep = step;
-                    }
-                    // Assumes need step is 
-                    else if (step.InitCndt.Equals(needStep))
-                    {
-                        // Subsumer
-                        needStepSubStep = step;
-                    }
-                }
-            }
-            if (repairStepSubStep.Name.Equals("") || needStepSubStep.Name.Equals(""))
-            {
-                //Debug.Log("never found steps to merge");
-                throw new System.Exception("Never found steps to merge");
-            }
+            // We assume that no timeline decomposition contains the same exact sub-step twice.
 
-            if (repairStepSubStep.ID == needStepSubStep.ID)
-            {
-                throw new System.Exception("Steps to be merged are already equal");
-            }
+            //var stepThatDoesMerging = producedCondition.ActionRef;
 
-            //MergeSteps(repairStepSubStep, needStepSubStep);
-            MergeSteps(needStepSubStep, repairStepSubStep);
+            // In case the sub-step has been merged, find the most recent reference
+            //var getID = MM.FindRoot(stepThatDoesMerging.ID);
+            //if (getID != stepThatDoesMerging.ID)
+            //{
+            //    stepThatDoesMerging = Steps.Where(s => s.ID == getID).First();
+            //}
 
+            //getID = MM.FindRoot(stepThatNeedsToBeMerged.ID);
+            //if (getID != stepThatNeedsToBeMerged.ID)
+            //{
+            //    stepThatNeedsToBeMerged = Steps.Where(s => s.ID == getID).First();
+            //}
 
-            // Add decomp link from repair step to new sub-step
-           // repairStep.SubSteps.Remove(ReferencedStep1);
-            //repairStep.SubSteps.Add(ReferencedStep2);
-            //ReferencedStep2.Parent = repairStep;
+            // rewrite the produced sub-step
+            RewrittenAs(stepThatNeedsToBeMerged, stepThatDoesMerging);
+            //MergeSteps(stepThatDoesMerging, stepThatNeedsToBeMerged);
 
-            // Remove decomp link from parent of repair step (get root)
-            var repairStepRoot = GetDecompRoot(repairStep) as CompositePlanStep;
-            var needStepParent = needStep.Parent as CompositePlanStep;
-            needStepParent.SubSteps.Remove(needStep);
-            needStepParent.SubSteps.Add(repairStepRoot);
-            //repairStepRoot.Depth = needStepParent.Depth + 1;
-            //UpdateDecompTreeDepth(repairStep);
-            repairStepRoot.Parent = needStepParent;
-            Orderings.Insert(needStepParent.InitialStep, repairStepRoot.InitialStep);
-            Orderings.Insert(repairStepRoot.GoalStep, needStepParent.GoalStep);
-            needStepParent.SubSteps.Remove(needStepSubStep);
+            // get the produced step's decompositional root
+            var repairStepRoot = GetStepByID(DeLinks.GetRoot(repairStep)) as CompositePlanStep;
 
-            //if (hdepth > needStep.Depth + )
+            // removed the consumed rewritten sub-step
+            DeLinks.RemoveSubStep(needStepComposite, stepThatNeedsToBeMerged);
+            //needStepComposite.SubSteps.Remove(stepThatNeedsToBeMerged);
+
+            // add decomp link to produced step's root
+            DeLinks.Insert(needStepComposite, repairStepRoot);
+            //repairStepRoot.Parent = needStepComposite;
+            //needStepComposite.SubSteps.Add(repairStepRoot);
             
-            // for each link with needStepSubStep, add link to repairstep 
+            // Add orderings to keep repair Step within decompositional borders
+            Orderings.Insert(needStepComposite.InitialStep, repairStepRoot.InitialStep);
+            Orderings.Insert(repairStepRoot.GoalStep, needStepComposite.GoalStep);
+
         }
 
-        
+        private CompositePlanStep GetStepFromID(int v)
+        {
+            throw new NotImplementedException();
+        }
 
         public void RepairWithComposite(OpenCondition oc, CompositeSchedulePlanStep repairStep)
         {
@@ -485,11 +542,18 @@ namespace BoltFreezer.Scheduling
 
             // need to merge all steps that are being connected by this predicate:
             if (oc.precondition.Name.Equals("obs-starts"))
+            //if (oc.precondition is ContextPredicate cxtp)
             {
-                Console.WriteLine("obs-starts");
+                this.ID += "s";
+                //var repairEff = repairStep.Effects.Where(e => cxtp.Equals(oc.precondition)).First() ;
                 RepairWithMerge(oc.precondition, needStep, repairStep);
                 return;
             }
+            //if (oc.precondition.Name.Equals("obs-starts"))
+            //{
+            //    Console.WriteLine("obs-starts");
+                
+            //}
 
             orderings.Insert(repairStep.GoalStep as IPlanStep, needStep);
 
@@ -512,19 +576,11 @@ namespace BoltFreezer.Scheduling
                 if (step.Height > 0)
                 {
 
-                    // not sufficient
-                    //if (clink.Head.Parent.Equals(step) || clink.Tail.Parent.Equals(step)) //.SubSteps.Contains(clink.Head) || stepAsComp.SubSteps.Contains(clink.Tail))
-                    //{
-                    //    continue;
-                    //    // replace this with... is Decompositional Link-based path from step to clink.Head or clink.Tail
-                    //}
-
-
                     // we need to check that this step's goal step
                     var stepAsComp = step as CompositeSchedulePlanStep;
 
 
-                    if (OnDecompPath(clink.Head, step.ID))
+                    if (DeLinks.OnDecompPath(clink.Head, step.ID))
                     {
                         // must be ordered within 
                         if (Orderings.IsPath(clink.Tail, stepAsComp.GoalStep))
@@ -533,18 +589,18 @@ namespace BoltFreezer.Scheduling
                             continue;
                         }
 
-                        if (!OnDecompPath(clink.Tail, step.ID))
+                        if (!DeLinks.OnDecompPath(clink.Tail, step.ID))
                         {
                             // Q --> s -p-> t, not p in eff(Q), not Q --> t
                             // then, need to tuck t into Q's borders.
-                            var tailRoot = GetDecompRoot(clink.Tail) as CompositePlanStep;
+                            var tailRoot = GetStepByID(DeLinks.GetRoot(clink.Tail)) as CompositePlanStep;
                             Orderings.Insert(tailRoot.GoalStep, stepAsComp.InitialStep);
                         }
 
                         continue;
                     }
 
-                    if (OnDecompPath(clink.Tail, step.ID))
+                    if (DeLinks.OnDecompPath(clink.Tail, step.ID))
                     {
                         // step cannot threaten
                         continue;
@@ -561,27 +617,7 @@ namespace BoltFreezer.Scheduling
                         continue;
                     }
 
-                    //if (OnDecompPath(repairStep, step.ID))
-                    //{
-                    //    var needRoot = GetDecompRoot(needStep) as CompositeSchedulePlanStep;
-                    //    // repair step produces p, step has not p, need step uses p. 
-                    //    // Decide whether to include need step into borders
-                    //    Orderings.Insert(needRoot.GoalStep, stepAsComp.GoalStep);
-                    //    Orderings.Insert(repairStep.GoalStep, needRoot.InitialStep);
-                    //    continue;
-                    //}
-
-                    //if (OnDecompPath(needStep, step.ID))
-                    //{
-                    //    // decide whether to include repair step into bordersof step
-                    //    var repairRoot = GetDecompRoot(repairStep) as CompositeSchedulePlanStep;
-                    //    Orderings.Insert(stepAsComp.InitialStep, repairRoot.InitialStep);
-                    //    Orderings.Insert(repairRoot.GoalStep, needStep);
-                    //    // just check if causal link between repairstep goal and step goal is threatened
-                    //    continue;
-                    //    //  Console.WriteLine("here");
-                    //}
-
+             
                     Flaws.Add(new ThreatenedLinkFlaw(clink, stepAsComp));
                    // Flaws.Add(new ThreatenedLinkFlaw(clink, compInit));
                 }
@@ -589,16 +625,11 @@ namespace BoltFreezer.Scheduling
                 else
                 {
                     // is it possible that step is a sub-step of repair step? Yes it is.
-                    if (OnDecompPath(step, repairStep.ID))
+                    if (DeLinks.OnDecompPath(step, repairStep.ID))
                     {
                         // but, there's nothing we can do about it; and all links to repairStep.GoalStep are there to be threatened
                         continue;
                     }
-                    //if (OnDecompPath(step, needStep.Parent.ID))
-                    //{
-                    //    // there should be an ordering from needstep to step in this case.
-                    //    continue;
-                    //}
 
                     // step is a threat to need precondition
                     if (Orderings.IsPath(needStep, step))
@@ -616,10 +647,82 @@ namespace BoltFreezer.Scheduling
             }
         }
 
+        public new void DetectThreats(IPlanStep possibleThreat)
+        {
+            CompositeSchedulePlanStep possibleThreatComposite = new CompositeSchedulePlanStep();
+            if (possibleThreat.Height > 0)
+            {
+                possibleThreatComposite = possibleThreat as CompositeSchedulePlanStep;
+            }
+
+            foreach (var clink in causalLinks)
+            {
+
+                if (!CacheMaps.IsThreat(clink.Predicate, possibleThreat))
+                {
+                    continue;
+                }
+
+                if (possibleThreat.Height > 0)
+                {
+
+                    if (DeLinks.OnDecompPath(clink.Head, possibleThreat.ID))
+                    {
+                        // must be ordered within 
+                        if (Orderings.IsPath(clink.Tail, possibleThreatComposite.GoalStep))
+                        {
+                            // already tucked into Q's borders
+                            continue;
+                        }
+
+                        if (!DeLinks.OnDecompPath(clink.Tail, possibleThreat.ID))
+                        {
+                            // Q --> s -p-> t, not p in eff(Q), not Q --> t
+                            // then, need to tuck t into Q's borders.
+                            var tailRoot = GetStepByID(DeLinks.GetRoot(clink.Tail)) as CompositePlanStep;
+                            Orderings.Insert(tailRoot.GoalStep, possibleThreatComposite.InitialStep);
+                        }
+
+                        continue;
+                    }
+
+                    if (DeLinks.OnDecompPath(clink.Tail, possibleThreat.ID))
+                    {
+                        continue;
+                    }
+
+                    if (Orderings.IsPath(clink.Tail, possibleThreatComposite.InitialStep))
+                    {
+                        continue;
+                    }
+                    if (Orderings.IsPath(possibleThreatComposite.GoalStep, clink.Head))
+                    {
+                        continue;
+                    }
+                    Flaws.Add(new ThreatenedLinkFlaw(clink, possibleThreat));
+                }
+                else
+                {
+                    // don't need to check decomp paths, because causal links and threat are all primitive. 
+                    if (Orderings.IsPath(clink.Tail, possibleThreat))
+                    {
+                        continue;
+                    }
+                    if (Orderings.IsPath(possibleThreat, clink.Head))
+                    {
+                        continue;
+                    }
+                    Flaws.Add(new ThreatenedLinkFlaw(clink, possibleThreat));
+                }
+
+
+            }
+        }
+
         public new System.Object Clone()
         {
             var basePlanClone = base.Clone() as Plan;
-            var newPlan = new PlanSchedule(basePlanClone, new HashSet<Tuple<IPlanStep, IPlanStep>>(Cntgs.edges), new HashSet<Tuple<int, int>>(MM.Merges))
+            var newPlan = new PlanSchedule(basePlanClone, new HashSet<Tuple<IPlanStep, IPlanStep>>(Cntgs.edges), new HashSet<Tuple<int, int>>(MM.Merges), DeLinks.Clone())
             {
                 Hdepth = hdepth,
                 Decomps = Decomps

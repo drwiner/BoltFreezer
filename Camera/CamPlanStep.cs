@@ -21,6 +21,11 @@ namespace BoltFreezer.Camera {
 
         public CamDirective directive = CamDirective.None;
 
+        public CamPlanStep() : base()
+        {
+
+        }
+
         public CamPlanStep(IOperator groundAction) : base(groundAction)
         {
         }

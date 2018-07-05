@@ -5,24 +5,130 @@ using System.Collections;
 using System.Collections.Generic;
 
 using System;
+using BoltFreezer.Camera;
+using System.Linq;
+using BoltFreezer.DecompTools;
 
 namespace BoltFreezer.Scheduling {
 
     // An instantiation of CompositeSchedule
 	[Serializable]
-    public class CompositeSchedulePlanStep : CompositePlanStep, ICompositePlanStep
+    public class CompositeSchedulePlanStep : CompositePlanStep, ICompositePlanStep, ICompositeSchedule
     {
+
+
+        public List<CamPlanStep> CamScheduleSubSteps
+        {
+            get
+            {
+                return SubSteps.OfType<CamPlanStep>().ToList();
+            }
+        }
+
         // has cntgs in addition to sub orderings
-        public List<Tuple<IPlanStep, IPlanStep>> Cntgs;
+        public List<Tuple<IPlanStep, IPlanStep>> Cntgs
+        {
+            get
+            {
+                return cntgs;
+            }
+            set
+            {
+                cntgs = value;
+            }
+        }
+        protected List<Tuple<IPlanStep, IPlanStep>> cntgs;
+
+        public int NumberSegments
+        {
+            get
+            {
+                int count = 0;
+                foreach (var substep in subSteps)
+                {
+                    if (substep is CamPlanStep cps)
+                    {
+                        count = count + cps.TargetDetails.ActionSegs.Count;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public int NumberCamSteps
+        {
+            get
+            {
+                int count = 0;
+                foreach (var substep in subSteps)
+                {
+                    if (substep is CamPlanStep cps)
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public ActionSeg InitialActionSeg
+        {
+            get; set;
+        }
+        public ActionSeg FinalActionSeg
+        {
+            get; set;
+        }
+        public CamPlanStep InitialCamAction { get; set; }
+        public CamPlanStep FinalCamAction { get; set; }
+        public IPlanStep InitialAction { get; set; }
+        public IPlanStep FinalAction { get; set; }
+
+        List<Tuple<IPlanStep, IPlanStep>> IComposite.SubOrderings
+        {
+            get => SubOrderings;
+            set
+            {
+                subOrderings = value;
+            }
+        }
+
+        List<CausalLink<IPlanStep>> IComposite.SubLinks {
+            get => SubLinks;
+            set
+            {
+                subLinks = value;
+            }
+        }
+
 
         public CompositeSchedulePlanStep(CompositeSchedule comp) : base(comp as Composite)
         {
             Cntgs = comp.Cntgs;
+
+            InitialActionSeg = comp.InitialActionSeg;
+            FinalActionSeg = comp.FinalActionSeg;
+
+            InitialAction = comp.InitialAction;
+            FinalAction = comp.FinalAction;
+
+            InitialCamAction = comp.InitialCamAction;
+            FinalCamAction = comp.FinalCamAction;
+            //ContextPrecons = comp.ContextPrecons;
+            //ContextEffects = comp.ContextEffects;
         }
 
-        public CompositeSchedulePlanStep(IComposite comp, List<Tuple<IPlanStep, IPlanStep>> cntgs) : base(comp)
+        public CompositeSchedulePlanStep(CompositeSchedulePlanStep comp) : base(comp as CompositePlanStep)
         {
-            Cntgs = cntgs;
+            Cntgs = comp.Cntgs;
+            InitialActionSeg = comp.InitialActionSeg;
+            FinalActionSeg = comp.FinalActionSeg;
+
+            InitialAction = comp.InitialAction;
+            FinalAction = comp.FinalAction;
+
+            InitialCamAction = comp.InitialCamAction;
+            FinalCamAction = comp.FinalCamAction;
         }
 
         public CompositeSchedulePlanStep(IPlanStep ps) : base(ps)
@@ -75,8 +181,11 @@ namespace BoltFreezer.Scheduling {
             {
                 
                 InitialActionSeg = InitialActionSeg.Clone(),
-                FinalActionSeg = FinalActionSeg.Clone()
-            
+                FinalActionSeg = FinalActionSeg.Clone(),
+                InitialAction = InitialAction.Clone() as IPlanStep,
+                FinalAction = FinalAction.Clone() as IPlanStep,
+                InitialCamAction = InitialCamAction.Clone() as CamPlanStep,
+                FinalCamAction = FinalCamAction.Clone() as CamPlanStep
             };
         }
 

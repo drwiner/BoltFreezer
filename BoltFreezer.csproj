@@ -74,6 +74,7 @@
     <Compile Include="Camera\CamSchema.cs" />
     <Compile Include="Camera\CamTargetSchema.cs" />
     <Compile Include="DecompTools\Constraints.cs" />
+    <Compile Include="DecompTools\ContextPredicate.cs" />
     <Compile Include="DecompTools\Decomposition.cs" />
     <Compile Include="DecompTools\DecompositionLinks.cs" />
     <Compile Include="DecompTools\TimelineDecomposition.cs" />
@@ -87,6 +88,7 @@
     <Compile Include="Enums\SelectionType.cs" />
     <Compile Include="FileIO\JsonProblemDeserializer.cs" />
     <Compile Include="FileIO\SimpleJson.cs" />
+    <Compile Include="Interfaces\ICompositeSchedule.cs" />
     <Compile Include="Interfaces\POP\IFlawLibrary.cs" />
     <Compile Include="Interfaces\POP\ISelection.cs" />
     <Compile Include="Camera\CamPlanStep.cs" />

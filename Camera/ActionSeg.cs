@@ -38,6 +38,7 @@ namespace BoltFreezer.Camera
         {
             actionVarName = actionvar;
             actionID = _actionID;
+            actiontypeID = _actiontypeID;
             targetVarName = tarvar;
             startPercent = start;
             endPercent = end;

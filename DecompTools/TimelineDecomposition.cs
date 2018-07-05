@@ -30,6 +30,8 @@ namespace BoltFreezer.DecompTools
         public List<Tuple<string, Tuple<CamPlanStep, CamPlanStep>>> discConstraints;
 
         public ActionSeg InitialActionSeg, FinalActionSeg;
+        public CamPlanStep InitialCamAction, FinalCamAction;
+        public IPlanStep InitialAction, FinalAction;
 
         public TimelineDecomposition() : base()
         {
@@ -38,6 +40,10 @@ namespace BoltFreezer.DecompTools
             discourseSubSteps = new List<CamPlanStep>();
             InitialActionSeg = new ActionSeg();
             FinalActionSeg = new ActionSeg();
+            InitialAction = new PlanStep();
+            FinalAction = new PlanStep();
+            InitialCamAction = new CamPlanStep();
+            FinalCamAction = new CamPlanStep();
         }
 
         public TimelineDecomposition(string name, List<ITerm> terms, IOperator init, IOperator dummy, List<IPredicate> Preconditions, List<IPredicate> Effects, int ID)
@@ -52,6 +58,7 @@ namespace BoltFreezer.DecompTools
 
         }
 
+        // used for initialization
         public TimelineDecomposition(IOperator core, List<IPredicate> literals,
             List<Tuple<IPlanStep, IPlanStep>> fcntgs, List<Tuple<CamPlanStep, CamPlanStep>> dcntgs,
             List<Tuple<string, Tuple<PlanStep, PlanStep>>> fconstraints, List<Tuple<string, Tuple<CamPlanStep, CamPlanStep>>> dconstraints,
@@ -69,8 +76,22 @@ namespace BoltFreezer.DecompTools
             discOrderings = dOrderings;
             discLinks = dLinks;
             fabulaActionNameMap = fabulaStepVariableNameDictionary;
+
+            // to be updated after grounding or adding connectives
+            InitialCamAction = discourseSubSteps[0];
+            FinalCamAction = discourseSubSteps[discourseSubSteps.Count - 1];
+
+            // to beupdated after grounding regular actions
+            InitialActionSeg = InitialCamAction.TargetDetails.ActionSegs[0];
+            FinalActionSeg = FinalCamAction.TargetDetails.ActionSegs[FinalCamAction.TargetDetails.ActionSegs.Count - 1];
+
+            // to be instantiated after grounding actions
+            InitialAction = new PlanStep();
+            FinalAction = new PlanStep();
+            
         }
 
+        // used for cloning.
         public TimelineDecomposition(Decomposition decomp,
             List<Tuple<IPlanStep, IPlanStep>> fcntgs, List<Tuple<CamPlanStep, CamPlanStep>> dcntgs,
             List<CamPlanStep> discourseSteps,
@@ -87,6 +108,7 @@ namespace BoltFreezer.DecompTools
             discOrderings = dOrderings;
             discLinks = dLinks;
             fabulaActionNameMap = fabulaStepVariableNameDictionary;
+
         }
 
         
@@ -234,7 +256,15 @@ namespace BoltFreezer.DecompTools
                 newSubsteps.Add(newsubstep);
             }
 
-            return new TimelineDecomposition(baseDecomp, fabCntgs.ToList(), discCntgs.ToList(), newSubsteps, fabConstraints.ToList(), discConstraints.ToList(), discOrderings.ToList(), discLinks.ToList(), fabulaActionNameMap.ToDictionary(x=> x.Key, x=> x.Value));
+            return new TimelineDecomposition(baseDecomp, fabCntgs.ToList(), discCntgs.ToList(), newSubsteps, fabConstraints.ToList(), discConstraints.ToList(), discOrderings.ToList(), discLinks.ToList(), fabulaActionNameMap.ToDictionary(x => x.Key, x => x.Value))
+            {
+                InitialActionSeg = InitialActionSeg.Clone(),
+                FinalActionSeg = FinalActionSeg.Clone(),
+                InitialAction = InitialAction.Clone() as IPlanStep,
+                FinalAction = FinalAction.Clone() as IPlanStep,
+                InitialCamAction = InitialCamAction.Clone() as CamPlanStep,
+                FinalCamAction = FinalCamAction.Clone() as CamPlanStep
+            };
         }
     }
 }

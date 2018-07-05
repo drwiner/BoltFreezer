@@ -79,6 +79,7 @@ namespace BoltFreezer.PlanTools
             subOrderings = comp.SubOrderings;
         }
 
+        // Used for Clone
         public CompositePlanStep(IComposite comp, List<IPredicate> openconditions, IPlanStep init, IPlanStep goal, 
             List<IPlanStep> substeps, List<Tuple<IPlanStep, IPlanStep>> suborderings, List<CausalLink<IPlanStep>> clinks, int ID) 
             : base(comp as IOperator, openconditions, ID)
@@ -113,7 +114,12 @@ namespace BoltFreezer.PlanTools
             goalStep = compositeAction.GoalStep;
 
             // Sub-steps are to be newly instantiated later during inset decomp. 
-            subSteps = compositeAction.SubSteps;
+            var newSubSteps = new List<IPlanStep>();
+            foreach(var s in compositeAction.SubSteps)
+            {
+                newSubSteps.Add(s.Clone() as IPlanStep);
+            }
+            subSteps = newSubSteps;
             subOrderings = compositeAction.SubOrderings;
             subLinks = compositeAction.SubLinks;
         }
@@ -123,7 +129,7 @@ namespace BoltFreezer.PlanTools
             var newSubStepContainer = new List<IPlanStep>();
             foreach(var step in SubSteps)
             {
-                newSubStepContainer.Add(step);
+                newSubStepContainer.Add(step.Clone() as IPlanStep);
             }
 
             return new CompositePlanStep(CompositeAction, OpenConditions, InitialStep.Clone() as IPlanStep, GoalStep.Clone() as IPlanStep, 

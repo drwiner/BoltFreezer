@@ -191,6 +191,7 @@ namespace TestFreezer
             ci.problemname = "racetest(1)";
             ci.problemname = "racetest(7)";
             ci.problemname = "racetest(9)";
+            ci.problemname = "racetestWith2Connective";
             ci.RunTest(1000000f);
 
             // search (false ==> ignore depth as stopping condition, is default). Selection (E0) (true=> do check for no flaws no matter depth).

@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace BoltFreezer.Scheduling
 {
     [Serializable]
-    public class CompositeSchedule : Composite, IComposite
+    public class CompositeSchedule : Composite, IComposite, ICompositeSchedule
     {
         public List<Tuple<IPlanStep, IPlanStep>> Cntgs;
 
@@ -45,8 +45,16 @@ namespace BoltFreezer.Scheduling
                 return count;
             }
         }
-        public ActionSeg InitialActionSeg;
-        public ActionSeg FinalActionSeg;
+
+        //public List<ContextPredicate> ContextPrecons { get; set; }
+        //public List<ContextPredicate> ContextEffects { get; set; }
+
+        public ActionSeg InitialActionSeg { get; set; }
+        public ActionSeg FinalActionSeg { get; set; }
+        public CamPlanStep InitialCamAction { get; set; }
+        public CamPlanStep FinalCamAction { get; set; }
+        public IPlanStep InitialAction { get; set; }
+        public IPlanStep FinalAction { get; set; }
 
         // used to create root 
         public CompositeSchedule(IOperator op) : base(op)
@@ -112,6 +120,14 @@ namespace BoltFreezer.Scheduling
                 SubLinks.Add(new CausalLink<IPlanStep>(dlink.Predicate, dlink.Head, dlink.Tail));
             }
 
+            // these should already be ground.
+            InitialActionSeg = td.InitialActionSeg.Clone();
+            FinalActionSeg = td.FinalActionSeg.Clone();
+            InitialAction = td.InitialAction.Clone() as IPlanStep;
+            FinalAction = td.FinalAction.Clone() as IPlanStep;
+            InitialCamAction = td.InitialCamAction.Clone() as CamPlanStep;
+            FinalCamAction = td.FinalCamAction.Clone() as CamPlanStep;
+
         }
 
         public new System.Object Clone()
@@ -125,7 +141,11 @@ namespace BoltFreezer.Scheduling
             var theClone = new CompositeSchedule(CompositeBase, newCntgs)
             {
                 InitialActionSeg = InitialActionSeg.Clone(),
-                FinalActionSeg = FinalActionSeg.Clone()
+                FinalActionSeg = FinalActionSeg.Clone(),
+                InitialAction = InitialAction.Clone() as IPlanStep,
+                FinalAction = FinalAction.Clone() as IPlanStep,
+                InitialCamAction = InitialCamAction.Clone() as CamPlanStep,
+                FinalCamAction = FinalCamAction.Clone() as CamPlanStep
             };
             return theClone;
         }

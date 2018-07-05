@@ -26,7 +26,7 @@ namespace BoltFreezer.Scheduling
 
         public static IPlan CreateInitialPlan(Problem problem)
         {
-            var initialPlan = new PlanSchedule(new Plan(new State(problem.Initial) as IState, new State(problem.Goal) as IState), new List<Tuple<IPlanStep, IPlanStep>>(), new List<Tuple<int, int>>());
+            var initialPlan = new PlanSchedule(new Plan(new State(problem.Initial) as IState, new State(problem.Goal) as IState), new List<Tuple<IPlanStep, IPlanStep>>(), new List<Tuple<int, int>>(), new DecompositionLinks());
             foreach (var goal in problem.Goal)
                 initialPlan.Flaws.Add(initialPlan, new OpenCondition(goal, initialPlan.GoalStep as IPlanStep));
             initialPlan.Orderings.Insert(initialPlan.InitialStep, initialPlan.GoalStep);
@@ -35,7 +35,7 @@ namespace BoltFreezer.Scheduling
 
         public static IPlan CreateInitialPlan(List<IPredicate> Initial, List<IPredicate> Goal)
         {
-            var initialPlan = new PlanSchedule(new Plan(new State(Initial) as IState, new State(Goal) as IState), new List<Tuple<IPlanStep, IPlanStep>>(), new List<Tuple<int, int>>());
+            var initialPlan = new PlanSchedule(new Plan(new State(Initial) as IState, new State(Goal) as IState), new List<Tuple<IPlanStep, IPlanStep>>(), new List<Tuple<int, int>>(), new DecompositionLinks());
             foreach (var goal in Goal)
                 initialPlan.Flaws.Add(initialPlan, new OpenCondition(goal, initialPlan.GoalStep as IPlanStep));
             initialPlan.Orderings.Insert(initialPlan.InitialStep, initialPlan.GoalStep);
@@ -91,7 +91,7 @@ namespace BoltFreezer.Scheduling
                 {
                     //continue;
                     var compCndt = cndt as CompositeSchedule;
-                    newStep = new CompositeSchedulePlanStep(compCndt.Clone() as IComposite, compCndt.Cntgs)
+                    newStep = new CompositeSchedulePlanStep(compCndt.Clone() as CompositeSchedule)
                     {
                         Depth = oc.step.Depth
                     };
