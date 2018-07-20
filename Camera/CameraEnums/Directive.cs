@@ -10,7 +10,8 @@ namespace BoltFreezer.Camera.CameraEnums
         None,
         Stationary,
         Pan,
-        Follow
+        Follow,
+        GroupAim
     }
 
 }

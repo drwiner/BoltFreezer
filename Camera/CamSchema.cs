@@ -20,18 +20,24 @@ namespace BoltFreezer.Camera
 
         public Vangle vangle = Vangle.None;
 
-        public CamSchema(FramingType _scale, string _tLoc, Orient _tOrient, Hangle _hangle, Vangle _vangle)
+        // Used to reconstruct camera w/o specific target; alternatively, give sample target
+        public float distance;
+        public float height;
+
+        public CamSchema(FramingType _scale, string _tLoc, Orient _tOrient, Hangle _hangle, Vangle _vangle, float _distance, float _height)
         {
             scale = _scale;
             targetLocation = _tLoc;
             targetOrientation = _tOrient;
             hangle = _hangle;
             vangle = _vangle;
+            distance = _distance;
+            height = _height;
         }
 
         public CamSchema Duplicate()
         {
-            return new CamSchema(scale, targetLocation, targetOrientation, hangle, vangle);
+            return new CamSchema(scale, targetLocation, targetOrientation, hangle, vangle, distance, height);
         }
 
         public override string ToString()
@@ -65,15 +71,19 @@ namespace BoltFreezer.Camera
             {
                 return -1;
             }
-            if (vangle.Equals("Low"))
+            if (vangle == Vangle.Low)
             {
                 return -30;
             }
-            if (vangle.Equals("Eye"))
+            if (vangle == Vangle.Eye)
             {
                 return 0;
             }
-            return 30;
+            if (vangle == Vangle.High)
+            {
+                return 30;
+            }
+            return 0;
         }
 
         public bool IsConsistent(CamSchema cas)
@@ -128,7 +138,7 @@ namespace BoltFreezer.Camera
 
         public CamSchema Clone()
         {
-            return new CamSchema(scale, targetLocation, targetOrientation, hangle, vangle);
+            return new CamSchema(scale, targetLocation, targetOrientation, hangle, vangle, distance, height);
         }
     }
 }

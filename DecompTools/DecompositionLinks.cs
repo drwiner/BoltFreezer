@@ -28,6 +28,10 @@ namespace BoltFreezer.DecompTools
                 SubStepMap[csps.ID] = new List<int>();
             }
             SubStepMap[csps.ID].Add(substep.ID);
+            if (!ParentMap.ContainsKey(csps.ID))
+            {
+                ParentMap[csps.ID] = -1;
+            }
         }
 
         public int GetRoot(IPlanStep step)
@@ -62,7 +66,7 @@ namespace BoltFreezer.DecompTools
         public void RemoveSubStep(IPlanStep parent, IPlanStep child)
         {
             SubStepMap[parent.ID].Remove(child.ID);
-            ParentMap[child.ID] = -1;
+            ParentMap[child.ID] = -2;
         }
 
         public bool OnDecompPath(IPlanStep a, int target)
@@ -82,20 +86,25 @@ namespace BoltFreezer.DecompTools
                 return false;
             }
 
-            if (ParentMap[a] == target)
-            {
-                return true;
-            }
-
             if (ParentMap[a] == -1)
             {
                 return false;
+            }
+
+            if (ParentMap[a] == target)
+            {
+                return true;
             }
 
             var parent = ParentMap[a];
             if (parent == -1)
             {
                 return false;
+            }
+
+            if (parent == -2)
+            {
+                throw new System.Exception("traveled up wrong tree");
             }
             return OnDecompPath(parent, target);
         }
@@ -104,7 +113,7 @@ namespace BoltFreezer.DecompTools
         {
             if (!ParentMap.ContainsKey(stepID))
             {
-                return -1;
+                return -2;
             }
             return ParentMap[stepID];
         }

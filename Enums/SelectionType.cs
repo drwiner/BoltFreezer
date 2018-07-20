@@ -15,6 +15,7 @@ namespace BoltFreezer.Enums
         E4, 
         E5,
         E6,
-        DecompDivHdepth
+        DecompDivHdepth,
+        E3Star
     }
 }

@@ -191,7 +191,15 @@ namespace TestFreezer
             ci.problemname = "racetest(1)";
             ci.problemname = "racetest(7)";
             ci.problemname = "racetest(9)";
+
+            // Success: RaceWorld Problem 0
             ci.problemname = "racetestWith2Connective";
+
+            ci.problemname = "raceTest9Agents";
+            ci.problemname = "duel4Test";
+            ci.problemname = "duel5Test";
+            ci.problemname = "duel6Test";
+            //ci.problemname = "michael3test";
             ci.RunTest(1000000f);
 
             // search (false ==> ignore depth as stopping condition, is default). Selection (E0) (true=> do check for no flaws no matter depth).

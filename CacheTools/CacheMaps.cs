@@ -16,6 +16,8 @@ namespace BoltFreezer.PlanTools
         public static TupleMap<IPredicate, List<int>> CausalTupleMap = new TupleMap<IPredicate, List<int>>();
         public static TupleMap<IPredicate, List<int>> ThreatTupleMap = new TupleMap<IPredicate, List<int>>();
 
+        public static List<IPredicate> PrimaryEffects = new List<IPredicate>();
+
         //public static Dictionary<IPredicate, List<int>> PosCausalMap = new Dictionary<IPredicate, List<int>>();
         //public static Dictionary<IPredicate, List<int>> NegCausalMap = new Dictionary<IPredicate, List<int>>();
 
@@ -234,6 +236,7 @@ namespace BoltFreezer.PlanTools
                 var causeMap = CausalTupleMap.Get(goalCondition.Sign);
                 var threatmap = ThreatTupleMap.Get(goalCondition.Sign);
 
+                // Hence, it's been processed already
                 if (causeMap.ContainsKey(goalCondition) || threatmap.ContainsKey(goalCondition))
                 {
                     continue;
@@ -241,18 +244,15 @@ namespace BoltFreezer.PlanTools
 
                 foreach (var gstep in groundSteps)
                 {
-                    if (gstep.Height > 0)
-                    {
-                        //Console.WriteLine("debug");
-                    }
+
                     if (gstep.Effects.Contains(goalCondition))
                     {
                         if (!causeMap.ContainsKey(goalCondition))
                             causeMap.Add(goalCondition, new List<int>() { gstep.ID });
                         else
                             causeMap[goalCondition].Add(gstep.ID);
-
                     }
+
                     if (gstep.Effects.Contains(goalCondition.GetReversed()))
                     {
                         if (!threatmap.ContainsKey(goalCondition))
@@ -260,6 +260,7 @@ namespace BoltFreezer.PlanTools
                         else
                             threatmap[goalCondition].Add(gstep.ID);
                     }
+
                 }
             }
         }
@@ -325,6 +326,150 @@ namespace BoltFreezer.PlanTools
 
             HeuristicMethods.visitedPreds = RecursiveHeuristicCache(initialMap, newInitialList);
          
+        }
+
+        public static bool IsPrimaryEffect(IPredicate condition)
+        {
+            return PrimaryEffects.Contains(condition);
+        }
+
+        /// <summary>
+        /// Given a primary effect (one that is not the effect of a primitive step), calculate heuristic value.
+        /// Let that heuristic value be the shortest (height) step that can contribute, plus all of its preconditions.
+        /// Recursively, if any of its preconditions are primary effects, then repeat until we have either a step that is true in the initial state or has no primary effects as preconditions.
+        /// </summary>
+        /// <param name="InitialState"></param>
+        /// <param name="primaryEffect"></param>
+        /// <returns></returns>
+        public static void PrimaryEffectHack(IState InitialState)
+        {
+            // Finds primary effects: for each composite step, if its precondition has no visitedPreds value.
+            CalculatePrimaryEffects();
+
+            var initialMap = new TupleMap<IPredicate, int>();
+            var primaryEffectsInInitialState = new List<IPredicate>();
+            foreach (var item in InitialState.Predicates)
+            {
+                if (IsPrimaryEffect(item))
+                {
+                    primaryEffectsInInitialState.Add(item);
+                    initialMap.Get(item.Sign)[item] = 0;
+                }
+            }
+
+            var heurDict = PrimaryEffectRecursiveHeuristicCache(initialMap, primaryEffectsInInitialState);
+
+            foreach (var keyvalue in heurDict.Get(true))
+            {
+                HeuristicMethods.visitedPreds.Get(true)[keyvalue.Key] = keyvalue.Value;
+            }
+            foreach (var keyvalue in heurDict.Get(false))
+            {
+                HeuristicMethods.visitedPreds.Get(false)[keyvalue.Key] = keyvalue.Value;
+            }
+        }
+
+        private static void CalculatePrimaryEffects()
+        {
+            PrimaryEffects = new List<IPredicate>();
+            var CompositeOps = GroundActionFactory.GroundActions.Where(act => act.Height > 0);
+
+            foreach (var compOp in CompositeOps)
+            {
+                foreach (var precon in compOp.Preconditions)
+                {
+                    if (!HeuristicMethods.visitedPreds.Get(precon.Sign).ContainsKey(precon))
+                    {
+                        PrimaryEffects.Add(precon);
+                        HeuristicMethods.visitedPreds.Get(precon.Sign)[precon] = 200;
+                    }
+                }
+                foreach(var eff in compOp.Effects)
+                {
+                    if (!HeuristicMethods.visitedPreds.Get(eff.Sign).ContainsKey(eff))
+                    {
+                        PrimaryEffects.Add(eff);
+                        HeuristicMethods.visitedPreds.Get(eff.Sign)[eff] = 200;
+                    }
+                }
+            }
+
+        }
+
+        private static TupleMap<IPredicate, int> PrimaryEffectRecursiveHeuristicCache(TupleMap<IPredicate, int> currentMap, List<IPredicate> InitialConditions)
+        {
+            var initiallyRelevant = new List<IOperator>();
+            var CompositeOps = GroundActionFactory.GroundActions.Where(act => act.Height > 0);
+            foreach (var compOp in CompositeOps)
+            {
+                var initiallySupported = true;
+                foreach (var precond in compOp.Preconditions)
+                {
+                    if (IsPrimaryEffect(precond))
+                    {
+                        // then this is a primary effect.
+                        if (!InitialConditions.Contains(precond))
+                        {
+                            initiallySupported = false;
+                            break;
+                        }
+                    }
+                }
+                if (initiallySupported)
+                {
+                    initiallyRelevant.Add(compOp);
+                }
+            }
+
+            // a boolean tag to decide whether to continue recursively. If checked, then there is some new effect that isn't in initial conditions.
+            bool toContinue = false;
+
+            // for each step whose preconditions are executable given the initial conditions
+            foreach (var newStep in initiallyRelevant)
+            {
+                // sum_{pre in newstep.preconditions} currentMap[pre]
+                int thisStepsValue = 0;
+                foreach (var precon in newStep.Preconditions)
+                {
+                    if (IsPrimaryEffect(precon))
+                    {
+                        thisStepsValue += currentMap.Get(precon.Sign)[precon];
+                    }
+                    else
+                    {
+                        thisStepsValue += HeuristicMethods.visitedPreds.Get(precon.Sign)[precon];
+                    }
+                }
+
+                foreach (var eff in newStep.Effects)
+                {
+                    if (!IsPrimaryEffect(eff))
+                    {
+                        continue;
+                    }
+
+                    // ignore effects we've already seen; these occur "earlier" in planning graph
+                    if (currentMap.Get(eff.Sign).ContainsKey(eff))
+                        continue;
+
+                    // If we make it this far, then we've reached an unexplored literal effect
+                    toContinue = true;
+
+                    // The current value of this effect is 1 (this new step) + the sum of the preconditions of this step in the map.
+                    currentMap.Get(eff.Sign)[eff] = 1 + thisStepsValue;
+
+                    // Add this effect to the new initial Condition for subsequent round
+                    InitialConditions.Add(eff);
+                }
+            }
+
+            // Only continue recursively if we've explored a new literal effect. Pass the map along to maintain a global item.
+            if (toContinue)
+                return PrimaryEffectRecursiveHeuristicCache(currentMap, InitialConditions);
+
+            // Otherwise, return our current map
+            return currentMap;
+
         }
     }
 

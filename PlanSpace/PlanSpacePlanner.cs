@@ -328,6 +328,23 @@ namespace BoltFreezer.PlanSpace
                 }
                 writer.WriteLine("\n");
                 writer.WriteLine(plan.ToStringOrdered());
+
+                writer.WriteLine("\nComposites:\n");
+                foreach (var item in plan.Steps)
+                {
+                    if (item.Height > 0)
+                    {
+                        writer.WriteLine(item.ToString());
+                    }
+                }
+
+                writer.WriteLine("\nOrderings:\n");
+                foreach (var ord in plan.Orderings.edges)
+                {
+                    writer.WriteLine(ord.ToString());
+                }
+
+                
             }
         }
 

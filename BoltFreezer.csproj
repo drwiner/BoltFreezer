@@ -70,6 +70,7 @@
   <ItemGroup>
     <Compile Include="CacheTools\ProblemFreezer.cs" />
     <Compile Include="Camera\ActionSeg.cs" />
+    <Compile Include="Camera\CameraEnums\CompositionCoordinate.cs" />
     <Compile Include="Camera\CameraEnums\Directive.cs" />
     <Compile Include="Camera\CamSchema.cs" />
     <Compile Include="Camera\CamTargetSchema.cs" />

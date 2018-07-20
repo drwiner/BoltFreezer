@@ -19,7 +19,7 @@ namespace BoltFreezer.Camera {
         // A totally and temporally ordered list of action segments
         public CamTargetSchema TargetDetails = null;
 
-        public CamDirective directive = CamDirective.None;
+        //public CamDirective directive = CamDirective.None;
 
         public CamPlanStep() : base()
         {
@@ -46,7 +46,7 @@ namespace BoltFreezer.Camera {
                 TargetDetails = cps.TargetDetails.Clone();
             if (cps.CamObject != null)
                 CamObject = cps.CamObject;
-            directive = cps.directive;
+            //directive = cps.directive;
             
         }
 
@@ -63,7 +63,7 @@ namespace BoltFreezer.Camera {
             if (TargetDetails != null)
                 newstep.TargetDetails = TargetDetails.Clone();
 
-            newstep.directive = directive;
+            //newstep.directive = directive;
 
             return newstep;
         }

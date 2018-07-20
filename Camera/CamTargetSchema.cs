@@ -13,7 +13,9 @@ namespace BoltFreezer.Camera
     {
         public Orient orient = Orient.None;
 
+        public int actionSegOfFocus = 0;
         public string location = "";
+        public string orientTowards = "";
 
         public List<ActionSeg> ActionSegs = new List<ActionSeg>();
 

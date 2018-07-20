@@ -224,6 +224,14 @@ namespace TestFreezer
             return new List<IPredicate>() { goalCondition };
         }
 
+        public List<IPredicate> CreateGoalState_DuelState()
+        {
+            var bb = new Term("BlueBoid", true) as ITerm;
+            var ob = new Term("OrangeBoid", true) as ITerm;
+            var goalCondition = new Predicate("bel-about-to-duel", new List<ITerm>() { bb, ob }, true);
+            return new List<IPredicate>() { goalCondition };
+        }
+
         public List<IPredicate> MakeObservable(List<IPredicate> initialState)
         {
             var newState = new List<IPredicate>();
@@ -253,7 +261,8 @@ namespace TestFreezer
             //var goalState = CreateGoalState_GetBlock2ToL1();
             //var goalState = CreateGoalState_GetBlock2ToL4();
             //var goalState = CreateGoalState_GetBlock1ToL4();
-            var goalState = CreateGoalState_Race1();
+            //var goalState = CreateGoalState_Race1();
+            var goalState = CreateGoalState_DuelState();
             //goalState = MakeObservable(goalState);
 
             var CausalMapFileName = GetCausalMapFileName();
@@ -265,7 +274,7 @@ namespace TestFreezer
 
             var iniTstate = new State(initialState) as IState;
             CacheMaps.CacheAddReuseHeuristic(iniTstate);
-            PrimaryEffectHack(iniTstate);
+            CacheMaps.PrimaryEffectHack(iniTstate);
 
 
             initial = initialState;
@@ -293,119 +302,6 @@ namespace TestFreezer
             return Parser.GetTopDirectory() + @"Cached\EffortMaps\UnityBlocksWorld\" + problemname;
         }
 
-        /// <summary>
-        /// Given a primary effect (one that is not the effect of a primitive step), calculate heuristic value.
-        /// Let that heuristic value be the shortest (height) step that can contribute, plus all of its preconditions.
-        /// Recursively, if any of its preconditions are primary effects, then repeat until we have either a step that is true in the initial state or has no primary effects as preconditions.
-        /// </summary>
-        /// <param name="InitialState"></param>
-        /// <param name="primaryEffect"></param>
-        /// <returns></returns>
-        public static void PrimaryEffectHack(IState InitialState)
-        {
-            var initialMap = new TupleMap<IPredicate, int>();
-            var primaryEffectsInInitialState = new List<IPredicate>();
-            foreach (var item in InitialState.Predicates)
-            {
-                if (IsPrimaryEffect(item))
-                {
-                    primaryEffectsInInitialState.Add(item);
-                    initialMap.Get(item.Sign)[item] = 0;
-                }
-            }
-
-            var heurDict = PrimaryEffectRecursiveHeuristicCache(initialMap, primaryEffectsInInitialState);
-
-            foreach (var keyvalue in heurDict.Get(true))
-            {
-                HeuristicMethods.visitedPreds.Get(true)[keyvalue.Key] = keyvalue.Value;
-            }
-            foreach (var keyvalue in heurDict.Get(false))
-            {
-                HeuristicMethods.visitedPreds.Get(false)[keyvalue.Key] = keyvalue.Value;
-            }
-        }
-
-        private static TupleMap<IPredicate, int> PrimaryEffectRecursiveHeuristicCache(TupleMap<IPredicate, int> currentMap, List<IPredicate> InitialConditions)
-        {
-            var initiallyRelevant = new List<IOperator>();
-            var CompositeOps = GroundActionFactory.GroundActions.Where(act => act.Height > 0);
-            foreach (var compOp in CompositeOps)
-            {
-                var initiallySupported = true;
-                foreach (var precond in compOp.Preconditions)
-                {
-                    if (IsPrimaryEffect(precond))
-                    {
-                        // then this is a primary effect.
-                        if (!InitialConditions.Contains(precond))
-                        {
-                            initiallySupported = false;
-                            break;
-                        }
-                    }
-                }
-                if (initiallySupported)
-                {
-                    initiallyRelevant.Add(compOp);
-                }
-            }
-
-            // a boolean tag to decide whether to continue recursively. If checked, then there is some new effect that isn't in initial conditions.
-            bool toContinue = false;
-
-            // for each step whose preconditions are executable given the initial conditions
-            foreach (var newStep in initiallyRelevant)
-            {
-                // sum_{pre in newstep.preconditions} currentMap[pre]
-                int thisStepsValue = 0;
-                foreach (var precon in newStep.Preconditions)
-                {
-                    if (IsPrimaryEffect(precon))
-                    {
-                        thisStepsValue += currentMap.Get(precon.Sign)[precon];
-                    }
-                    else
-                    {
-                        thisStepsValue += HeuristicMethods.visitedPreds.Get(precon.Sign)[precon];
-                    }
-                }
-
-                foreach (var eff in newStep.Effects)
-                {
-                    if (!IsPrimaryEffect(eff))
-                    {
-                        continue;
-                    }
-
-                    // ignore effects we've already seen; these occur "earlier" in planning graph
-                    if (currentMap.Get(eff.Sign).ContainsKey(eff))
-                        continue;
-
-                    // If we make it this far, then we've reached an unexplored literal effect
-                    toContinue = true;
-
-                    // The current value of this effect is 1 (this new step) + the sum of the preconditions of this step in the map.
-                    currentMap.Get(eff.Sign)[eff] = 1 + thisStepsValue;
-
-                    // Add this effect to the new initial Condition for subsequent round
-                    InitialConditions.Add(eff);
-                }
-            }
-
-            // Only continue recursively if we've explored a new literal effect. Pass the map along to maintain a global item.
-            if (toContinue)
-                return PrimaryEffectRecursiveHeuristicCache(currentMap, InitialConditions);
-
-            // Otherwise, return our current map
-            return currentMap;
-
-        }
-
-        public static bool IsPrimaryEffect(IPredicate pred)
-        {
-            return (pred.Name.Equals("obs") || pred.Name.Equals("obs-starts"));
-        }
 
         public IPlan Run(IPlan initPlan, ISearch SearchMethod, ISelection SelectMethod, float cutoff)
         {
@@ -442,8 +338,13 @@ namespace TestFreezer
             //var solution = Run(initialPlan, new ADstar(false), new E0(new ZeroHeuristic()), cutoffTime);
             //var solution = Run(initialPlan, new ADstar(false), new E0(new NumOpenConditionsHeuristic()), cutoffTime);
             //var solution = Run(initialPlan, new ADstar(false), new E0(new AddReuseHeuristic(), true), cutoffTime);
-           // var solution = Run(initialPlan, new ADstar(false), new E3(new AddReuseHeuristic()), cutoffTime);
-            var solution = Run(initialPlan, new ADstar(false), new E3(new AddReuseHeuristic()), cutoffTime);
+            // var solution = Run(initialPlan, new ADstar(false), new E3(new AddReuseHeuristic()), cutoffTime);
+
+
+            var solution = Run(initialPlan, new ADstar(false), new E3Star(new AddReuseHeuristic()), cutoffTime);
+            //var solution = Run(initialPlan, new ADstar(false), new E3(new AddReuseHeuristic()), cutoffTime);
+
+
             //var solution = Run(initialPlan, new ADstar(false), new E3(new AddReuseHeuristic()), cutoffTime);
             //var solution = Run(initPlan, new BFS(), new Nada(new ZeroHeuristic()), 20000);
             if (solution != null)

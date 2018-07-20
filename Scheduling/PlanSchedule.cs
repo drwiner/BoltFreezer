@@ -81,21 +81,28 @@ namespace BoltFreezer.Scheduling
 
             // Clone, Add, and Order Initial step
             var dummyInit = new PlanStep(newStep.InitialStep) as IPlanStep;
+            dummyInit.InitCndt = newStep.InitialStep.InitCndt;
+            
             dummyInit.Depth = newStep.Depth;
             IDMap[newStep.InitialStep.ID] = dummyInit;
             Steps.Add(dummyInit);
             Orderings.Insert(InitialStep, dummyInit);
             Orderings.Insert(dummyInit, GoalStep);
 
+
             // Clone, Add, and order Goal step
             var dummyGoal = new PlanStep(newStep.GoalStep) as IPlanStep;
             dummyGoal.Depth = newStep.Depth;
             dummyGoal.InitCndt = dummyInit;
+            dummyGoal.GoalCndt = newStep.GoalStep.GoalCndt;
             InsertPrimitiveSubstep(dummyGoal, dummyInit.Effects, true);
             IDMap[newStep.GoalStep.ID] = dummyGoal;
             Orderings.Insert(dummyInit, dummyGoal);
 
             dummyInit.GoalCndt = dummyGoal;
+
+            this.ID += "([" + dummyInit.ID.ToString() + ',' + dummyGoal.ID.ToString() + "])";
+            
 
             // needs same operator ID as newStep, in order to still be referenced for primary-effect-based open conditions
             //var newStepCopy = new CompositeSchedulePlanStep(new Operator(newStep.Action.Predicate.Name, newStep.Action.Terms, new Hashtable(), new List<IPredicate>(), new List<IPredicate>(), newStep.Action.ID));
@@ -106,6 +113,7 @@ namespace BoltFreezer.Scheduling
             var newSubSteps = new List<IPlanStep>();
             newStep.Preconditions = new List<IPredicate>();
             newStep.Effects = new List<IPredicate>();
+
             newStep.InitialStep = dummyInit;
             newStep.GoalStep = dummyGoal;
 
@@ -126,36 +134,23 @@ namespace BoltFreezer.Scheduling
                         Depth = newStep.Depth + 1
                     };
 
-                    Orderings.Insert(compositeSubStep.GoalStep, dummyGoal);
-                    Orderings.Insert(dummyInit, compositeSubStep.InitialStep);
-                    IDMap[substep.ID] = compositeSubStep;
-                    compositeSubStep.InitialStep.InitCndt = dummyInit;
-                    compositeSubStep.InitialStep.GoalCndt = dummyGoal;
-                    compositeSubStep.GoalStep.InitCndt = dummyInit;
-                    compositeSubStep.GoalStep.GoalCndt = dummyGoal;
-
-                    DeLinks.Insert(newStep, compositeSubStep);
-
-                    //compositeSubStep.Parent = newStep;
-                    
+                    // Avoid the following issue: compositeSubStep's initial and goal step will be reassigned its ID AFTER it is inserted; thus, insert first
                     newSubSteps.Add(compositeSubStep);
+                    DeLinks.Insert(newStep, compositeSubStep);
                     Insert(compositeSubStep);
 
-                    //foreach (var precon in compositeSubStep.ContextPrecons)
-                    //{
-                    //    if (newStep.ContextPrecons.Contains(precon))
-                    //    {
-                    //        // then replace.
-                    //    }
-                    //    // these precons MUST be referencing a local sub-step; or else, they reference a precondition or effect of a sub-step.
-                    //    precon.ActionRef = IDMap[precon.ActionRef.ID];
-                    //}
-                    //foreach (var eff in newStep.ContextEffects)
-                    //{
-                    //    eff.ActionRef = IDMap[eff.ActionRef.ID];
-                    //}
+                    Orderings.Insert(compositeSubStep.GoalStep, dummyGoal);
+                    Orderings.Insert(dummyInit, compositeSubStep.InitialStep);
 
-                    // Don't bother updating hdepth yet because we will check on recursion
+                    //this.ID += "(^Oss[" + compositeSubStep.GoalStep.ID.ToString() + ',' + dummyGoal.ID.ToString() + "])";
+                 //   this.ID += "(^Oss[" + dummyInit.ID.ToString() + ',' + compositeSubStep.InitialStep.ID.ToString() + "])";
+
+                    IDMap[substep.ID] = compositeSubStep;
+
+                    // The initial step of the sub-step looks to this local-subplan's dummy init as it's init cndt
+                    compositeSubStep.InitialStep.InitCndt = dummyInit;
+                    // The goal step of the sub-step looks to this local sub-plan's dummy goal step as it's goal candidate
+                    compositeSubStep.GoalStep.GoalCndt = dummyGoal;
                 }
                 else
                 {
@@ -195,6 +190,27 @@ namespace BoltFreezer.Scheduling
                 }
             }
 
+            newStep.InitialAction = IDMap[newStep.InitialAction.ID];
+            if (newStep.InitialAction is CompositeSchedulePlanStep cspsNewStep)
+            {
+                newStep.InitialCamAction = cspsNewStep.InitialCamAction;
+            }
+            else
+            {
+                newStep.InitialCamAction = IDMap[newStep.InitialCamAction.ID] as CamPlanStep;
+            }
+            
+            newStep.FinalAction = IDMap[newStep.FinalAction.ID];
+
+            if (newStep.FinalAction is CompositeSchedulePlanStep cspsNewStepf)
+            {
+                newStep.FinalCamAction = cspsNewStepf.FinalCamAction;
+            }
+            else
+            {
+                newStep.FinalCamAction = IDMap[newStep.FinalCamAction.ID] as CamPlanStep;
+            }
+    
             // update action seg targets
             foreach(var cps in newCamPlanSteps)
             {
@@ -235,6 +251,7 @@ namespace BoltFreezer.Scheduling
                     var temp = tail as CompositeSchedulePlanStep;
                     tail = temp.InitialStep as IPlanStep;
                 }
+                //this.ID += string.Format("(^Oso[{0},{1}])", head.ID, tail.ID);
                 Orderings.Insert(head, tail);
             }
 
@@ -252,12 +269,12 @@ namespace BoltFreezer.Scheduling
                     if (tail is CamPlanStep cps)
                     {
                         // then get final discourse step of temp // This is a HACK - because the last camera substep may be on a grandchild
-                        head = temp.CamScheduleSubSteps.Last() as IPlanStep;
+                        head = temp.FinalCamAction as IPlanStep;
                     }
                     else
                     {
                         // then get the action referenced by the final action segment - already updated actionID and is already in plan.
-                        head = steps.Where(s => s.ID == temp.FinalActionSeg.ActionID).First();
+                        head = temp.FinalAction;
                     }
                 }
                 if (tail.Height > 0)
@@ -266,16 +283,17 @@ namespace BoltFreezer.Scheduling
                     if (head is CamPlanStep cps)
                     {
                         // then get first discourse step of temp // This is a HACK - because the first camera substep may be on a grandchild
-                        tail = temp.CamScheduleSubSteps.First() as IPlanStep;
+                        tail = temp.InitialCamAction;
                     }
                     else
                     {
-                        tail = steps.Where(s => s.ID == temp.InitialActionSeg.ActionID).First();
+                        tail = temp.InitialAction;
                     }
                 }
                 Cntgs.Insert(head, tail);
                 // also add orderings just in case
                 Orderings.Insert(head, tail);
+               // this.ID += string.Format("(^Osc[{0},{1}])", head.ID, tail.ID);
             }
 
             foreach (var clink in newStep.SubLinks)
@@ -298,6 +316,7 @@ namespace BoltFreezer.Scheduling
                 var newclink = new CausalLink<IPlanStep>(clink.Predicate, head, tail);
                 CausalLinks.Add(newclink);
                 Orderings.Insert(head, tail);
+                //this.ID += string.Format("(^Osl[{0},{1}])", head.ID, tail.ID);
 
                 // check if this causal links is threatened by a step in subplan
                 foreach (var step in newSubSteps)
@@ -444,11 +463,12 @@ namespace BoltFreezer.Scheduling
                 }
             }
 
-            Orderings.edges = new HashSet<Tuple<IPlanStep, IPlanStep>>();
-            foreach (var newordering in newOrderings)
-            {
-                Orderings.Insert(newordering.First, newordering.Second);
-            }
+
+            Orderings.edges = new HashSet<Tuple<IPlanStep, IPlanStep>>(newOrderings);
+            //foreach (var newordering in newOrderings)
+            //{
+            //    Orderings.Insert(newordering.First, newordering.Second);
+            //}
 
             Cntgs.edges = newCntgs;
             CausalLinks = newLinks.ToList();
@@ -523,7 +543,24 @@ namespace BoltFreezer.Scheduling
             
             // Add orderings to keep repair Step within decompositional borders
             Orderings.Insert(needStepComposite.InitialStep, repairStepRoot.InitialStep);
+            //this.ID += string.Format("(^Om[{0},{1}])", needStepComposite.InitialStep.ID, repairStepRoot.InitialStep.ID);
             Orderings.Insert(repairStepRoot.GoalStep, needStepComposite.GoalStep);
+            //this.ID += string.Format("(^Om[{0},{1}])", repairStepRoot.GoalStep.ID, needStepComposite.GoalStep.ID);
+
+            Orderings.Insert(needStepComposite.InitialStep, repairStep.InitialStep);
+            Orderings.Insert(repairStep.GoalStep, needStepComposite.GoalStep);
+
+            // the needstep camera schedule sub-steps may not be ordered relative to the action being merged.
+            foreach(var needCamSubStep in needStepComposite.CamScheduleSubSteps)
+            {
+                Orderings.Insert(repairStep.GoalStep, needCamSubStep);
+                //this.ID += string.Format("(^Ocams[{0},{1}])", needCamSubStep.ID, repairStep.InitialStep.ID);
+                //foreach (var repairCamSubStep in repairStep.CamScheduleSubSteps)
+                //{
+                //    Orderings.Insert(repairCamSubStep, needCamSubStep);
+                //    this.ID += string.Format("(^Ocams[{0},{1}])", repairCamSubStep.ID, needCamSubStep.ID);
+                //}
+            }
 
         }
 
@@ -556,6 +593,7 @@ namespace BoltFreezer.Scheduling
             //}
 
             orderings.Insert(repairStep.GoalStep as IPlanStep, needStep);
+            //this.ID += string.Format("(^Orl[{0},{1}])", repairStep.GoalStep.ID, needStep.ID);
 
             var clink = new CausalLink<IPlanStep>(oc.precondition as Predicate, repairStep.GoalStep as IPlanStep, needStep);
             causalLinks.Add(clink);
@@ -595,6 +633,7 @@ namespace BoltFreezer.Scheduling
                             // then, need to tuck t into Q's borders.
                             var tailRoot = GetStepByID(DeLinks.GetRoot(clink.Tail)) as CompositePlanStep;
                             Orderings.Insert(tailRoot.GoalStep, stepAsComp.InitialStep);
+                            this.ID += string.Format("(^Od[{0},{1}])", tailRoot.GoalStep.ID, stepAsComp.InitialStep.ID);
                         }
 
                         continue;
@@ -681,6 +720,7 @@ namespace BoltFreezer.Scheduling
                             // then, need to tuck t into Q's borders.
                             var tailRoot = GetStepByID(DeLinks.GetRoot(clink.Tail)) as CompositePlanStep;
                             Orderings.Insert(tailRoot.GoalStep, possibleThreatComposite.InitialStep);
+                            this.ID += string.Format("(^Od2[{0},{1}])", tailRoot.GoalStep.ID, possibleThreatComposite.InitialStep.ID);
                         }
 
                         continue;

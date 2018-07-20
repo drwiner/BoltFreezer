@@ -59,7 +59,7 @@ namespace BoltFreezer.PlanTools
             FromOperators(ops);
         }
 
-        public static void FromOperator(IOperator op)
+        private static void FromOperator(IOperator op)
         {
 
             var permList = new List<List<string>>();
@@ -97,7 +97,7 @@ namespace BoltFreezer.PlanTools
             }
         }
 
-        public static void FromOperators(List<IOperator> operators)
+        private static void FromOperators(List<IOperator> operators)
         {
             foreach (var op in operators)
             {

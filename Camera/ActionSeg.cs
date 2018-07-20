@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BoltFreezer.Camera.CameraEnums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,8 @@ namespace BoltFreezer.Camera
         public int actiontypeID;
         public double startPercent = 0;
         public double endPercent = 1;
+        public CompositionCoordinate screenxy = CompositionCoordinate.Center;
+        public CamDirective directive = CamDirective.Pan;
 
         public ActionSeg(string actionvar, double start, double end)
         {
@@ -34,12 +37,14 @@ namespace BoltFreezer.Camera
             // These should be inserted for each pair of targets that are consecutive but not contiguous.
         }
 
-        public ActionSeg(string actionvar, int _actionID, int _actiontypeID, string tarvar, double start, double end)
+        public ActionSeg(string actionvar, int _actionID, int _actiontypeID, string tarvar, CompositionCoordinate sxz, CamDirective dire, double start, double end)
         {
             actionVarName = actionvar;
             actionID = _actionID;
             actiontypeID = _actiontypeID;
             targetVarName = tarvar;
+            screenxy = sxz;
+            directive = dire;
             startPercent = start;
             endPercent = end;
         }
@@ -68,7 +73,7 @@ namespace BoltFreezer.Camera
 
         public ActionSeg Clone()
         {
-            return new ActionSeg(actionVarName, actionID, actiontypeID, targetVarName, startPercent, endPercent);
+            return new ActionSeg(actionVarName, actionID, actiontypeID, targetVarName, screenxy, directive, startPercent, endPercent);
         }
 
     }
